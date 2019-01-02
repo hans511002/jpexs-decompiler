@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -27,36 +28,41 @@ import com.jpexs.decompiler.graph.model.LocalData;
  */
 public class GetSuperAVM2Item extends AVM2Item {
 
-    public GraphTargetItem object;
+	public GraphTargetItem object;
 
-    public FullMultinameAVM2Item propertyName;
+	public FullMultinameAVM2Item propertyName;
 
-    public GetSuperAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem object, FullMultinameAVM2Item propertyName) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.object = object;
-        this.propertyName = propertyName;
-    }
+	public GetSuperAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem object,
+			FullMultinameAVM2Item propertyName) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.object = object;
+		this.propertyName = propertyName;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (!object.toString().equals("this")) {
-            int length = writer.getLength();
-            object.toString(writer, localData);
-            if (writer.getLength() > length) {
-                writer.append(".");
-            }
-        }
-        writer.append("super.");
-        return propertyName.toString(writer, localData);
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (!object.toString().equals("this")) {
+			int length = nwriter.getLength();
+			object.toString(nwriter, localData);
+			if (nwriter.getLength() > length) {
+				nwriter.append(".");
+			}
+		}
+		nwriter.append("super.");
+		propertyName.toString(nwriter, localData);
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

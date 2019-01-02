@@ -16,6 +16,9 @@
  */
 package com.jpexs.decompiler.flash.action.model;
 
+import java.util.List;
+import java.util.Random;
+
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.ActionRandomNumber;
 import com.jpexs.decompiler.flash.ecma.EcmaScript;
@@ -26,8 +29,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
-import java.util.Random;
 
 /**
  *
@@ -35,43 +36,50 @@ import java.util.Random;
  */
 public class RandomNumberActionItem extends ActionItem {
 
-    private static final Random rnd = new Random();
+	private static final Random rnd = new Random();
 
-    public RandomNumberActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem maximum) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY, maximum);
-    }
+	public RandomNumberActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem maximum) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY, maximum);
+	}
 
-    public static Integer getResult(Object maximum) {
-        int maximumInt = EcmaScript.toInt32(maximum);
-        if (maximumInt <= 0) {
-            return 0;
-        }
-        return rnd.nextInt(maximumInt);
-    }
+	public static Integer getResult(Object maximum) {
+		int maximumInt = EcmaScript.toInt32(maximum);
+		if (maximumInt <= 0) {
+			return 0;
+		}
+		return rnd.nextInt(maximumInt);
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("random");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        value.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("random");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		value.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(value.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(value.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, value, new ActionRandomNumber());
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, value,
+				new ActionRandomNumber());
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

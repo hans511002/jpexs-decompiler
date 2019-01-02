@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
 
 import com.jpexs.decompiler.flash.abc.avm2.model.AVM2Item;
@@ -25,28 +26,31 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
  */
 public class UnboundedTypeItem extends AVM2Item {
 
-    public UnboundedTypeItem() {
-        super(null, null, NOPRECEDENCE);
-    }
+	public UnboundedTypeItem() {
+		super(null, null, NOPRECEDENCE);
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("*");
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("*");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return this;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return this;
+	}
 
-    @Override
-    public String toString() {
-        return "*";
-    }
+	@Override
+	public String toString() {
+		return "*";
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

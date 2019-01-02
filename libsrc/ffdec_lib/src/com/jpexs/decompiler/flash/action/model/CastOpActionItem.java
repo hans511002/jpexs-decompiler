@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf7.ActionCastOp;
@@ -24,8 +28,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -33,47 +35,55 @@ import java.util.List;
  */
 public class CastOpActionItem extends ActionItem {
 
-    public GraphTargetItem constructor;
+	public GraphTargetItem constructor;
 
-    public GraphTargetItem object;
+	public GraphTargetItem object;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(constructor);
-        ret.add(object);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(constructor);
+		ret.add(object);
+		return ret;
+	}
 
-    public CastOpActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem constructor, GraphTargetItem object) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.constructor = constructor;
-        this.object = object;
-    }
+	public CastOpActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem constructor,
+			GraphTargetItem object) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.constructor = constructor;
+		this.object = object;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("(");
-        stripQuotes(constructor, localData, writer);
-        writer.append(")");
-        return object.toString(writer, localData);
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("(");
+		stripQuotes(constructor, localData, nwriter);
+		nwriter.append(")");
+		object.toString(nwriter, localData);
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(constructor.getNeededSources());
-        ret.addAll(object.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(constructor.getNeededSources());
+		ret.addAll(object.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, constructor, object, new ActionCastOp());
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, constructor, object,
+				new ActionCastOp());
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -26,8 +30,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.Loop;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -35,118 +37,126 @@ import java.util.List;
  */
 public class ForItem extends LoopItem implements Block {
 
-    public List<GraphTargetItem> firstCommands;
+	public List<GraphTargetItem> firstCommands;
 
-    public GraphTargetItem expression;
+	public GraphTargetItem expression;
 
-    public List<GraphTargetItem> finalCommands;
+	public List<GraphTargetItem> finalCommands;
 
-    public List<GraphTargetItem> commands;
+	public List<GraphTargetItem> commands;
 
-    private boolean labelUsed;
+	private boolean labelUsed;
 
-    @Override
-    public List<List<GraphTargetItem>> getSubs() {
-        List<List<GraphTargetItem>> ret = new ArrayList<>();
-        if (firstCommands != null) {
-            ret.add(firstCommands);
-        }
-        if (commands != null) {
-            ret.add(commands);
-        }
-        if (finalCommands != null) {
-            ret.add(finalCommands);
-        }
-        return ret;
-    }
+	@Override
+	public List<List<GraphTargetItem>> getSubs() {
+		List<List<GraphTargetItem>> ret = new ArrayList<>();
+		if (firstCommands != null) {
+			ret.add(firstCommands);
+		}
+		if (commands != null) {
+			ret.add(commands);
+		}
+		if (finalCommands != null) {
+			ret.add(finalCommands);
+		}
+		return ret;
+	}
 
-    public ForItem(GraphSourceItem src, GraphSourceItem lineStartIns, Loop loop, List<GraphTargetItem> firstCommands, GraphTargetItem expression, List<GraphTargetItem> finalCommands, List<GraphTargetItem> commands) {
-        super(src, lineStartIns, loop);
-        this.firstCommands = firstCommands;
-        this.expression = expression;
-        this.finalCommands = finalCommands;
-        this.commands = commands;
-    }
+	public ForItem(GraphSourceItem src, GraphSourceItem lineStartIns,
+			Loop loop, List<GraphTargetItem> firstCommands,
+			GraphTargetItem expression, List<GraphTargetItem> finalCommands,
+			List<GraphTargetItem> commands) {
+		super(src, lineStartIns, loop);
+		this.firstCommands = firstCommands;
+		this.expression = expression;
+		this.finalCommands = finalCommands;
+		this.commands = commands;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (writer instanceof NulWriter) {
-            ((NulWriter) writer).startLoop(loop.id, LoopWithType.LOOP_TYPE_LOOP);
-        }
-        if (labelUsed) {
-            writer.append("loop").append(loop.id).append(":").newLine();
-        }
-        writer.append("for");
-        if (writer.getFormatting().spaceBeforeParenthesesForParentheses) {
-            writer.append(" ");
-        }
-        writer.append("(");
-        int p = 0;
-        for (int i = 0; i < firstCommands.size(); i++) {
-            if (firstCommands.get(i).isEmpty()) {
-                continue;
-            }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (nwriter instanceof NulWriter) {
+			((NulWriter) nwriter).startLoop(loop.id,
+					LoopWithType.LOOP_TYPE_LOOP);
+		}
+		if (labelUsed) {
+			nwriter.append("loop").append(loop.id).append(":").newLine();
+		}
+		nwriter.append("for");
+		if (nwriter.getFormatting().spaceBeforeParenthesesForParentheses) {
+			nwriter.append(" ");
+		}
+		nwriter.append("(");
+		int p = 0;
+		for (int i = 0; i < firstCommands.size(); i++) {
+			if (firstCommands.get(i).isEmpty()) {
+				continue;
+			}
 
-            if (p > 0) {
-                writer.append(",");
-            }
-            firstCommands.get(i).toString(writer, localData);
-            p++;
-        }
-        writer.append("; ");
-        expression.toStringBoolean(writer, localData);
-        writer.append("; ");
-        p = 0;
-        for (int i = 0; i < finalCommands.size(); i++) {
-            if (finalCommands.get(i).isEmpty()) {
-                continue;
-            }
-            if (p > 0) {
-                writer.append(",");
-            }
-            finalCommands.get(i).toString(writer, localData);
-            p++;
-        }
-        writer.append(")");
-        appendBlock(expression, writer, localData, commands);
-        if (writer instanceof NulWriter) {
-            LoopWithType loopOjb = ((NulWriter) writer).endLoop(loop.id);
-            labelUsed = loopOjb.used;
-        }
-        return writer;
-    }
+			if (p > 0) {
+				nwriter.append(",");
+			}
+			firstCommands.get(i).toString(nwriter, localData);
+			p++;
+		}
+		nwriter.append("; ");
+		expression.toStringBoolean(nwriter, localData);
+		nwriter.append("; ");
+		p = 0;
+		for (int i = 0; i < finalCommands.size(); i++) {
+			if (finalCommands.get(i).isEmpty()) {
+				continue;
+			}
+			if (p > 0) {
+				nwriter.append(",");
+			}
+			finalCommands.get(i).toString(nwriter, localData);
+			p++;
+		}
+		nwriter.append(")");
+		appendBlock(expression, nwriter, localData, commands);
+		if (nwriter instanceof NulWriter) {
+			LoopWithType loopOjb = ((NulWriter) nwriter).endLoop(loop.id);
+			labelUsed = loopOjb.used;
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public List<ContinueItem> getContinues() {
-        List<ContinueItem> ret = new ArrayList<>();
-        for (GraphTargetItem ti : commands) {
-            if (ti instanceof ContinueItem) {
-                ret.add((ContinueItem) ti);
-            }
-            if (ti instanceof Block) {
-                ret.addAll(((Block) ti).getContinues());
-            }
-        }
-        return ret;
-    }
+	@Override
+	public List<ContinueItem> getContinues() {
+		List<ContinueItem> ret = new ArrayList<>();
+		for (GraphTargetItem ti : commands) {
+			if (ti instanceof ContinueItem) {
+				ret.add((ContinueItem) ti);
+			}
+			if (ti instanceof Block) {
+				ret.addAll(((Block) ti).getContinues());
+			}
+		}
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return generator.generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return generator.generate(localData, this);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 }

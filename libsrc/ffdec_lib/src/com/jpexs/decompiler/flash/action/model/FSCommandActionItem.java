@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.model.operations.AddActionItem;
@@ -26,7 +29,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -34,33 +36,46 @@ import java.util.List;
  */
 public class FSCommandActionItem extends ActionItem {
 
-    private final GraphTargetItem command;
+	private final GraphTargetItem command;
 
-    public FSCommandActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem command) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.command = command;
-    }
+	public FSCommandActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem command) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.command = command;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("fscommand");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        command.appendTry(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("fscommand");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		command.appendTry(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        ActionSourceGenerator asg = (ActionSourceGenerator) generator;
-        if ((command instanceof DirectValueActionItem) && ((DirectValueActionItem) command).isString()) {
-            return toSourceMerge(localData, generator, new ActionGetURL("FSCommand:" + ((DirectValueActionItem) command).getAsString(), ""));
-        }
-        return toSourceMerge(localData, generator, new AddActionItem(null, null, asg.pushConstTargetItem("FSCommand:"), command, true), asg.pushConstTargetItem(""), new ActionGetURL2(1/*GET*/, false, false));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		ActionSourceGenerator asg = (ActionSourceGenerator) generator;
+		if ((command instanceof DirectValueActionItem)
+				&& ((DirectValueActionItem) command).isString()) {
+			return toSourceMerge(localData, generator,
+					new ActionGetURL("FSCommand:"
+							+ ((DirectValueActionItem) command).getAsString(),
+							""));
+		}
+		return toSourceMerge(localData, generator, new AddActionItem(null,
+				null, asg.pushConstTargetItem("FSCommand:"), command, true),
+				asg.pushConstTargetItem(""), new ActionGetURL2(1/* GET */,
+						false, false));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

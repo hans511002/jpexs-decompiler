@@ -34,7 +34,7 @@ public class EnumeratedValueActionItem extends ActionItem implements BranchStack
 
     @Override
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        return writer.append("Â§Â§enumeration()");
+        return writer.append("¡ì¡ìenumeration()");
     }
 
     @Override

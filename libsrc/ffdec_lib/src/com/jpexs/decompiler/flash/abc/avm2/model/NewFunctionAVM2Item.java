@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.types.ConvertData;
@@ -28,7 +31,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.ScopeStack;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -36,68 +38,79 @@ import java.util.List;
  */
 public class NewFunctionAVM2Item extends AVM2Item {
 
-    public String functionName;
+	public String functionName;
 
-    public String path;
+	public String path;
 
-    public boolean isStatic;
+	public boolean isStatic;
 
-    public int scriptIndex;
+	public int scriptIndex;
 
-    public int classIndex;
+	public int classIndex;
 
-    public ABC abc;
+	public ABC abc;
 
-    public List<DottedChain> fullyQualifiedNames;
+	public List<DottedChain> fullyQualifiedNames;
 
-    public int methodIndex;
+	public int methodIndex;
 
-    public NewFunctionAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, String functionName, String path, boolean isStatic, int scriptIndex, int classIndex, ABC abc, List<DottedChain> fullyQualifiedNames, int methodIndex) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.functionName = functionName;
-        this.path = path;
-        this.isStatic = isStatic;
-        this.scriptIndex = scriptIndex;
-        this.classIndex = classIndex;
-        this.abc = abc;
-        this.fullyQualifiedNames = fullyQualifiedNames;
-        this.methodIndex = methodIndex;
-    }
+	public NewFunctionAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, String functionName, String path,
+			boolean isStatic, int scriptIndex, int classIndex, ABC abc,
+			List<DottedChain> fullyQualifiedNames, int methodIndex) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.functionName = functionName;
+		this.path = path;
+		this.isStatic = isStatic;
+		this.scriptIndex = scriptIndex;
+		this.classIndex = classIndex;
+		this.abc = abc;
+		this.fullyQualifiedNames = fullyQualifiedNames;
+		this.methodIndex = methodIndex;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        MethodBody body = abc.findBody(methodIndex);
-        writer.append("function");
-        writer.startMethod(methodIndex);
-        writer.append((!functionName.isEmpty() ? " " + functionName : ""));
-        writer.appendNoHilight("(");
-        abc.method_info.get(methodIndex).getParamStr(writer, abc.constants, body, abc, fullyQualifiedNames);
-        writer.appendNoHilight("):");
-        if (Configuration.showMethodBodyId.get()) {
-            writer.appendNoHilight("// method body index: ");
-            writer.appendNoHilight(abc.findBodyIndex(methodIndex));
-            writer.appendNoHilight(" method index: ");
-            writer.appendNoHilight(methodIndex);
-            writer.newLine();
-        }
-        abc.method_info.get(methodIndex).getReturnTypeStr(writer, abc.constants, fullyQualifiedNames);
-        writer.startBlock();
-        if (body != null) {
-            body.convert(new ConvertData(), path + "/inner", ScriptExportMode.AS, isStatic, methodIndex, scriptIndex, classIndex, abc, null, new ScopeStack(), 0, new NulWriter(), fullyQualifiedNames, null, false);
-            body.toString(path + "/inner", ScriptExportMode.AS, abc, null, writer, fullyQualifiedNames);
-        }
-        writer.endBlock();
-        writer.endMethod();
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		MethodBody body = abc.findBody(methodIndex);
+		nwriter.append("function");
+		nwriter.startMethod(methodIndex);
+		nwriter.append((!functionName.isEmpty() ? " " + functionName : ""));
+		nwriter.appendNoHilight("(");
+		abc.method_info.get(methodIndex).getParamStr(nwriter, abc.constants,
+				body, abc, fullyQualifiedNames);
+		nwriter.appendNoHilight("):");
+		if (Configuration.showMethodBodyId.get()) {
+			nwriter.appendNoHilight("// method body index: ");
+			nwriter.appendNoHilight(abc.findBodyIndex(methodIndex));
+			nwriter.appendNoHilight(" method index: ");
+			nwriter.appendNoHilight(methodIndex);
+			nwriter.newLine();
+		}
+		abc.method_info.get(methodIndex).getReturnTypeStr(nwriter,
+				abc.constants, fullyQualifiedNames);
+		nwriter.startBlock();
+		if (body != null) {
+			body.convert(new ConvertData(), path + "/inner",
+					ScriptExportMode.AS, isStatic, methodIndex, scriptIndex,
+					classIndex, abc, null, new ScopeStack(), 0,
+					new NulWriter(), fullyQualifiedNames, null, false);
+			body.toString(path + "/inner", ScriptExportMode.AS, abc, null,
+					nwriter, fullyQualifiedNames);
+		}
+		nwriter.endBlock();
+		nwriter.endMethod();
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return new TypeItem(DottedChain.FUNCTION);
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return new TypeItem(DottedChain.FUNCTION);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

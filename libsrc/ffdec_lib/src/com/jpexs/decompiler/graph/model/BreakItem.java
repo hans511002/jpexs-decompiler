@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -23,7 +26,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
-import java.util.List;
 
 /**
  *
@@ -31,43 +33,47 @@ import java.util.List;
  */
 public class BreakItem extends GraphTargetItem {
 
-    public long loopId;
+	public long loopId;
 
-    private boolean labelRequired;
+	private boolean labelRequired;
 
-    public BreakItem(GraphSourceItem src, GraphSourceItem lineStartIns, long loopId) {
-        super(src, lineStartIns, NOPRECEDENCE);
-        this.loopId = loopId;
-    }
+	public BreakItem(GraphSourceItem src, GraphSourceItem lineStartIns,
+			long loopId) {
+		super(src, lineStartIns, NOPRECEDENCE);
+		this.loopId = loopId;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        writer.append("break");
-        if (writer instanceof NulWriter) {
-            NulWriter nulWriter = (NulWriter) writer;
-            labelRequired = loopId != nulWriter.getLoop();
-            if (labelRequired) {
-                nulWriter.setLoopUsed(loopId);
-            }
-        }
-        if (labelRequired) {
-            writer.append(" loop").append(loopId);
-        }
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter nwriter, LocalData localData) {
+		// GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("break");
+		if (nwriter instanceof NulWriter) {
+			NulWriter nulWriter = (NulWriter) nwriter;
+			labelRequired = loopId != nulWriter.getLoop();
+			if (labelRequired) {
+				nulWriter.setLoopUsed(loopId);
+			}
+		}
+		if (labelRequired) {
+			nwriter.append(" loop").append(loopId);
+		}
+		// writer.marge(nwriter);
+		return nwriter;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return generator.generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return generator.generate(localData, this);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 }

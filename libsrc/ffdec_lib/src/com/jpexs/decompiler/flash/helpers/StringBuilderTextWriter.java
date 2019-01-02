@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
 
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
@@ -25,98 +26,125 @@ import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
  */
 public class StringBuilderTextWriter extends GraphTextWriter {
 
-    private final StringBuilder writer;
+	private final StringBuilder writer;
 
-    private boolean newLine = true;
+	private boolean newLine = true;
 
-    private int indent;
+	private int indent;
 
-    private int writtenBytes;
+	private int writtenBytes;
 
-    public StringBuilderTextWriter(CodeFormatting formatting, StringBuilder writer) {
-        super(formatting);
-        this.writer = writer;
-    }
+	public StringBuilderTextWriter(CodeFormatting formatting,
+			StringBuilder writer) {
+		super(formatting);
+		this.writer = writer;
+		this.sb = writer;
+	}
 
-    @Override
-    public GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue, HighlightData data) {
-        writeToOutputStream(text);
-        return this;
-    }
+	public StringBuilderTextWriter(CodeFormatting formatting) {
+		super(formatting);
+		this.writer = this.sb;
+	}
 
-    @Override
-    public StringBuilderTextWriter append(String str) {
-        writeToOutputStream(str);
-        return this;
-    }
+	public GraphTextWriter cloneNew() {
+		return new StringBuilderTextWriter(formatting);
+	};
 
-    @Override
-    public GraphTextWriter appendWithData(String str, HighlightData data) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public GraphTextWriter marge(GraphTextWriter w) {
+		super.marge(w);
+		StringBuilderTextWriter o = (StringBuilderTextWriter) w;
+		this.sb.append(o.sb);
+		this.writtenBytes += o.writtenBytes;
+		return this;
+	};
 
-    @Override
-    public StringBuilderTextWriter append(String str, long offset, long fileOffset) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public String toTmpString() {
+		return writer.toString();
+	}
 
-    @Override
-    public StringBuilderTextWriter appendNoHilight(int i) {
-        writeToOutputStream(Integer.toString(i));
-        return this;
-    }
+	@Override
+	public GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, String specialValue, HighlightData data) {
+		writeToOutputStream(text);
+		return this;
+	}
 
-    @Override
-    public StringBuilderTextWriter appendNoHilight(String str) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public StringBuilderTextWriter append(String str) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public StringBuilderTextWriter indent() {
-        indent++;
-        return this;
-    }
+	@Override
+	public GraphTextWriter appendWithData(String str, HighlightData data) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public StringBuilderTextWriter unindent() {
-        indent--;
-        return this;
-    }
+	@Override
+	public StringBuilderTextWriter append(String str, long offset,
+			long fileOffset) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public StringBuilderTextWriter newLine() {
-        writeToOutputStream(formatting.newLineChars);
-        newLine = true;
-        return this;
-    }
+	@Override
+	public StringBuilderTextWriter appendNoHilight(int i) {
+		writeToOutputStream(Integer.toString(i));
+		return this;
+	}
 
-    @Override
-    public int getLength() {
-        return writtenBytes;
-    }
+	@Override
+	public StringBuilderTextWriter appendNoHilight(String str) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public int getIndent() {
-        return indent;
-    }
+	@Override
+	public StringBuilderTextWriter indent() {
+		indent++;
+		return this;
+	}
 
-    private void writeToOutputStream(String str) {
-        if (newLine) {
-            newLine = false;
-            appendIndent();
-        }
-        writer.append(str);
-        writtenBytes += str.length();
+	@Override
+	public StringBuilderTextWriter unindent() {
+		indent--;
+		return this;
+	}
 
-    }
+	@Override
+	public StringBuilderTextWriter newLine() {
+		writeToOutputStream(formatting.newLineChars);
+		newLine = true;
+		return this;
+	}
 
-    private void appendIndent() {
-        for (int i = 0; i < indent; i++) {
-            writeToOutputStream(formatting.indentString);
-        }
-    }
+	@Override
+	public int getLength() {
+		return writtenBytes;
+	}
+
+	@Override
+	public int getIndent() {
+		return indent;
+	}
+
+	private void writeToOutputStream(String str) {
+		if (newLine) {
+			newLine = false;
+			appendIndent();
+		}
+		writer.append(str);
+		writtenBytes += str.length();
+
+	}
+
+	private void appendIndent() {
+		for (int i = 0; i < indent; i++) {
+			writeToOutputStream(formatting.indentString);
+		}
+	}
 
 }

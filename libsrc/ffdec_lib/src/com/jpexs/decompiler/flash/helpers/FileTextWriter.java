@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
 
 import java.io.FileOutputStream;
@@ -24,8 +25,8 @@ import java.io.FileOutputStream;
  */
 public class FileTextWriter extends StreamTextWriter implements AutoCloseable {
 
-    public FileTextWriter(CodeFormatting formatting, FileOutputStream os) {
-        super(formatting, os);
-    }
+	public FileTextWriter(CodeFormatting formatting, FileOutputStream os) {
+		super(formatting, os);
+	}
 
 }

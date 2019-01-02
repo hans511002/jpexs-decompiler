@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instructions;
@@ -24,7 +27,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -32,39 +34,46 @@ import java.util.List;
  */
 public class NextNameAVM2Item extends AVM2Item {
 
-    GraphTargetItem index;
+	GraphTargetItem index;
 
-    GraphTargetItem obj;
+	GraphTargetItem obj;
 
-    public NextNameAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem index, GraphTargetItem obj) {
-        super(instruction, lineStartIns, NOPRECEDENCE);
-        this.index = index;
-        this.obj = obj;
-    }
+	public NextNameAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem index,
+			GraphTargetItem obj) {
+		super(instruction, lineStartIns, NOPRECEDENCE);
+		this.index = index;
+		this.obj = obj;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("Â§Â§nextname");
-        writer.spaceBeforeCallParenthesies(2);
-        writer.append("(");
-        index.toString(writer, localData);
-        writer.append(",");
-        obj.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("¡ì¡ìnextname");
+		nwriter.spaceBeforeCallParenthesies(2);
+		nwriter.append("(");
+		index.toString(nwriter, localData);
+		nwriter.append(",");
+		obj.toString(nwriter, localData);
+		nwriter.append(")");
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, obj, index, ins(AVM2Instructions.NextName));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, obj, index,
+				ins(AVM2Instructions.NextName));
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

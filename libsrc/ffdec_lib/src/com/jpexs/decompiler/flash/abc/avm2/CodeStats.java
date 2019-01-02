@@ -12,14 +12,16 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -27,42 +29,57 @@ import java.util.List;
  */
 public class CodeStats {
 
-    public int maxstack = 0;
+	public int maxstack = 0;
 
-    public int maxscope = 0;
+	public int maxscope = 0;
 
-    public int maxlocal = 1;
+	public int maxlocal = 1;
 
-    public int initscope = 0;
+	public int initscope = 0;
 
-    public boolean has_set_dxns = false;
+	public boolean has_set_dxns = false;
 
-    public boolean has_activation = false;
+	public boolean has_activation = false;
 
-    public InstructionStats[] instructionStats;
+	public InstructionStats[] instructionStats;
 
-    public GraphTextWriter toString(GraphTextWriter writer, ABC abc, List<DottedChain> fullyQualifiedNames) {
-        writer.appendNoHilight("Stats: maxstack=" + maxstack + ", maxscope=" + maxscope + ", maxlocal=" + maxlocal).newLine();
-        int i = 0;
-        int ms = 0;
-        for (InstructionStats stats : instructionStats) {
-            int deltastack = stats.ins.definition.getStackDelta(stats.ins, abc);
-            if (stats.stackpos > ms) {
-                ms = stats.stackpos;
-            }
-            writer.appendNoHilight(i + ":" + stats.stackpos + (deltastack >= 0 ? "+" + deltastack : deltastack) + "," + stats.scopepos + "    " + stats.ins.toString(writer, LocalData.create(abc.constants, null, fullyQualifiedNames))).newLine();
-            i++;
-        }
-        return writer;
-    }
+	public GraphTextWriter toString(GraphTextWriter writer, ABC abc,
+			List<DottedChain> fullyQualifiedNames) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.appendNoHilight(
+				"Stats: maxstack=" + maxstack + ", maxscope=" + maxscope
+						+ ", maxlocal=" + maxlocal).newLine();
+		int i = 0;
+		int ms = 0;
+		for (InstructionStats stats : instructionStats) {
+			int deltastack = stats.ins.definition.getStackDelta(stats.ins, abc);
+			if (stats.stackpos > ms) {
+				ms = stats.stackpos;
+			}
+			nwriter.appendNoHilight(
+					i
+							+ ":"
+							+ stats.stackpos
+							+ (deltastack >= 0 ? "+" + deltastack : deltastack)
+							+ ","
+							+ stats.scopepos
+							+ "    "
+							+ stats.ins.toString(nwriter, LocalData.create(
+									abc.constants, null, fullyQualifiedNames)))
+					.newLine();
+			i++;
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    public CodeStats() {
-    }
+	public CodeStats() {
+	}
 
-    public CodeStats(AVM2Code code) {
-        instructionStats = new InstructionStats[code.code.size()];
-        for (int i = 0; i < code.code.size(); i++) {
-            instructionStats[i] = new InstructionStats(code.code.get(i));
-        }
-    }
+	public CodeStats(AVM2Code code) {
+		instructionStats = new InstructionStats[code.code.size()];
+		for (int i = 0; i < code.code.size(); i++) {
+			instructionStats[i] = new InstructionStats(code.code.get(i));
+		}
+	}
 }

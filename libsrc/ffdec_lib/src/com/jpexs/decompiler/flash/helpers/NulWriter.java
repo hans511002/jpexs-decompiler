@@ -12,12 +12,14 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
+
+import java.util.Stack;
 
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
-import java.util.Stack;
 
 /**
  * Provides methods for highlighting positions of instructions in the text.
@@ -26,136 +28,151 @@ import java.util.Stack;
  */
 public class NulWriter extends GraphTextWriter {
 
-    private final Stack<LoopWithType> loopStack = new Stack<>();
+	private final Stack<LoopWithType> loopStack = new Stack<>();
 
-    private final Stack<Boolean> stringAddedStack = new Stack<>();
+	private final Stack<Boolean> stringAddedStack = new Stack<>();
 
-    private boolean stringAdded = false;
+	private boolean stringAdded = false;
 
-    public NulWriter() {
-        super(new CodeFormatting());
-    }
+	public NulWriter() {
+		super(new CodeFormatting());
+	}
 
-    public void startLoop(long loopId, int loopType) {
-        LoopWithType loop = new LoopWithType();
-        loop.loopId = loopId;
-        loop.type = loopType;
-        loopStack.add(loop);
-    }
+	@Override
+	public GraphTextWriter cloneNew() {
+		return this;
+	};
 
-    public LoopWithType endLoop(long loopId) {
-        LoopWithType loopIdInStack = loopStack.pop();
-        if (loopId != loopIdInStack.loopId) {
-            throw new Error("LoopId mismatch");
-        }
-        return loopIdInStack;
-    }
+	@Override
+	public GraphTextWriter marge(GraphTextWriter w) {
+		// NulWriter o = (NulWriter) w;
+		// this.loopStack.addAll(o.loopStack);
+		// this.stringAddedStack.addAll(o.stringAddedStack);
+		// this.stringAdded = true;
+		return this;
+	}
 
-    public long getLoop() {
-        if (loopStack.isEmpty()) {
-            return -1;
-        }
-        return loopStack.peek().loopId;
-    }
+	public void startLoop(long loopId, int loopType) {
+		LoopWithType loop = new LoopWithType();
+		loop.loopId = loopId;
+		loop.type = loopType;
+		loopStack.add(loop);
+	}
 
-    public long getNonSwitchLoop() {
-        if (loopStack.isEmpty()) {
-            return -1;
-        }
+	public LoopWithType endLoop(long loopId) {
+		LoopWithType loopIdInStack = loopStack.pop();
+		if (loopId != loopIdInStack.loopId) {
+			throw new Error("LoopId mismatch");
+		}
+		return loopIdInStack;
+	}
 
-        int pos = loopStack.size() - 1;
-        LoopWithType loop;
-        do {
-            loop = loopStack.get(pos);
-            pos--;
-        } while ((pos >= 0) && (loop.type == LoopWithType.LOOP_TYPE_SWITCH));
+	public long getLoop() {
+		if (loopStack.isEmpty()) {
+			return -1;
+		}
+		return loopStack.peek().loopId;
+	}
 
-        if (loop.type == LoopWithType.LOOP_TYPE_SWITCH) {
-            return -1;
-        }
+	public long getNonSwitchLoop() {
+		if (loopStack.isEmpty()) {
+			return -1;
+		}
 
-        return loop.loopId;
-    }
+		int pos = loopStack.size() - 1;
+		LoopWithType loop;
+		do {
+			loop = loopStack.get(pos);
+			pos--;
+		} while ((pos >= 0) && (loop.type == LoopWithType.LOOP_TYPE_SWITCH));
 
-    public void setLoopUsed(long loopId) {
-        if (loopStack.isEmpty()) {
-            return;
-        }
+		if (loop.type == LoopWithType.LOOP_TYPE_SWITCH) {
+			return -1;
+		}
 
-        int pos = loopStack.size() - 1;
-        LoopWithType loop = null;
-        do {
-            loop = loopStack.get(pos);
-            pos--;
-        } while ((pos >= 0) && (loop.loopId != loopId));
+		return loop.loopId;
+	}
 
-        if (loop.loopId == loopId) {
-            loop.used = true;
-        }
-    }
+	public void setLoopUsed(long loopId) {
+		if (loopStack.isEmpty()) {
+			return;
+		}
 
-    @Override
-    public NulWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue, HighlightData data) {
-        stringAdded = true;
-        return this;
-    }
+		int pos = loopStack.size() - 1;
+		LoopWithType loop = null;
+		do {
+			loop = loopStack.get(pos);
+			pos--;
+		} while ((pos >= 0) && (loop.loopId != loopId));
 
-    @Override
-    public GraphTextWriter append(char value) {
-        stringAdded = true;
-        return this;
-    }
+		if (loop.loopId == loopId) {
+			loop.used = true;
+		}
+	}
 
-    @Override
-    public GraphTextWriter append(int value) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public NulWriter hilightSpecial(String text, HighlightSpecialType type,
+			String specialValue, HighlightData data) {
+		stringAdded = true;
+		return this;
+	}
 
-    @Override
-    public GraphTextWriter append(long value) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public GraphTextWriter append(char value) {
+		stringAdded = true;
+		return this;
+	}
 
-    @Override
-    public NulWriter append(String str) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public GraphTextWriter append(int value) {
+		stringAdded = true;
+		return this;
+	}
 
-    @Override
-    public GraphTextWriter appendWithData(String str, HighlightData data) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public GraphTextWriter append(long value) {
+		stringAdded = true;
+		return this;
+	}
 
-    @Override
-    public NulWriter append(String str, long offset, long fileOffset) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public NulWriter append(String str) {
+		stringAdded = true;
+		return this;
+	}
 
-    @Override
-    public NulWriter appendNoHilight(int i) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public GraphTextWriter appendWithData(String str, HighlightData data) {
+		stringAdded = true;
+		return this;
+	}
 
-    @Override
-    public NulWriter appendNoHilight(String str) {
-        stringAdded = true;
-        return this;
-    }
+	@Override
+	public NulWriter append(String str, long offset, long fileOffset) {
+		stringAdded = true;
+		return this;
+	}
 
-    public void mark() {
-        stringAddedStack.add(stringAdded);
-        stringAdded = false;
-    }
+	@Override
+	public NulWriter appendNoHilight(int i) {
+		stringAdded = true;
+		return this;
+	}
 
-    public boolean getMark() {
-        boolean result = stringAdded;
-        stringAdded = stringAddedStack.pop() || result;
-        return result;
-    }
+	@Override
+	public NulWriter appendNoHilight(String str) {
+		stringAdded = true;
+		return this;
+	}
+
+	public void mark() {
+		stringAddedStack.add(stringAdded);
+		stringAdded = false;
+	}
+
+	public boolean getMark() {
+		boolean result = stringAdded;
+		stringAdded = stringAddedStack.pop() || result;
+		return result;
+	}
 }

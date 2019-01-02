@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -24,23 +25,26 @@ import com.jpexs.decompiler.graph.model.LocalData;
  */
 public class DefineRegisterActionItem extends ActionItem {
 
-    private final String identifier;
+	private final String identifier;
 
-    private final int register;
+	private final int register;
 
-    public DefineRegisterActionItem(String identifier, int register) {
-        super(null, null, PRECEDENCE_PRIMARY);
-        this.identifier = identifier;
-        this.register = register;
-    }
+	public DefineRegisterActionItem(String identifier, int register) {
+		super(null, null, PRECEDENCE_PRIMARY);
+		this.identifier = identifier;
+		this.register = register;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        return writer.append("var ").append(identifier);
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("var ").append(identifier);
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

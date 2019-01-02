@@ -12,15 +12,17 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -28,41 +30,46 @@ import java.util.List;
  */
 public class ImplementsOpActionItem extends ActionItem {
 
-    public GraphTargetItem subclass;
+	public GraphTargetItem subclass;
 
-    public List<GraphTargetItem> superclasses;
+	public List<GraphTargetItem> superclasses;
 
-    public ImplementsOpActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem subclass, List<GraphTargetItem> superclasses) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.subclass = subclass;
-        this.superclasses = superclasses;
-    }
+	public ImplementsOpActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem subclass,
+			List<GraphTargetItem> superclasses) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.subclass = subclass;
+		this.superclasses = superclasses;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        subclass.toString(writer, localData);
-        writer.append(" implements ");
-        for (int i = 0; i < superclasses.size(); i++) {
-            if (i > 0) {
-                writer.append(",");
-            }
-            superclasses.get(i).toString(writer, localData);
-        }
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		subclass.toString(nwriter, localData);
+		nwriter.append(" implements ");
+		for (int i = 0; i < superclasses.size(); i++) {
+			if (i > 0) {
+				nwriter.append(",");
+			}
+			superclasses.get(i).toString(nwriter, localData);
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(subclass.getNeededSources());
-        for (GraphTargetItem ti : superclasses) {
-            ret.addAll(ti.getNeededSources());
-        }
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(subclass.getNeededSources());
+		for (GraphTargetItem ti : superclasses) {
+			ret.addAll(ti.getNeededSources());
+		}
+		return ret;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

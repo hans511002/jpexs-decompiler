@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
+
+import java.util.logging.Logger;
 
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
@@ -25,229 +28,282 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
  * @author JPEXS
  */
 public abstract class GraphTextWriter {
+	static final Logger logger = Logger.getLogger(HighlightedTextWriter.class
+			.getName());
 
-    protected long startTime;
+	protected long startTime;
 
-    protected long suspendTime;
-    public final StringBuilder sb = new StringBuilder();
+	protected long suspendTime;
+	public StringBuilder sb = new StringBuilder();
 
-    protected CodeFormatting formatting;
+	protected CodeFormatting formatting;
 
-    public static final int TRAIT_INSTANCE_INITIALIZER = -1;
+	public static final int TRAIT_INSTANCE_INITIALIZER = -1;
 
-    public static final int TRAIT_CLASS_INITIALIZER = -2;
+	public static final int TRAIT_CLASS_INITIALIZER = -2;
 
-    public static final int TRAIT_SCRIPT_INITIALIZER = -3;
+	public static final int TRAIT_SCRIPT_INITIALIZER = -3;
 
-    public static final int TRAIT_UNKNOWN = -4;
+	public static final int TRAIT_UNKNOWN = -4;
 
-    public CodeFormatting getFormatting() {
-        return formatting;
-    }
+	public CodeFormatting getFormatting() {
+		return formatting;
+	}
 
-    public GraphTextWriter(CodeFormatting formatting) {
-        startTime = System.currentTimeMillis();
-        this.formatting = formatting;
-    }
+	public GraphTextWriter(CodeFormatting formatting) {
+		startTime = System.currentTimeMillis();
+		this.formatting = formatting;
+	}
 
-    public boolean getIsHighlighted() {
-        return false;
-    }
+	public boolean getIsHighlighted() {
+		return false;
+	}
 
-    /**
-     * Highlights specified text as instruction
-     *
-     * @param src
-     * @param startLineItem
-     * @param pos Offset of instruction
-     * @param data
-     * @return GraphTextWriter
-     */
-    public GraphTextWriter startOffset(GraphSourceItem src, GraphSourceItem startLineItem, int pos, HighlightData data) {
-        return this;
-    }
+	public String toTmpString() {
+		return sb.toString();
+	}
 
-    public GraphTextWriter endOffset() {
-        return this;
-    }
+	/**
+	 * Highlights specified text as instruction
+	 *
+	 * @param src
+	 * @param startLineItem
+	 * @param pos
+	 *            Offset of instruction
+	 * @param data
+	 * @return GraphTextWriter
+	 */
+	public GraphTextWriter startOffset(GraphSourceItem src,
+			GraphSourceItem startLineItem, int pos, HighlightData data) {
+		return this;
+	}
 
-    /**
-     * Highlights specified text as method
-     *
-     * @param index MethodInfo index
-     * @return GraphTextWriter
-     */
-    public GraphTextWriter startMethod(long index) {
-        return this;
-    }
+	public GraphTextWriter endOffset() {
+		return this;
+	}
 
-    /**
-     * Highlights specified text as method/function
-     *
-     * @param name Function name
-     * @return GraphTextWriter
-     */
-    public GraphTextWriter startFunction(String name) {
-        return this;
-    }
+	public GraphTextWriter marge(GraphTextWriter nwriter) {
+		this.startTime += nwriter.startTime;
+		String tmp = toTmpString().trim();
+		// if (tmp.length() > 5)
+		{
+			// logger.info(this.getClass().getCanonicalName()
+			// + "=================================marge");
+			StackTraceElement[] eles = Thread.currentThread().getStackTrace();
+			StackTraceElement e = eles[3];
+			logger.info(e.getClassName() + "." + e.getMethodName() + "("
+					+ e.getFileName() + ":" + e.getLineNumber()
+					+ ") marge========");
+			// boolean haveToString = false;
+			// for (int i = 2; i < (eles.length > 7 ? 7 : eles.length); i++) {
+			// if (eles[i].getMethodName().equals("toString")) {
+			// haveToString = true;
+			// break;
+			// }
+			// }
+			// if (haveToString) {
+			// for (int i = 2; i < (eles.length > 7 ? 7 : eles.length); i++) {
+			// e = eles[i];
+			// logger.info(e.getClassName() + "." + e.getMethodName()
+			// + "(" + e.getFileName() + ":" + e.getLineNumber()
+			// + ") marge========");
+			// }
+			// }
+		}
+		return this;
+	};
 
-    public GraphTextWriter endMethod() {
-        return this;
-    }
+	public abstract GraphTextWriter cloneNew();
 
-    public GraphTextWriter endFunction() {
-        return this;
-    }
+	/**
+	 * Highlights specified text as method
+	 *
+	 * @param index
+	 *            MethodInfo index
+	 * @return GraphTextWriter
+	 */
+	public GraphTextWriter startMethod(long index) {
+		return this;
+	}
 
-    /**
-     * Highlights specified text as class
-     *
-     * @param index Class index
-     * @return GraphTextWriter
-     */
-    public GraphTextWriter startClass(long index) {
-        return this;
-    }
+	/**
+	 * Highlights specified text as method/function
+	 *
+	 * @param name
+	 *            Function name
+	 * @return GraphTextWriter
+	 */
+	public GraphTextWriter startFunction(String name) {
+		return this;
+	}
 
-    public GraphTextWriter startClass(String className) {
-        return this;
-    }
+	public GraphTextWriter endMethod() {
+		return this;
+	}
 
-    public GraphTextWriter endClass() {
-        return this;
-    }
+	public GraphTextWriter endFunction() {
+		return this;
+	}
 
-    /**
-     * Highlights specified text as trait
-     *
-     * @param index Trait index
-     * @return GraphTextWriter
-     */
-    public GraphTextWriter startTrait(long index) {
-        return this;
-    }
+	/**
+	 * Highlights specified text as class
+	 *
+	 * @param index
+	 *            Class index
+	 * @return GraphTextWriter
+	 */
+	public GraphTextWriter startClass(long index) {
+		return this;
+	}
 
-    public GraphTextWriter endTrait() {
-        return this;
-    }
+	public GraphTextWriter startClass(String className) {
+		return this;
+	}
 
-    public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type) {
-        return hilightSpecial(text, type, "");
-    }
+	public GraphTextWriter endClass() {
+		return this;
+	}
 
-    public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, int specialValue) {
-        return hilightSpecial(text, type, Integer.toString(specialValue), null);
-    }
+	/**
+	 * Highlights specified text as trait
+	 *
+	 * @param index
+	 *            Trait index
+	 * @return GraphTextWriter
+	 */
+	public GraphTextWriter startTrait(long index) {
+		return this;
+	}
 
-    public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, int specialValue, HighlightData data) {
-        return hilightSpecial(text, type, Integer.toString(specialValue), data);
-    }
+	public GraphTextWriter endTrait() {
+		return this;
+	}
 
-    public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue) {
-        return hilightSpecial(text, type, specialValue, null);
-    }
+	public final GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type) {
+		return hilightSpecial(text, type, "");
+	}
 
-    protected GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue, HighlightData data) {
-        return this;
-    }
+	public final GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, int specialValue) {
+		return hilightSpecial(text, type, Integer.toString(specialValue), null);
+	}
 
-    public static String hilighOffset(String text, long offset) {
-        return "";
-    }
+	public final GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, int specialValue, HighlightData data) {
+		return hilightSpecial(text, type, Integer.toString(specialValue), data);
+	}
 
-    public abstract GraphTextWriter appendWithData(String str, HighlightData data);
+	public final GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, String specialValue) {
+		return hilightSpecial(text, type, specialValue, null);
+	}
 
-    public GraphTextWriter append(char value) {
-        return append(Character.toString(value));
-    }
+	protected GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, String specialValue, HighlightData data) {
+		return this;
+	}
 
-    public GraphTextWriter append(int value) {
-        return append(Integer.toString(value));
-    }
+	public static String hilighOffset(String text, long offset) {
+		return "";
+	}
 
-    public GraphTextWriter append(long value) {
-        return append(Long.toString(value));
-    }
+	public abstract GraphTextWriter appendWithData(String str,
+			HighlightData data);
 
-    public GraphTextWriter append(double value) {
-        return append(Double.toString(value));
-    }
+	public GraphTextWriter append(char value) {
+		return append(Character.toString(value));
+	}
 
-    public abstract GraphTextWriter append(String str);
+	public GraphTextWriter append(int value) {
+		return append(Integer.toString(value));
+	}
 
-    public abstract GraphTextWriter append(String str, long offset, long fileOffset);
+	public GraphTextWriter append(long value) {
+		return append(Long.toString(value));
+	}
 
-    public abstract GraphTextWriter appendNoHilight(int i);
+	public GraphTextWriter append(double value) {
+		return append(Double.toString(value));
+	}
 
-    public abstract GraphTextWriter appendNoHilight(String str);
+	public abstract GraphTextWriter append(String str);
 
-    public GraphTextWriter indent() {
-        return this;
-    }
+	public abstract GraphTextWriter append(String str, long offset,
+			long fileOffset);
 
-    public GraphTextWriter unindent() {
-        return this;
-    }
+	public abstract GraphTextWriter appendNoHilight(int i);
 
-    public GraphTextWriter newLine() {
-        return this;
-    }
+	public abstract GraphTextWriter appendNoHilight(String str);
 
-    public int getLength() {
-        return 0;
-    }
+	public GraphTextWriter indent() {
+		return this;
+	}
 
-    public int getIndent() {
-        return 0;
-    }
+	public GraphTextWriter unindent() {
+		return this;
+	}
 
-    public void suspendMeasure() {
-        suspendTime = System.currentTimeMillis();
-    }
+	public GraphTextWriter newLine() {
+		return this;
+	}
 
-    public void continueMeasure() {
-        long time = System.currentTimeMillis();
-        startTime += time - suspendTime;
-    }
+	public int getLength() {
+		return 0;
+	}
 
-    @Override
-    public String toString() {
-        return "";
-    }
+	public int getIndent() {
+		return 0;
+	}
 
-    private GraphTextWriter startBlock(String opening) {
-        if (formatting.beginBlockOnNewLine) {
-            newLine();
-        } else {
-            append(" ");
-        }
-        return append(opening).newLine().indent();
-    }
+	public void suspendMeasure() {
+		suspendTime = System.currentTimeMillis();
+	}
 
-    public GraphTextWriter startBlock() {
-        return startBlock("{");
-    }
+	public void continueMeasure() {
+		long time = System.currentTimeMillis();
+		startTime += time - suspendTime;
+	}
 
-    private GraphTextWriter endBlock(String closing) {
-        return unindent().append(closing);
-    }
+	@Override
+	public String toString() {
+		return "";
+	}
 
-    public GraphTextWriter endBlock() {
-        return endBlock("}");
-    }
+	private GraphTextWriter startBlock(String opening) {
+		if (formatting.beginBlockOnNewLine) {
+			newLine();
+		} else {
+			append(" ");
+		}
+		return append(opening).newLine().indent();
+	}
 
-    public GraphTextWriter space() {
-        return append(" ");
-    }
+	public GraphTextWriter startBlock() {
+		return startBlock("{");
+	}
 
-    public GraphTextWriter spaceBeforeCallParenthesies(int argCount) {
-        if (argCount > 0) {
-            if (formatting.spaceBeforeParenthesesMethodCallParentheses) {
-                space();
-            }
-        } else if (formatting.spaceBeforeParenthesesMethodCallEmptyParentheses) {
-            space();
-        }
-        return this;
-    }
+	private GraphTextWriter endBlock(String closing) {
+		return unindent().append(closing);
+	}
+
+	public GraphTextWriter endBlock() {
+		return endBlock("}");
+	}
+
+	public GraphTextWriter space() {
+		return append(" ");
+	}
+
+	public GraphTextWriter spaceBeforeCallParenthesies(int argCount) {
+		if (argCount > 0) {
+			if (formatting.spaceBeforeParenthesesMethodCallParentheses) {
+				space();
+			}
+		} else if (formatting.spaceBeforeParenthesesMethodCallEmptyParentheses) {
+			space();
+		}
+		return this;
+	}
+
 }

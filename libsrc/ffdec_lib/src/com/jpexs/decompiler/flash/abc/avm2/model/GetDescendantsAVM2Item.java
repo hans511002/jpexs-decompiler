@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.parser.script.AVM2SourceGenerator;
@@ -25,7 +28,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -33,47 +35,54 @@ import java.util.List;
  */
 public class GetDescendantsAVM2Item extends AVM2Item {
 
-    public GraphTargetItem object;
+	public GraphTargetItem object;
 
-    public GraphTargetItem multiname;
+	public GraphTargetItem multiname;
 
-    public List<NamespaceItem> openedNamespaces;
+	public List<NamespaceItem> openedNamespaces;
 
-    public String nameStr;
+	public String nameStr;
 
-    //constructor for compiler
-    public GetDescendantsAVM2Item(GraphTargetItem object, String nameStr, List<NamespaceItem> openedNamespaces) {
-        super(null, null, PRECEDENCE_PRIMARY);
-        this.object = object;
-        this.nameStr = nameStr;
-        this.openedNamespaces = openedNamespaces;
-    }
+	// constructor for compiler
+	public GetDescendantsAVM2Item(GraphTargetItem object, String nameStr,
+			List<NamespaceItem> openedNamespaces) {
+		super(null, null, PRECEDENCE_PRIMARY);
+		this.object = object;
+		this.nameStr = nameStr;
+		this.openedNamespaces = openedNamespaces;
+	}
 
-    public GetDescendantsAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem object, GraphTargetItem multiname) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.object = object;
-        this.multiname = multiname;
-    }
+	public GetDescendantsAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem object,
+			GraphTargetItem multiname) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.object = object;
+		this.multiname = multiname;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        object.toString(writer, localData);
-        writer.append("..");
-        return multiname.toString(writer, localData);
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		object.toString(nwriter, localData);
+		nwriter.append("..");
+		multiname.toString(nwriter, localData);
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return ((AVM2SourceGenerator) generator).generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return ((AVM2SourceGenerator) generator).generate(localData, this);
+	}
 }

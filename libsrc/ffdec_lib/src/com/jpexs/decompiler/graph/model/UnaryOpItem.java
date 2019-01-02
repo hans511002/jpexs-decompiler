@@ -12,15 +12,17 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.List;
+import java.util.Set;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -28,78 +30,83 @@ import java.util.Set;
  */
 public abstract class UnaryOpItem extends GraphTargetItem implements UnaryOp {
 
-    public String operator;
+	public String operator;
 
-    protected String coerce;
+	protected String coerce;
 
-    public UnaryOpItem(GraphSourceItem instruction, GraphSourceItem lineStartItem, int precedence, GraphTargetItem value, String operator, String coerce) {
-        super(instruction, lineStartItem, precedence, value);
-        this.operator = operator;
-        this.coerce = coerce;
-    }
+	public UnaryOpItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartItem, int precedence,
+			GraphTargetItem value, String operator, String coerce) {
+		super(instruction, lineStartItem, precedence, value);
+		this.operator = operator;
+		this.coerce = coerce;
+	}
 
-    @Override
-    public GraphTargetItem simplify(String implicitCoerce) {
-        GraphTargetItem r = clone();
-        r.value = r.value.simplify(coerce);
-        return simplifySomething(r, implicitCoerce);
-    }
+	@Override
+	public GraphTargetItem simplify(String implicitCoerce) {
+		GraphTargetItem r = clone();
+		r.value = r.value.simplify(coerce);
+		return simplifySomething(r, implicitCoerce);
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append(operator);
-        if (value != null) {
-            if (value.getPrecedence() > precedence) {
-                writer.append("(");
-                value.toString(writer, localData, coerce);
-                writer.append(")");
-            } else {
-                value.toString(writer, localData, coerce);
-            }
-        } else {
-            writer.append("null");
-        }
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append(operator);
+		if (value != null) {
+			if (value.getPrecedence() > precedence) {
+				nwriter.append("(");
+				value.toString(nwriter, localData, coerce);
+				nwriter.append(")");
+			} else {
+				value.toString(nwriter, localData, coerce);
+			}
+		} else {
+			nwriter.append("null");
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
-        if (dependencies.contains(value)) {
-            return false;
-        }
-        dependencies.add(value);
-        return value.isConvertedCompileTime(dependencies);
-    }
+	@Override
+	public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
+		if (dependencies.contains(value)) {
+			return false;
+		}
+		dependencies.add(value);
+		return value.isConvertedCompileTime(dependencies);
+	}
 
-    @Override
-    public boolean isVariableComputed() {
-        return value.isVariableComputed();
-    }
+	@Override
+	public boolean isVariableComputed() {
+		return value.isVariableComputed();
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(value.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(value.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public boolean hasSideEffect() {
-        return value.hasSideEffect();
-    }
+	@Override
+	public boolean hasSideEffect() {
+		return value.hasSideEffect();
+	}
 
-    @Override
-    public int getPrecedence() {
-        return precedence;
-    }
+	@Override
+	public int getPrecedence() {
+		return precedence;
+	}
 
-    @Override
-    public GraphTargetItem getValue() {
-        return value;
-    }
+	@Override
+	public GraphTargetItem getValue() {
+		return value;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

@@ -45,310 +45,329 @@ import java.util.List;
  */
 public class BUTTONCONDACTION implements ASMSource, Serializable {
 
-    private SWF swf;
+	private SWF swf;
 
-    private Tag tag;
+	private Tag tag;
 
-    private String scriptName = "-";
+	private String scriptName = "-";
 
-    @Override
-    public String getScriptName() {
-        return scriptName;
-    }
+	@Override
+	public String getScriptName() {
+		return scriptName;
+	}
 
-    // Constructor for Generic tag editor.
-    public BUTTONCONDACTION() {
-        swf = null;
-        tag = null;
-        actionBytes = new ByteArrayRange(SWFInputStream.BYTE_ARRAY_EMPTY);
-    }
+	// Constructor for Generic tag editor.
+	public BUTTONCONDACTION() {
+		swf = null;
+		tag = null;
+		actionBytes = new ByteArrayRange(SWFInputStream.BYTE_ARRAY_EMPTY);
+	}
 
-    @Override
-    public void setScriptName(String scriptName) {
-        this.scriptName = scriptName;
-    }
+	@Override
+	public void setScriptName(String scriptName) {
+		this.scriptName = scriptName;
+	}
 
-    public BUTTONCONDACTION(SWF swf, SWFInputStream sis, Tag tag) throws IOException {
-        this.swf = swf;
-        this.tag = tag;
-        int condActionSize = sis.readUI16("condActionSize");
-        isLast = condActionSize <= 0;
-        condIdleToOverDown = sis.readUB(1, "condIdleToOverDown") == 1;
-        condOutDownToIdle = sis.readUB(1, "condOutDownToIdle") == 1;
-        condOutDownToOverDown = sis.readUB(1, "condOutDownToOverDown") == 1;
-        condOverDownToOutDown = sis.readUB(1, "condOverDownToOutDown") == 1;
-        condOverDownToOverUp = sis.readUB(1, "condOverDownToOverUp") == 1;
-        condOverUpToOverDown = sis.readUB(1, "condOverUpToOverDown") == 1;
-        condOverUpToIddle = sis.readUB(1, "condOverUpToIddle") == 1;
-        condIdleToOverUp = sis.readUB(1, "condIdleToOverUp") == 1;
-        condKeyPress = (int) sis.readUB(7, "condKeyPress");
-        condOverDownToIdle = sis.readUB(1, "condOverDownToIdle") == 1;
-        actionBytes = sis.readByteRangeEx(condActionSize <= 0 ? sis.available() : condActionSize - 4, "actionBytes", DumpInfoSpecialType.ACTION_BYTES, sis.getPos());
-    }
+	public BUTTONCONDACTION(SWF swf, SWFInputStream sis, Tag tag)
+			throws IOException {
+		this.swf = swf;
+		this.tag = tag;
+		int condActionSize = sis.readUI16("condActionSize");
+		isLast = condActionSize <= 0;
+		condIdleToOverDown = sis.readUB(1, "condIdleToOverDown") == 1;
+		condOutDownToIdle = sis.readUB(1, "condOutDownToIdle") == 1;
+		condOutDownToOverDown = sis.readUB(1, "condOutDownToOverDown") == 1;
+		condOverDownToOutDown = sis.readUB(1, "condOverDownToOutDown") == 1;
+		condOverDownToOverUp = sis.readUB(1, "condOverDownToOverUp") == 1;
+		condOverUpToOverDown = sis.readUB(1, "condOverUpToOverDown") == 1;
+		condOverUpToIddle = sis.readUB(1, "condOverUpToIddle") == 1;
+		condIdleToOverUp = sis.readUB(1, "condIdleToOverUp") == 1;
+		condKeyPress = (int) sis.readUB(7, "condKeyPress");
+		condOverDownToIdle = sis.readUB(1, "condOverDownToIdle") == 1;
+		actionBytes = sis.readByteRangeEx(condActionSize <= 0 ? sis.available()
+				: condActionSize - 4, "actionBytes",
+				DumpInfoSpecialType.ACTION_BYTES, sis.getPos());
+	}
 
-    @Override
-    public SWF getSwf() {
-        return swf;
-    }
+	@Override
+	public SWF getSwf() {
+		return swf;
+	}
 
-    /**
-     * Is this BUTTONCONDACTION last in the list?
-     */
-    @Internal
-    public boolean isLast;
+	/**
+	 * Is this BUTTONCONDACTION last in the list?
+	 */
+	@Internal
+	public boolean isLast;
 
-    /**
-     * Idle to OverDown
-     */
-    public boolean condIdleToOverDown;
+	/**
+	 * Idle to OverDown
+	 */
+	public boolean condIdleToOverDown;
 
-    /**
-     * OutDown to Idle
-     */
-    public boolean condOutDownToIdle;
+	/**
+	 * OutDown to Idle
+	 */
+	public boolean condOutDownToIdle;
 
-    /**
-     * OutDown to OverDown
-     */
-    public boolean condOutDownToOverDown;
+	/**
+	 * OutDown to OverDown
+	 */
+	public boolean condOutDownToOverDown;
 
-    /**
-     * OverDown to OutDown
-     */
-    public boolean condOverDownToOutDown;
+	/**
+	 * OverDown to OutDown
+	 */
+	public boolean condOverDownToOutDown;
 
-    /**
-     * OverDown to OverUp
-     */
-    public boolean condOverDownToOverUp;
+	/**
+	 * OverDown to OverUp
+	 */
+	public boolean condOverDownToOverUp;
 
-    /**
-     * OverUp to OverDown
-     */
-    public boolean condOverUpToOverDown;
+	/**
+	 * OverUp to OverDown
+	 */
+	public boolean condOverUpToOverDown;
 
-    /**
-     * OverUp to Idle
-     */
-    public boolean condOverUpToIddle;
+	/**
+	 * OverUp to Idle
+	 */
+	public boolean condOverUpToIddle;
 
-    /**
-     * Idle to OverUp
-     */
-    public boolean condIdleToOverUp;
+	/**
+	 * Idle to OverUp
+	 */
+	public boolean condIdleToOverUp;
 
-    /**
-     * @since SWF 4 key code
-     */
-    @SWFType(value = BasicType.UB, count = 7)
-    @Conditional(minSwfVersion = 4)
-    public int condKeyPress;
+	/**
+	 * @since SWF 4 key code
+	 */
+	@SWFType(value = BasicType.UB, count = 7)
+	@Conditional(minSwfVersion = 4)
+	public int condKeyPress;
 
-    /**
-     * OverDown to Idle
-     */
-    public boolean condOverDownToIdle;
+	/**
+	 * OverDown to Idle
+	 */
+	public boolean condOverDownToIdle;
 
-    /**
-     * Actions to perform in byte array
-     */
-    @HideInRawEdit
-    public ByteArrayRange actionBytes;
+	/**
+	 * Actions to perform in byte array
+	 */
+	@HideInRawEdit
+	public ByteArrayRange actionBytes;
 
-    /**
-     * Sets actions associated with this object
-     *
-     * @param actions Action list
-     */
-    /*public void setActions(List<Action> actions) {
-     this.actions = actions;
-     }*/
-    /**
-     * Returns a string representation of the object
-     *
-     * @return a string representation of the object.
-     */
-    @Override
-    public String toString() {
-        return "BUTTONCONDACTION";
-    }
+	/**
+	 * Sets actions associated with this object
+	 *
+	 * @param actions
+	 *            Action list
+	 */
+	/*
+	 * public void setActions(List<Action> actions) { this.actions = actions; }
+	 */
+	/**
+	 * Returns a string representation of the object
+	 *
+	 * @return a string representation of the object.
+	 */
+	@Override
+	public String toString() {
+		return "BUTTONCONDACTION";
+	}
 
-    /**
-     * Converts actions to ASM source
-     *
-     * @param exportMode PCode or hex?
-     * @param writer
-     * @param actions
-     * @return ASM source
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public GraphTextWriter getASMSource(ScriptExportMode exportMode, GraphTextWriter writer, ActionList actions) throws InterruptedException {
-        if (actions == null) {
-            actions = getActions();
-        }
-        return Action.actionsToString(listeners, 0, actions, swf.version, exportMode, writer);
-    }
+	/**
+	 * Converts actions to ASM source
+	 *
+	 * @param exportMode
+	 *            PCode or hex?
+	 * @param writer
+	 * @param actions
+	 * @return ASM source
+	 * @throws java.lang.InterruptedException
+	 */
+	@Override
+	public GraphTextWriter getASMSource(ScriptExportMode exportMode,
+			GraphTextWriter writer, ActionList actions)
+			throws InterruptedException {
+		if (actions == null) {
+			actions = getActions();
+		}
+		return Action.actionsToString(listeners, 0, actions, swf.version,
+				exportMode, writer);
+	}
 
-    @Override
-    public GraphTextWriter getActionScriptSource(GraphTextWriter writer, ActionList actions) throws InterruptedException {
-        if (actions == null) {
-            actions = getActions();
-        }
+	@Override
+	public GraphTextWriter getActionScriptSource(GraphTextWriter writer,
+			ActionList actions) throws InterruptedException {
+		if (actions == null) {
+			actions = getActions();
+		}
 
-        return Action.actionsToSource(this, actions, getScriptName(), writer);
-    }
+		return Action.actionsToSource(this, actions, getScriptName(), writer);
+	}
 
-    /**
-     * Whether or not this object contains ASM source
-     *
-     * @return True when contains
-     */
-    @Override
-    public boolean containsSource() {
-        return true;
-    }
+	/**
+	 * Whether or not this object contains ASM source
+	 *
+	 * @return True when contains
+	 */
+	@Override
+	public boolean containsSource() {
+		return true;
+	}
 
-    /**
-     * Returns actions associated with this object
-     *
-     * @return List of actions
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public ActionList getActions() throws InterruptedException {
-        return SWF.getCachedActionList(this, listeners);
-    }
+	/**
+	 * Returns actions associated with this object
+	 *
+	 * @return List of actions
+	 * @throws java.lang.InterruptedException
+	 */
+	@Override
+	public ActionList getActions() throws InterruptedException {
+		return SWF.getCachedActionList(this, listeners);
+	}
 
-    @Override
-    public void setActions(List<Action> actions) {
-        actionBytes = Action.actionsToByteArrayRange(actions, true, swf.version);
-    }
+	@Override
+	public void setActions(List<Action> actions) {
+		actionBytes = Action
+				.actionsToByteArrayRange(actions, true, swf.version);
+	}
 
-    @Override
-    public ByteArrayRange getActionBytes() {
-        return actionBytes;
-    }
+	@Override
+	public ByteArrayRange getActionBytes() {
+		return actionBytes;
+	}
 
-    @Override
-    public void setActionBytes(byte[] actionBytes) {
-        this.actionBytes = new ByteArrayRange(actionBytes);
-        SWF.uncache(this);
-    }
+	@Override
+	public void setActionBytes(byte[] actionBytes) {
+		this.actionBytes = new ByteArrayRange(actionBytes);
+		SWF.uncache(this);
+	}
 
-    @Override
-    public void setConstantPools(List<List<String>> constantPools) throws ConstantPoolTooBigException {
-        Action.setConstantPools(this, constantPools, false);
-    }
+	@Override
+	public void setConstantPools(List<List<String>> constantPools)
+			throws ConstantPoolTooBigException {
+		Action.setConstantPools(this, constantPools, false);
+	}
 
-    @Override
-    public void setModified() {
-        if (tag != null) {
-            tag.setModified(true);
-        }
-    }
+	@Override
+	public void setModified() {
+		if (tag != null) {
+			tag.setModified(true);
+		}
+	}
 
-    @Override
-    public boolean isModified() {
-        if (tag != null) {
-            return tag.isModified();
-        }
-        return false;
-    }
+	@Override
+	public boolean isModified() {
+		if (tag != null) {
+			return tag.isModified();
+		}
+		return false;
+	}
 
-    @Override
-    public GraphTextWriter getActionBytesAsHex(GraphTextWriter writer) {
-        return Helper.byteArrayToHexWithHeader(writer, actionBytes.getRangeData());
-    }
+	@Override
+	public GraphTextWriter getActionBytesAsHex(GraphTextWriter writer) {
+		return Helper.byteArrayToHexWithHeader(writer,
+				actionBytes.getRangeData());
+	}
 
-    List<DisassemblyListener> listeners = new ArrayList<>();
+	List<DisassemblyListener> listeners = new ArrayList<>();
 
-    @Override
-    public void addDisassemblyListener(DisassemblyListener listener) {
-        listeners.add(listener);
-    }
+	@Override
+	public void addDisassemblyListener(DisassemblyListener listener) {
+		listeners.add(listener);
+	}
 
-    @Override
-    public void removeDisassemblyListener(DisassemblyListener listener) {
-        listeners.remove(listener);
-    }
+	@Override
+	public void removeDisassemblyListener(DisassemblyListener listener) {
+		listeners.remove(listener);
+	}
 
-    private String getHeader(boolean asFilename) {
-        List<String> events = new ArrayList<>();
-        if (condOverUpToOverDown) {
-            events.add("press");
-        }
-        if (condOverDownToOverUp) {
-            events.add("release");
-        }
-        if (condOutDownToIdle) {
-            events.add("releaseOutside");
-        }
-        if (condIdleToOverUp) {
-            events.add("rollOver");
-        }
-        if (condOverUpToIddle) {
-            events.add("rollOut");
-        }
-        if (condOverDownToOutDown) {
-            events.add("dragOut");
-        }
-        if (condOutDownToOverDown) {
-            events.add("dragOver");
-        }
-        if (condKeyPress > 0) {
-            if (asFilename) {
-                events.add("keyPress " + Helper.makeFileName(CLIPACTIONRECORD.keyToString(condKeyPress).replace("<", "").replace(">", "")) + "");
-            } else {
-                events.add("keyPress \"" + CLIPACTIONRECORD.keyToString(condKeyPress) + "\"");
-            }
-        }
-        String onStr = "";
-        for (int i = 0; i < events.size(); i++) {
-            if (i > 0) {
-                onStr += ", ";
-            }
-            onStr += events.get(i);
-        }
-        return "on(" + onStr + ")";
-    }
+	private String getHeader(boolean asFilename) {
+		List<String> events = new ArrayList<>();
+		if (condOverUpToOverDown) {
+			events.add("press");
+		}
+		if (condOverDownToOverUp) {
+			events.add("release");
+		}
+		if (condOutDownToIdle) {
+			events.add("releaseOutside");
+		}
+		if (condIdleToOverUp) {
+			events.add("rollOver");
+		}
+		if (condOverUpToIddle) {
+			events.add("rollOut");
+		}
+		if (condOverDownToOutDown) {
+			events.add("dragOut");
+		}
+		if (condOutDownToOverDown) {
+			events.add("dragOver");
+		}
+		if (condKeyPress > 0) {
+			if (asFilename) {
+				events.add("keyPress "
+						+ Helper.makeFileName(CLIPACTIONRECORD
+								.keyToString(condKeyPress).replace("<", "")
+								.replace(">", "")) + "");
+			} else {
+				events.add("keyPress \""
+						+ CLIPACTIONRECORD.keyToString(condKeyPress) + "\"");
+			}
+		}
+		String onStr = "";
+		for (int i = 0; i < events.size(); i++) {
+			if (i > 0) {
+				onStr += ", ";
+			}
+			onStr += events.get(i);
+		}
+		return "on(" + onStr + ")";
+	}
 
-    @Override
-    public GraphTextWriter getActionSourcePrefix(GraphTextWriter writer) {
-        writer.appendNoHilight(getHeader(false));
-        writer.appendNoHilight("{").newLine();
-        return writer.indent();
-    }
+	@Override
+	public GraphTextWriter getActionSourcePrefix(GraphTextWriter writer) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.appendNoHilight(getHeader(false));
+		nwriter.appendNoHilight("{").newLine();
+		nwriter.indent();
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public GraphTextWriter getActionSourceSuffix(GraphTextWriter writer) {
-        writer.unindent();
-        return writer.appendNoHilight("}").newLine();
-    }
+	@Override
+	public GraphTextWriter getActionSourceSuffix(GraphTextWriter writer) {
+		writer.unindent();
+		return writer.appendNoHilight("}").newLine();
+	}
 
-    @Override
-    public int getPrefixLineCount() {
-        return 1;
-    }
+	@Override
+	public int getPrefixLineCount() {
+		return 1;
+	}
 
-    @Override
-    public String removePrefixAndSuffix(String source) {
-        return Helper.unindentRows(1, 1, source);
-    }
+	@Override
+	public String removePrefixAndSuffix(String source) {
+		return Helper.unindentRows(1, 1, source);
+	}
 
-    @Override
-    public String getExportFileName() {
-        return getHeader(true);
-    }
+	@Override
+	public String getExportFileName() {
+		return getHeader(true);
+	}
 
-    @Override
-    public Tag getSourceTag() {
-        return tag;
-    }
+	@Override
+	public Tag getSourceTag() {
+		return tag;
+	}
 
-    @Override
-    public void setSourceTag(Tag t) {
-        this.tag = t;
-        this.swf = t.getSwf();
-    }
+	@Override
+	public void setSourceTag(Tag t) {
+		this.tag = t;
+		this.swf = t.getSwf();
+	}
 }

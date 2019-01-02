@@ -12,8 +12,15 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instruction;
@@ -28,11 +35,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -40,83 +42,87 @@ import java.util.Set;
  */
 public class NewObjectAVM2Item extends AVM2Item {
 
-    public List<NameValuePair> pairs;
+	public List<NameValuePair> pairs;
 
-    public NewObjectAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, List<NameValuePair> pairs) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.pairs = pairs;
-    }
+	public NewObjectAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, List<NameValuePair> pairs) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.pairs = pairs;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        boolean singleLine = pairs.size() < 2;
-        //no new line before as it may break return clause (#593)
-        writer.append("{");
-        if (!singleLine) {
-            writer.newLine();
-            writer.indent();
-        }
-        for (int n = 0; n < pairs.size(); n++) {
-            if (n > 0) {
-                writer.append(",").newLine();
-            }
-            pairs.get(n).toString(writer, localData);
-        }
-        if (!singleLine) {
-            writer.newLine();
-            writer.unindent();
-        }
-        writer.append("}");
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		boolean singleLine = pairs.size() < 2;
+		// no new line before as it may break return clause (#593)
+		nwriter.append("{");
+		if (!singleLine) {
+			nwriter.newLine();
+			nwriter.indent();
+		}
+		for (int n = 0; n < pairs.size(); n++) {
+			if (n > 0) {
+				nwriter.append(",").newLine();
+			}
+			pairs.get(n).toString(nwriter, localData);
+		}
+		if (!singleLine) {
+			nwriter.newLine();
+			nwriter.unindent();
+		}
+		nwriter.append("}");
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return new TypeItem(DottedChain.OBJECT);
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return new TypeItem(DottedChain.OBJECT);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        List<GraphTargetItem> args = new ArrayList<>();
-        for (NameValuePair p : pairs) {
-            args.add(p.name);
-            args.add(p.value);
-        }
-        return toSourceMerge(localData, generator, args,
-                new AVM2Instruction(0, AVM2Instructions.NewObject, new int[]{pairs.size()})
-        );
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		List<GraphTargetItem> args = new ArrayList<>();
+		for (NameValuePair p : pairs) {
+			args.add(p.name);
+			args.add(p.value);
+		}
+		return toSourceMerge(localData, generator, args, new AVM2Instruction(0,
+				AVM2Instructions.NewObject, new int[] { pairs.size() }));
+	}
 
-    @Override
-    public Object getResult() {
-        Map<String, Object> props = new HashMap<>();
-        for (NameValuePair v : pairs) {
-            props.put(EcmaScript.toString(v.name.getResult()), v.value.getResult());
-        }
-        return new ObjectType(props);
-    }
+	@Override
+	public Object getResult() {
+		Map<String, Object> props = new HashMap<>();
+		for (NameValuePair v : pairs) {
+			props.put(EcmaScript.toString(v.name.getResult()),
+					v.value.getResult());
+		}
+		return new ObjectType(props);
+	}
 
-    @Override
-    public GraphTargetItem simplify(String implicitCoerce) {
-        if (implicitCoerce.isEmpty()) {
-            return this;
-        } else {
-            return super.simplify(implicitCoerce);
-        }
-    }
+	@Override
+	public GraphTargetItem simplify(String implicitCoerce) {
+		if (implicitCoerce.isEmpty()) {
+			return this;
+		} else {
+			return super.simplify(implicitCoerce);
+		}
+	}
 
-    @Override
-    public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
-        for (NameValuePair v : pairs) {
-            if (!v.name.isCompileTime() || !v.value.isCompileTime()) {
-                return false;
-            }
-        }
-        return true;
-    }
+	@Override
+	public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
+		for (NameValuePair v : pairs) {
+			if (!v.name.isCompileTime() || !v.value.isCompileTime()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

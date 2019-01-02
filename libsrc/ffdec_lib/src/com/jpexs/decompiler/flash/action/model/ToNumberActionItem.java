@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf5.ActionToNumber;
@@ -24,7 +27,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -32,42 +34,48 @@ import java.util.List;
  */
 public class ToNumberActionItem extends ActionItem {
 
-    public ToNumberActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
-    }
+	public ToNumberActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem value) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("Number");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        value.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("Number");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		value.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(value.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(value.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public Object getResult() {
-        return getResult(value.getResultAsNumber());
-    }
+	@Override
+	public Object getResult() {
+		return getResult(value.getResultAsNumber());
+	}
 
-    public static Double getResult(Double num) {
-        return num;
-    }
+	public static Double getResult(Double num) {
+		return num;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, value, new ActionToNumber());
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, value, new ActionToNumber());
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

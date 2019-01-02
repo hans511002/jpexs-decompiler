@@ -12,8 +12,13 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
@@ -22,9 +27,6 @@ import com.jpexs.decompiler.flash.helpers.hilight.HighlightType;
 import com.jpexs.decompiler.flash.helpers.hilight.Highlighting;
 import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.helpers.Helper;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
 
 /**
  * Provides methods for highlighting positions of instructions in the text.
@@ -33,334 +35,378 @@ import java.util.Stack;
  */
 public class HighlightedTextWriter extends GraphTextWriter {
 
- 
-    private final boolean hilight;
+	private final boolean hilight;
 
-    private boolean newLine = true;
+	private boolean newLine = true;
 
-    private int indent = 0;
+	private int indent = 0;
 
-    private final Stack<GraphSourceItemPosition> offsets = new Stack<>();
+	private final Stack<GraphSourceItemPosition> offsets = new Stack<>();
 
-    private boolean toStringCalled = false;
+	private boolean toStringCalled = false;
 
-    private int newLineCount = 0;
+	private int newLineCount = 0;
 
-    private final Stack<Highlighting> hilightStack = new Stack<>();
+	private final Stack<Highlighting> hilightStack = new Stack<>();
 
-    public List<Highlighting> traitHilights = new ArrayList<>();
+	public List<Highlighting> traitHilights = new ArrayList<>();
 
-    public List<Highlighting> classHilights = new ArrayList<>();
+	public List<Highlighting> classHilights = new ArrayList<>();
 
-    public List<Highlighting> methodHilights = new ArrayList<>();
+	public List<Highlighting> methodHilights = new ArrayList<>();
 
-    public List<Highlighting> instructionHilights = new ArrayList<>();
+	public List<Highlighting> instructionHilights = new ArrayList<>();
 
-    public List<Highlighting> specialHilights = new ArrayList<>();
+	public List<Highlighting> specialHilights = new ArrayList<>();
 
-    public HighlightedTextWriter(CodeFormatting formatting, boolean hilight) {
-        super(formatting);
-        this.hilight = hilight;
-    }
+	public GraphTextWriter cloneNew() {
+		HighlightedTextWriter nw = new HighlightedTextWriter(formatting,
+				hilight, indent);
+		nw.newLine = this.newLine;
+		return nw;
+	};
 
-    public HighlightedTextWriter(CodeFormatting formatting, boolean hilight, int indent) {
-        super(formatting);
-        this.hilight = hilight;
-        this.indent = indent;
-    }
+	@Override
+	public GraphTextWriter marge(GraphTextWriter w) {
+		super.marge(w);
+		HighlightedTextWriter o = (HighlightedTextWriter) w;
+		this.offsets.addAll(o.offsets);
+		this.hilightStack.addAll(o.hilightStack);
+		this.traitHilights.addAll(o.traitHilights);
+		this.classHilights.addAll(o.classHilights);
+		this.methodHilights.addAll(o.methodHilights);
+		this.instructionHilights.addAll(o.instructionHilights);
+		this.specialHilights.addAll(o.specialHilights);
+		String tmp = o.sb.toString();
+		logger.info("tmpWriter=" + tmp);
+		if (tmp.indexOf("addFrameScript") >= 0) {
+			logger.info("tmpWriter=" + tmp);
+		}
+		this.append(tmp);
+		this.indent = o.indent;
+		this.newLine = o.newLine;
+		return this;
+	};
 
-    @Override
-    public boolean getIsHighlighted() {
-        return hilight;
-    }
+	public HighlightedTextWriter(CodeFormatting formatting, boolean hilight) {
+		super(formatting);
+		this.hilight = hilight;
+	}
 
-    /**
-     * Highlights specified text as instruction by adding special tags
-     *
-     * @param src
-     * @param startLineItem
-     * @param pos Offset of instruction
-     * @param data
-     * @return HighlightedTextWriter
-     */
-    @Override
-    public HighlightedTextWriter startOffset(GraphSourceItem src, GraphSourceItem startLineItem, int pos, HighlightData data) {
-        GraphSourceItemPosition itemPos = new GraphSourceItemPosition();
-        itemPos.graphSourceItem = src;
-        itemPos.startLineItem = startLineItem;
-        itemPos.position = pos;
-        itemPos.data = data;
-        offsets.add(itemPos);
-        return this;
-    }
+	public HighlightedTextWriter(CodeFormatting formatting, boolean hilight,
+			int indent) {
+		super(formatting);
+		this.hilight = hilight;
+		this.indent = indent;
+	}
 
-    @Override
-    public HighlightedTextWriter endOffset() {
-        offsets.pop();
-        return this;
-    }
+	@Override
+	public boolean getIsHighlighted() {
+		return hilight;
+	}
 
-    /**
-     * Highlights specified text as method by adding special tags
-     *
-     * @param index MethodInfo index
-     * @return HighlightedTextWriter
-     */
-    @Override
-    public HighlightedTextWriter startMethod(long index) {
-        HighlightData data = new HighlightData();
-        data.index = index;
-        return start(data, HighlightType.METHOD);
-    }
+	/**
+	 * Highlights specified text as instruction by adding special tags
+	 *
+	 * @param src
+	 * @param startLineItem
+	 * @param pos
+	 *            Offset of instruction
+	 * @param data
+	 * @return HighlightedTextWriter
+	 */
+	@Override
+	public HighlightedTextWriter startOffset(GraphSourceItem src,
+			GraphSourceItem startLineItem, int pos, HighlightData data) {
+		GraphSourceItemPosition itemPos = new GraphSourceItemPosition();
+		itemPos.graphSourceItem = src;
+		itemPos.startLineItem = startLineItem;
+		itemPos.position = pos;
+		itemPos.data = data;
+		offsets.add(itemPos);
+		return this;
+	}
 
-    @Override
-    public HighlightedTextWriter startFunction(String name) {
-        HighlightData data = new HighlightData();
-        data.localName = name;
-        return start(data, HighlightType.METHOD);
-    }
+	@Override
+	public HighlightedTextWriter endOffset() {
+		offsets.pop();
+		return this;
+	}
 
-    @Override
-    public HighlightedTextWriter endMethod() {
-        return end(HighlightType.METHOD);
-    }
+	/**
+	 * Highlights specified text as method by adding special tags
+	 *
+	 * @param index
+	 *            MethodInfo index
+	 * @return HighlightedTextWriter
+	 */
+	@Override
+	public HighlightedTextWriter startMethod(long index) {
+		HighlightData data = new HighlightData();
+		data.index = index;
+		return start(data, HighlightType.METHOD);
+	}
 
-    @Override
-    public HighlightedTextWriter endFunction() {
-        return end(HighlightType.METHOD);
-    }
+	@Override
+	public HighlightedTextWriter startFunction(String name) {
+		HighlightData data = new HighlightData();
+		data.localName = name;
+		return start(data, HighlightType.METHOD);
+	}
 
-    /**
-     * Highlights specified text as class by adding special tags
-     *
-     * @param index Class index
-     * @return HighlightedTextWriter
-     */
-    @Override
-    public HighlightedTextWriter startClass(long index) {
-        HighlightData data = new HighlightData();
-        data.index = index;
-        return start(data, HighlightType.CLASS);
-    }
+	@Override
+	public HighlightedTextWriter endMethod() {
+		return end(HighlightType.METHOD);
+	}
 
-    @Override
-    public HighlightedTextWriter startClass(String className) {
-        HighlightData data = new HighlightData();
-        data.localName = className;
-        return start(data, HighlightType.CLASS);
-    }
+	@Override
+	public HighlightedTextWriter endFunction() {
+		return end(HighlightType.METHOD);
+	}
 
-    @Override
-    public HighlightedTextWriter endClass() {
-        return end(HighlightType.CLASS);
-    }
+	/**
+	 * Highlights specified text as class by adding special tags
+	 *
+	 * @param index
+	 *            Class index
+	 * @return HighlightedTextWriter
+	 */
+	@Override
+	public HighlightedTextWriter startClass(long index) {
+		HighlightData data = new HighlightData();
+		data.index = index;
+		return start(data, HighlightType.CLASS);
+	}
 
-    /**
-     * Highlights specified text as trait by adding special tags
-     *
-     * @param index Trait index
-     * @return HighlightedTextWriter
-     */
-    @Override
-    public HighlightedTextWriter startTrait(long index) {
-        HighlightData data = new HighlightData();
-        data.index = index;
-        return start(data, HighlightType.TRAIT);
-    }
+	@Override
+	public HighlightedTextWriter startClass(String className) {
+		HighlightData data = new HighlightData();
+		data.localName = className;
+		return start(data, HighlightType.CLASS);
+	}
 
-    @Override
-    public HighlightedTextWriter endTrait() {
-        return end(HighlightType.TRAIT);
-    }
+	@Override
+	public HighlightedTextWriter endClass() {
+		return end(HighlightType.CLASS);
+	}
 
-    @Override
-    protected HighlightedTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue, HighlightData data) {
-        HighlightData ndata = new HighlightData();
-        ndata.merge(data);
-        ndata.subtype = type;
-        ndata.specialValue = specialValue;
-        start(ndata, HighlightType.SPECIAL);
-        appendNoHilight(text);
-        return end(HighlightType.SPECIAL);
-    }
+	/**
+	 * Highlights specified text as trait by adding special tags
+	 *
+	 * @param index
+	 *            Trait index
+	 * @return HighlightedTextWriter
+	 */
+	@Override
+	public HighlightedTextWriter startTrait(long index) {
+		HighlightData data = new HighlightData();
+		data.index = index;
+		return start(data, HighlightType.TRAIT);
+	}
 
-    @Override
-    public HighlightedTextWriter append(String str) {
-        return appendWithData(str, null);
-    }
+	@Override
+	public HighlightedTextWriter endTrait() {
+		return end(HighlightType.TRAIT);
+	}
 
-    @Override
-    public HighlightedTextWriter appendWithData(String str, HighlightData data) {
-        Highlighting h = null;
-        if (!offsets.empty()) {
-            GraphSourceItemPosition itemPos = offsets.peek();
-            GraphSourceItem src = itemPos.graphSourceItem;
-            int pos = itemPos.position;
-            if (src != null && hilight) {
-                HighlightData ndata = new HighlightData();
-                ndata.merge(itemPos.data);
-                ndata.merge(data);
-                ndata.offset = src.getAddress() + pos;
-                ndata.fileOffset = src.getFileOffset();
-                if (itemPos.startLineItem != null) {
-                    ndata.firstLineOffset = itemPos.startLineItem.getLineOffset();
-                }
-                h = new Highlighting(sb.length() - newLineCount, ndata, HighlightType.OFFSET, str);
-                instructionHilights.add(h);
-            }
-        }
-        appendToSb(str);
-        fixNewLineCount(str);
-        if (h != null) {
-            h.len = sb.length() - newLineCount - h.startPos;
-        }
-        return this;
-    }
+	@Override
+	protected HighlightedTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, String specialValue, HighlightData data) {
+		HighlightData ndata = new HighlightData();
+		ndata.merge(data);
+		ndata.subtype = type;
+		ndata.specialValue = specialValue;
+		start(ndata, HighlightType.SPECIAL);
+		appendNoHilight(text);
+		return end(HighlightType.SPECIAL);
+	}
 
-    @Override
-    public HighlightedTextWriter append(String str, long offset, long fileOffset) {
-        Highlighting h = null;
-        if (hilight) {
-            HighlightData data = new HighlightData();
-            data.offset = offset;
-            data.fileOffset = fileOffset;
-            h = new Highlighting(sb.length() - newLineCount, data, HighlightType.OFFSET, str);
-            instructionHilights.add(h);
-        }
-        appendToSb(str);
-        if (h != null) {
-            h.len = sb.length() - newLineCount - h.startPos;
-        }
-        return this;
-    }
+	@Override
+	public HighlightedTextWriter append(String str) {
+		return appendWithData(str, null);
+	}
 
-    @Override
-    public HighlightedTextWriter appendNoHilight(int i) {
-        appendNoHilight(Integer.toString(i));
-        return this;
-    }
+	@Override
+	public HighlightedTextWriter appendWithData(String str, HighlightData data) {
+		Highlighting h = null;
+		if (!offsets.empty()) {
+			GraphSourceItemPosition itemPos = offsets.peek();
+			GraphSourceItem src = itemPos.graphSourceItem;
+			int pos = itemPos.position;
+			if (src != null && hilight) {
+				HighlightData ndata = new HighlightData();
+				ndata.merge(itemPos.data);
+				ndata.merge(data);
+				ndata.offset = src.getAddress() + pos;
+				ndata.fileOffset = src.getFileOffset();
+				if (itemPos.startLineItem != null) {
+					ndata.firstLineOffset = itemPos.startLineItem
+							.getLineOffset();
+				}
+				h = new Highlighting(sb.length() - newLineCount, ndata,
+						HighlightType.OFFSET, str);
+				instructionHilights.add(h);
+			}
+		}
+		appendToSb(str);
+		fixNewLineCount(str);
+		if (h != null) {
+			h.len = sb.length() - newLineCount - h.startPos;
+		}
+		return this;
+	}
 
-    @Override
-    public HighlightedTextWriter appendNoHilight(String str) {
-        appendToSb(str);
-        return this;
-    }
+	@Override
+	public HighlightedTextWriter append(String str, long offset, long fileOffset) {
+		Highlighting h = null;
+		if (hilight) {
+			HighlightData data = new HighlightData();
+			data.offset = offset;
+			data.fileOffset = fileOffset;
+			h = new Highlighting(sb.length() - newLineCount, data,
+					HighlightType.OFFSET, str);
+			instructionHilights.add(h);
+		}
+		appendToSb(str);
+		if (h != null) {
+			h.len = sb.length() - newLineCount - h.startPos;
+		}
+		return this;
+	}
 
-    @Override
-    public HighlightedTextWriter indent() {
-        indent++;
-        return this;
-    }
+	@Override
+	public HighlightedTextWriter appendNoHilight(int i) {
+		appendNoHilight(Integer.toString(i));
+		return this;
+	}
 
-    @Override
-    public HighlightedTextWriter unindent() {
-        indent--;
-        return this;
-    }
+	@Override
+	public HighlightedTextWriter appendNoHilight(String str) {
+		appendToSb(str);
+		return this;
+	}
 
-    @Override
-    public HighlightedTextWriter newLine() {
-        appendToSb(formatting.newLineChars);
-        newLine = true;
-        newLineCount++;
-        return this;
-    }
+	@Override
+	public HighlightedTextWriter indent() {
+		indent++;
+		return this;
+	}
 
-    @Override
-    public int getLength() {
-        return sb.length();
-    }
+	@Override
+	public HighlightedTextWriter unindent() {
+		indent--;
+		return this;
+	}
 
-    @Override
-    public int getIndent() {
-        return indent;
-    }
+	@Override
+	public HighlightedTextWriter newLine() {
+		appendToSb(formatting.newLineChars);
+		newLine = true;
+		newLineCount++;
+		return this;
+	}
 
-    @Override
-    public String toString() {
-        if (toStringCalled) {
-            throw new Error("HighlightedTextWriter.toString() was already called.");
-        }
-        if (Configuration._debugMode.get()) {
-            long stopTime = System.currentTimeMillis();
-            long time = stopTime - startTime;
-            if (time > 500) {
-                System.out.println("Rendering is too slow: " + Helper.formatTimeSec(time) + " length: " + sb.length());
-            }
-        }
-        toStringCalled = true;
-        return sb.toString();
-    }
+	@Override
+	public int getLength() {
+		return sb.length();
+	}
 
-    private HighlightedTextWriter start(HighlightData data, HighlightType type) {
-        if (hilight) {
-            Highlighting h = new Highlighting(sb.length() - newLineCount, data, type, null);
-            hilightStack.add(h);
-        }
-        return this;
-    }
+	@Override
+	public int getIndent() {
+		return indent;
+	}
 
-    private HighlightedTextWriter end(HighlightType expectedType) {
-        if (hilight) {
-            Highlighting h = hilightStack.pop();
-            h.len = sb.length() - newLineCount - h.startPos;
+	@Override
+	public String toString() {
+		if (toStringCalled) {
+			throw new Error(
+					"HighlightedTextWriter.toString() was already called.");
+		}
+		if (Configuration._debugMode.get()) {
+			long stopTime = System.currentTimeMillis();
+			long time = stopTime - startTime;
+			if (time > 500) {
+				System.out.println("Rendering is too slow: "
+						+ Helper.formatTimeSec(time) + " length: "
+						+ sb.length());
+			}
+		}
+		toStringCalled = true;
+		// logger.info("res=" + toTmpString());
+		return sb.toString();
+	}
 
-            if (!expectedType.equals(h.type)) {
-                throw new Error("Hilighting mismatch.");
-            }
+	private HighlightedTextWriter start(HighlightData data, HighlightType type) {
+		if (hilight) {
+			Highlighting h = new Highlighting(sb.length() - newLineCount, data,
+					type, null);
+			hilightStack.add(h);
+		}
+		return this;
+	}
 
-            switch (h.type) {
-                case CLASS:
-                    classHilights.add(h);
-                    break;
-                case METHOD:
-                    methodHilights.add(h);
-                    break;
-                case TRAIT:
-                    traitHilights.add(h);
-                    break;
-                case SPECIAL:
-                    specialHilights.add(h);
-                    break;
-                case OFFSET:
-                    instructionHilights.add(h);
-                    break;
-            }
-        }
-        return this;
-    }
+	private HighlightedTextWriter end(HighlightType expectedType) {
+		if (hilight) {
+			Highlighting h = hilightStack.pop();
+			h.len = sb.length() - newLineCount - h.startPos;
 
-    private void appendToSb(String str) {
-        if (newLine) {
-            newLine = false;
-            appendIndent();
-        }
-        sb.append(str);
-    }
+			if (!expectedType.equals(h.type)) {
+				throw new Error("Hilighting mismatch.");
+			}
 
-    private void fixNewLineCount(String str) {
-        int nl = 0;
-        int rn = 0;
-        char prevChar = 0;
-        for (int i = 0; i < str.length(); i++) {
-            char ch = str.charAt(i);
-            if (ch == '\r' || ch == '\n') {
-                rn++;
-            }
+			switch (h.type) {
+			case CLASS:
+				classHilights.add(h);
+				break;
+			case METHOD:
+				methodHilights.add(h);
+				break;
+			case TRAIT:
+				traitHilights.add(h);
+				break;
+			case SPECIAL:
+				specialHilights.add(h);
+				break;
+			case OFFSET:
+				instructionHilights.add(h);
+				break;
+			}
+		}
+		return this;
+	}
 
-            if (ch == '\r' || (prevChar != '\r' && ch == '\n')) {
-                nl++;
-            }
+	private void appendToSb(String str) {
+		if (newLine) {
+			newLine = false;
+			appendIndent();
+		}
+		sb.append(str);
+	}
 
-            prevChar = ch;
-        }
+	private void fixNewLineCount(String str) {
+		int nl = 0;
+		int rn = 0;
+		char prevChar = 0;
+		for (int i = 0; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			if (ch == '\r' || ch == '\n') {
+				rn++;
+			}
 
-        newLineCount += rn - nl;
-    }
+			if (ch == '\r' || (prevChar != '\r' && ch == '\n')) {
+				nl++;
+			}
 
-    private void appendIndent() {
-        for (int i = 0; i < indent; i++) {
-            appendNoHilight(formatting.indentString);
-        }
-    }
+			prevChar = ch;
+		}
+
+		newLineCount += rn - nl;
+	}
+
+	private void appendIndent() {
+		for (int i = 0; i < indent; i++) {
+			appendNoHilight(formatting.indentString);
+		}
+	}
+
 }

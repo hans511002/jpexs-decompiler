@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -21,7 +24,6 @@ import com.jpexs.decompiler.graph.CompilationException;
 import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
-import java.util.List;
 
 /**
  *
@@ -29,41 +31,47 @@ import java.util.List;
  */
 public class TernarOpItem extends GraphTargetItem {
 
-    public GraphTargetItem expression;
+	public GraphTargetItem expression;
 
-    public GraphTargetItem onTrue;
+	public GraphTargetItem onTrue;
 
-    public GraphTargetItem onFalse;
+	public GraphTargetItem onFalse;
 
-    public TernarOpItem(GraphSourceItem src, GraphSourceItem lineStartIns, GraphTargetItem expression, GraphTargetItem onTrue, GraphTargetItem onFalse) {
-        super(src, lineStartIns, PRECEDENCE_CONDITIONAL);
-        this.expression = expression;
-        this.onTrue = onTrue;
-        this.onFalse = onFalse;
-    }
+	public TernarOpItem(GraphSourceItem src, GraphSourceItem lineStartIns,
+			GraphTargetItem expression, GraphTargetItem onTrue,
+			GraphTargetItem onFalse) {
+		super(src, lineStartIns, PRECEDENCE_CONDITIONAL);
+		this.expression = expression;
+		this.onTrue = onTrue;
+		this.onFalse = onFalse;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        expression.toString(writer, localData);
-        writer.append("?");
-        onTrue.toString(writer, localData);
-        writer.append(":");
-        onFalse.toString(writer, localData);
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		expression.toString(nwriter, localData);
+		nwriter.append("?");
+		onTrue.toString(nwriter, localData);
+		nwriter.append(":");
+		onFalse.toString(nwriter, localData);
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return generator.generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return generator.generate(localData, this);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return onTrue.returnType();
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return onTrue.returnType();
+	}
 }

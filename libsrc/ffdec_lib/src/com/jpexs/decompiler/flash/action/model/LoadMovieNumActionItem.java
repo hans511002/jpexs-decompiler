@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.model.operations.AddActionItem;
@@ -25,8 +29,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -34,59 +36,70 @@ import java.util.List;
  */
 public class LoadMovieNumActionItem extends ActionItem {
 
-    private final GraphTargetItem urlString;
+	private final GraphTargetItem urlString;
 
-    private final GraphTargetItem num;
+	private final GraphTargetItem num;
 
-    private final int method;
+	private final int method;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(urlString);
-        ret.add(num);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(urlString);
+		ret.add(num);
+		return ret;
+	}
 
-    public LoadMovieNumActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem urlString, GraphTargetItem num, int method) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.urlString = urlString;
-        this.num = num;
-        this.method = method;
-    }
+	public LoadMovieNumActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem urlString,
+			GraphTargetItem num, int method) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.urlString = urlString;
+		this.num = num;
+		this.method = method;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        String methodStr = "";
-        if (method == 1) {
-            methodStr = ",\"GET\"";
-        }
-        if (method == 2) {
-            methodStr = ",\"POST\"";
-        }
-        writer.append("loadMovieNum");
-        writer.spaceBeforeCallParenthesies(2);
-        writer.append("(");
-        urlString.toString(writer, localData);
-        writer.append(",");
-        num.toString(writer, localData);
-        return writer.append(methodStr).append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		String methodStr = "";
+		if (method == 1) {
+			methodStr = ",\"GET\"";
+		}
+		if (method == 2) {
+			methodStr = ",\"POST\"";
+		}
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("loadMovieNum");
+		nwriter.spaceBeforeCallParenthesies(2);
+		nwriter.append("(");
+		urlString.toString(nwriter, localData);
+		nwriter.append(",");
+		num.toString(nwriter, localData);
+		nwriter.append(methodStr).append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        ActionSourceGenerator asGenerator = (ActionSourceGenerator) generator;
-        Object lev;
-        if ((num instanceof DirectValueActionItem) && (((DirectValueActionItem) num).value instanceof Long)) {
-            lev = asGenerator.pushConstTargetItem("_level" + ((DirectValueActionItem) num).value);
-        } else {
-            lev = new AddActionItem(getSrc(), getLineStartItem(), asGenerator.pushConstTargetItem("_level"), num, true);
-        }
-        return toSourceMerge(localData, generator, urlString, lev, new ActionGetURL2(method, false, false));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		ActionSourceGenerator asGenerator = (ActionSourceGenerator) generator;
+		Object lev;
+		if ((num instanceof DirectValueActionItem)
+				&& (((DirectValueActionItem) num).value instanceof Long)) {
+			lev = asGenerator.pushConstTargetItem("_level"
+					+ ((DirectValueActionItem) num).value);
+		} else {
+			lev = new AddActionItem(getSrc(), getLineStartItem(),
+					asGenerator.pushConstTargetItem("_level"), num, true);
+		}
+		return toSourceMerge(localData, generator, urlString, lev,
+				new ActionGetURL2(method, false, false));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

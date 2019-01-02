@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.HashMap;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instructions;
@@ -24,8 +28,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  *
@@ -33,29 +35,32 @@ import java.util.List;
  */
 public class NewActivationAVM2Item extends AVM2Item {
 
-    public HashMap<Integer, GraphTargetItem> slots = new HashMap<>();
+	public HashMap<Integer, GraphTargetItem> slots = new HashMap<>();
 
-    public NewActivationAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns) {
-        super(instruction, lineStartIns, NOPRECEDENCE);
-    }
+	public NewActivationAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns) {
+		super(instruction, lineStartIns, NOPRECEDENCE);
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, ins(AVM2Instructions.NewActivation));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator,
+				ins(AVM2Instructions.NewActivation));
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        return writer.append("Â§Â§newactivation()");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		return writer.append("¡ì¡ìnewactivation()");
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

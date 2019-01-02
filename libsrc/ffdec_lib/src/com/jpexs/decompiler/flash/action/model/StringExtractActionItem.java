@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.ActionStringExtract;
@@ -25,7 +28,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -33,73 +35,82 @@ import java.util.List;
  */
 public class StringExtractActionItem extends ActionItem {
 
-    public GraphTargetItem index;
+	public GraphTargetItem index;
 
-    public GraphTargetItem count;
+	public GraphTargetItem count;
 
-    public StringExtractActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value, GraphTargetItem index, GraphTargetItem count) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
-        this.index = index;
-        this.count = count;
-    }
+	public StringExtractActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem value,
+			GraphTargetItem index, GraphTargetItem count) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
+		this.index = index;
+		this.count = count;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        value.toString(writer, localData);
-        writer.append(".substr");
-        writer.spaceBeforeCallParenthesies(2);
-        writer.append("(");
-        index.toString(writer, localData);
-        writer.append(",");
-        count.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		value.toString(nwriter, localData);
+		nwriter.append(".substr");
+		nwriter.spaceBeforeCallParenthesies(2);
+		nwriter.append("(");
+		index.toString(nwriter, localData);
+		nwriter.append(",");
+		count.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(value.getNeededSources());
-        ret.addAll(index.getNeededSources());
-        ret.addAll(count.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(value.getNeededSources());
+		ret.addAll(index.getNeededSources());
+		ret.addAll(count.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public Object getResult() {
-        return getResult(count.getResult(), index.getResult(), value.getResult());
-    }
+	@Override
+	public Object getResult() {
+		return getResult(count.getResult(), index.getResult(),
+				value.getResult());
+	}
 
-    public static String getResult(Object count, Object index, Object value) {
-        String str = EcmaScript.toString(value);
-        int idx = EcmaScript.toInt32(index);
-        idx--; // index seems to be 1 based
+	public static String getResult(Object count, Object index, Object value) {
+		String str = EcmaScript.toString(value);
+		int idx = EcmaScript.toInt32(index);
+		idx--; // index seems to be 1 based
 
-        int cnt = EcmaScript.toInt32(count);
+		int cnt = EcmaScript.toInt32(count);
 
-        /*if (idx < 0) {
-         idx = str.length() + idx;
-         }*/
-        if (idx < 0) {
-            idx = 0;
-        } else if (idx > str.length()) {
-            return "";
-        }
+		/*
+		 * if (idx < 0) { idx = str.length() + idx; }
+		 */
+		if (idx < 0) {
+			idx = 0;
+		} else if (idx > str.length()) {
+			return "";
+		}
 
-        if (cnt < 0) {
-            cnt = str.length();
-        }
+		if (cnt < 0) {
+			cnt = str.length();
+		}
 
-        int endIdx = Math.min(str.length(), idx + cnt);
-        return str.substring(idx, endIdx);
-    }
+		int endIdx = Math.min(str.length(), idx + cnt);
+		return str.substring(idx, endIdx);
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, value, index, count, new ActionStringExtract());
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, value, index, count,
+				new ActionStringExtract());
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

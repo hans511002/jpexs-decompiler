@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -28,45 +29,50 @@ import com.jpexs.decompiler.graph.model.LocalData;
  */
 public class SetSuperAVM2Item extends AVM2Item {
 
-    public GraphTargetItem object;
+	public GraphTargetItem object;
 
-    public FullMultinameAVM2Item propertyName;
+	public FullMultinameAVM2Item propertyName;
 
-    @Override
-    public GraphPart getFirstPart() {
-        return value.getFirstPart();
-    }
+	@Override
+	public GraphPart getFirstPart() {
+		return value.getFirstPart();
+	}
 
-    public SetSuperAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value, GraphTargetItem object, FullMultinameAVM2Item propertyName) {
-        super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
-        this.object = object;
-        this.propertyName = propertyName;
-    }
+	public SetSuperAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem value,
+			GraphTargetItem object, FullMultinameAVM2Item propertyName) {
+		super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
+		this.object = object;
+		this.propertyName = propertyName;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (!object.toString().equals("this")) {
-            object.toString(writer, localData);
-            writer.append(".");
-        }
-        writer.append("super.");
-        propertyName.toString(writer, localData);
-        writer.append(" = ");
-        return value.toString(writer, localData);
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (!object.toString().equals("this")) {
+			object.toString(nwriter, localData);
+			nwriter.append(".");
+		}
+		nwriter.append("super.");
+		propertyName.toString(nwriter, localData);
+		nwriter.append(" = ");
+		value.toString(nwriter, localData);
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public boolean hasSideEffect() {
-        return true;
-    }
+	@Override
+	public boolean hasSideEffect() {
+		return true;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

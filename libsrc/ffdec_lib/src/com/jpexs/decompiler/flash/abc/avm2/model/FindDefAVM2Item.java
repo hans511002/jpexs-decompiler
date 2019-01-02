@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.abc.types.Multiname;
@@ -28,25 +29,30 @@ import com.jpexs.decompiler.graph.model.LocalData;
  */
 public class FindDefAVM2Item extends AVM2Item {
 
-    public Multiname propertyName;
+	public Multiname propertyName;
 
-    public FindDefAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, Multiname propertyName) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.propertyName = propertyName;
-    }
+	public FindDefAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, Multiname propertyName) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.propertyName = propertyName;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        return writer.append(propertyName.getNamespace(localData.constantsAvm2).getName(localData.constantsAvm2).toPrintableString(true)); //assume not null name
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append(propertyName.getNamespace(localData.constantsAvm2)
+				.getName(localData.constantsAvm2).toPrintableString(true));
+		// assume not null name
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

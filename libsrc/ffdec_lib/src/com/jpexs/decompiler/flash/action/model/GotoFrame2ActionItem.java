@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf3.ActionGotoFrame;
@@ -26,8 +30,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -35,61 +37,75 @@ import java.util.List;
  */
 public class GotoFrame2ActionItem extends ActionItem {
 
-    public GraphTargetItem frame;
+	public GraphTargetItem frame;
 
-    public boolean sceneBiasFlag;
+	public boolean sceneBiasFlag;
 
-    public boolean playFlag;
+	public boolean playFlag;
 
-    public int sceneBias;
+	public int sceneBias;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(frame);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(frame);
+		return ret;
+	}
 
-    public GotoFrame2ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem frame, boolean sceneBiasFlag, boolean playFlag, int sceneBias) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.frame = frame;
-        this.sceneBiasFlag = sceneBiasFlag;
-        this.playFlag = playFlag;
-        this.sceneBias = sceneBias;
-    }
+	public GotoFrame2ActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem frame,
+			boolean sceneBiasFlag, boolean playFlag, int sceneBias) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.frame = frame;
+		this.sceneBiasFlag = sceneBiasFlag;
+		this.playFlag = playFlag;
+		this.sceneBias = sceneBias;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        String prefix = "gotoAndStop";
-        if (playFlag) {
-            prefix = "gotoAndPlay";
-        }
-        writer.append(prefix);
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        frame.toString(writer, localData);
-        writer.append((sceneBiasFlag ? "," + sceneBias : ""));
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		String prefix = "gotoAndStop";
+		if (playFlag) {
+			prefix = "gotoAndPlay";
+		}
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append(prefix);
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		frame.toString(nwriter, localData);
+		nwriter.append((sceneBiasFlag ? "," + sceneBias : ""));
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(frame.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(frame.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        if (!sceneBiasFlag && (frame instanceof DirectValueActionItem) && (((DirectValueActionItem) frame).value instanceof Long)) {
-            return toSourceMerge(localData, generator, new ActionGotoFrame((int) ((long) (Long) ((DirectValueActionItem) frame).value) - 1), playFlag ? new ActionPlay() : null);
-        } else {
-            return toSourceMerge(localData, generator, frame, new ActionGotoFrame2(playFlag, sceneBiasFlag, sceneBias));
-        }
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		if (!sceneBiasFlag && (frame instanceof DirectValueActionItem)
+				&& (((DirectValueActionItem) frame).value instanceof Long)) {
+			return toSourceMerge(
+					localData,
+					generator,
+					new ActionGotoFrame(
+							(int) ((long) (Long) ((DirectValueActionItem) frame).value) - 1),
+					playFlag ? new ActionPlay() : null);
+		} else {
+			return toSourceMerge(localData, generator, frame,
+					new ActionGotoFrame2(playFlag, sceneBiasFlag, sceneBias));
+		}
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

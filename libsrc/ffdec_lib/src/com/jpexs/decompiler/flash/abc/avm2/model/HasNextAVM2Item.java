@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instructions;
@@ -24,7 +27,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -32,52 +34,59 @@ import java.util.List;
  */
 public class HasNextAVM2Item extends AVM2Item {
 
-    public GraphTargetItem index;
+	public GraphTargetItem index;
 
-    public GraphTargetItem obj;
+	public GraphTargetItem obj;
 
-    public HasNextAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem index, GraphTargetItem obj) {
-        super(instruction, lineStartIns, NOPRECEDENCE);
-        this.index = index;
-        this.obj = obj;
-    }
+	public HasNextAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem index,
+			GraphTargetItem obj) {
+		super(instruction, lineStartIns, NOPRECEDENCE);
+		this.index = index;
+		this.obj = obj;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        if ((index instanceof LocalRegAVM2Item) && (obj instanceof LocalRegAVM2Item)) {
-            int indexReg = ((LocalRegAVM2Item) index).regIndex;
-            int objectReg = ((LocalRegAVM2Item) obj).regIndex;
-            return toSourceMerge(localData, generator, ins(AVM2Instructions.HasNext2, objectReg, indexReg));
-        }
-        return toSourceMerge(localData, generator, obj, index, ins(AVM2Instructions.HasNext));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		if ((index instanceof LocalRegAVM2Item)
+				&& (obj instanceof LocalRegAVM2Item)) {
+			int indexReg = ((LocalRegAVM2Item) index).regIndex;
+			int objectReg = ((LocalRegAVM2Item) obj).regIndex;
+			return toSourceMerge(localData, generator,
+					ins(AVM2Instructions.HasNext2, objectReg, indexReg));
+		}
+		return toSourceMerge(localData, generator, obj, index,
+				ins(AVM2Instructions.HasNext));
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("¡ì¡ìhasnext(");
+		if (obj != null) {
+			obj.appendTry(nwriter, localData);
+		} else {
+			nwriter.append("null");
+		}
+		nwriter.append(",");
+		if (index != null) {
+			index.appendTry(nwriter, localData);
+		} else {
+			nwriter.append("null");
+		}
+		nwriter.append(")");
+		return writer.marge(nwriter);
+	}
 
-        writer.append("Â§Â§hasnext(");
-        if (obj != null) {
-            obj.appendTry(writer, localData);
-        } else {
-            writer.append("null");
-        }
-        writer.append(",");
-        if (index != null) {
-            index.appendTry(writer, localData);
-        } else {
-            writer.append("null");
-        }
-        writer.append(")");
-        return writer;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.BOOLEAN;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.BOOLEAN;
-    }
-
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

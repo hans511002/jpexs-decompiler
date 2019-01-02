@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
@@ -28,29 +29,34 @@ import com.jpexs.decompiler.graph.model.LocalData;
  */
 public class NameSpaceAVM2Item extends AVM2Item {
 
-    public int namespaceIndex;
+	public int namespaceIndex;
 
-    public NameSpaceAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, int namespaceIndex) {
-        super(instruction, lineStartIns, NOPRECEDENCE);
-        this.namespaceIndex = namespaceIndex;
-    }
+	public NameSpaceAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, int namespaceIndex) {
+		super(instruction, lineStartIns, NOPRECEDENCE);
+		this.namespaceIndex = namespaceIndex;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        if (namespaceIndex == 0) {
-            return writer.append("*");
-        }
-        AVM2ConstantPool constants = localData.constantsAvm2;
-        return writer.append(constants.getNamespace(namespaceIndex).toString(constants)); //assume not null name
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (namespaceIndex == 0) {
+			nwriter.append("*");
+			return writer.marge(nwriter);
+		}
+		AVM2ConstantPool constants = localData.constantsAvm2;
+		nwriter.append(constants.getNamespace(namespaceIndex).toString(
+				constants)); // assume not null name
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

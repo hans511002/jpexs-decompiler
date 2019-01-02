@@ -399,7 +399,7 @@ public class ActionScript2ClassDetector {
                         }
                         commands.add(commandsStartPos, ifsItem);
 
-                        //remove Â§Â§pop after, if it's there
+                        //remove ¡ì¡ìpop after, if it's there
                         if (commandsStartPos + 1 < commands.size()) {
                             if (commands.get(commandsStartPos + 1) instanceof PopItem) {
                                 commands.remove(commandsStartPos + 1);
@@ -583,7 +583,7 @@ public class ActionScript2ClassDetector {
             }
             commands.add(commandsStartPos, clsItem);
 
-            //remove Â§Â§pop after, if it's there
+            //remove ¡ì¡ìpop after, if it's there
             if (commandsStartPos + 1 < commands.size()) {
                 if (commands.get(commandsStartPos + 1) instanceof PopItem) {
                     commands.remove(commandsStartPos + 1);
@@ -608,22 +608,22 @@ public class ActionScript2ClassDetector {
             {
                _global.a = new Object();
             }
-            Â§Â§pop();
+            ¡ì¡ìpop();
             if(!_global.a.b)
             {
                _global.a.b = new Object();
             }
-            Â§Â§pop();
+            ¡ì¡ìpop();
             if(!_global.a.b.c)
             {
                _global.a.b.c = new Object();
             }
-            Â§Â§pop();
+            ¡ì¡ìpop();
             if(!_global.a.b.c.D)
             {
                 ..class_content...            
             }
-            Â§Â§pop();
+            ¡ì¡ìpop();
          */
         List<String> pathToSearchVariant1 = new ArrayList<>();
         pathToSearchVariant1.add("_global");
@@ -643,7 +643,7 @@ public class ActionScript2ClassDetector {
 
                         //_global.a.b.c = new Object();  
                         if ((ifItem.onTrue.size() == 1) && (ifItem.onTrue.get(0) instanceof SetMemberActionItem) && (((SetMemberActionItem) ifItem.onTrue.get(0)).value instanceof NewObjectActionItem)) {
-                            //skip Â§Â§pop item if its there right after if
+                            //skip ¡ì¡ìpop item if its there right after if
                             if (checkPos + 1 < commands.size()) {
                                 GraphTargetItem tnext = commands.get(checkPos + 1);
                                 if (tnext instanceof PopItem) {

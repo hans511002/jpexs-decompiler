@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf3.ActionGetURL;
@@ -23,7 +26,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.helpers.Helper;
-import java.util.List;
 
 /**
  *
@@ -31,34 +33,40 @@ import java.util.List;
  */
 public class GetURLActionItem extends ActionItem {
 
-    public String urlString;
+	public String urlString;
 
-    public String targetString;
+	public String targetString;
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        writer.append("getUrl");
-        writer.spaceBeforeCallParenthesies(2);
-        writer.append("(\"");
-        writer.append(Helper.escapeActionScriptString(urlString));
-        writer.append("\", \"");
-        writer.append(Helper.escapeActionScriptString(targetString));
-        return writer.append("\")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("getUrl");
+		nwriter.spaceBeforeCallParenthesies(2);
+		nwriter.append("(\"");
+		nwriter.append(Helper.escapeActionScriptString(urlString));
+		nwriter.append("\", \"");
+		nwriter.append(Helper.escapeActionScriptString(targetString));
+		nwriter.append("\")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    public GetURLActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, String urlString, String targetString) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.urlString = urlString;
-        this.targetString = targetString;
-    }
+	public GetURLActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, String urlString, String targetString) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.urlString = urlString;
+		this.targetString = targetString;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, new ActionGetURL(urlString, targetString));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, new ActionGetURL(urlString,
+				targetString));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

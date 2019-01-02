@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.IdentifiersDeobfuscation;
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
@@ -27,99 +31,115 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author JPEXS
  */
-public class DefineLocalActionItem extends ActionItem implements SetTypeActionItem {
+public class DefineLocalActionItem extends ActionItem implements
+		SetTypeActionItem {
 
-    public GraphTargetItem name;
+	public GraphTargetItem name;
 
-    private int tempRegister = -1;
+	private int tempRegister = -1;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(name);
-        if (value != null) {
-            ret.add(value);
-        }
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(name);
+		if (value != null) {
+			ret.add(value);
+		}
+		return ret;
+	}
 
-    @Override
-    public void setValue(GraphTargetItem value) {
-        this.value = value;
-    }
+	@Override
+	public void setValue(GraphTargetItem value) {
+		this.value = value;
+	}
 
-    @Override
-    public int getTempRegister() {
-        return tempRegister;
-    }
+	@Override
+	public int getTempRegister() {
+		return tempRegister;
+	}
 
-    @Override
-    public void setTempRegister(int tempRegister) {
-        this.tempRegister = tempRegister;
-    }
+	@Override
+	public void setTempRegister(int tempRegister) {
+		this.tempRegister = tempRegister;
+	}
 
-    @Override
-    public GraphTargetItem getValue() {
-        return value;
-    }
+	@Override
+	public GraphTargetItem getValue() {
+		return value;
+	}
 
-    public DefineLocalActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem name, GraphTargetItem value) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
-        this.name = name;
-    }
+	public DefineLocalActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem name,
+			GraphTargetItem value) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
+		this.name = name;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
 
-        writer.append("var ");
+		nwriter.append("var ");
 
-        HighlightData srcData = getSrcData();
-        srcData.localName = name.toStringNoQuotes(localData);
-        srcData.declaration = true;
-        if (((name instanceof DirectValueActionItem)) && (((DirectValueActionItem) name).isString()) && (!IdentifiersDeobfuscation.isValidName(false, ((DirectValueActionItem) name).toStringNoQuotes(localData), "this", "super"))) {
-            IdentifiersDeobfuscation.appendObfuscatedIdentifier(((DirectValueActionItem) name).toStringNoQuotes(localData), writer);
-        } else {
-            stripQuotes(name, localData, writer);
-        }
-        if (value == null) {
-            return writer;
-        }
-        writer.append(" = ");
-        return value.toString(writer, localData);
-    }
+		HighlightData srcData = getSrcData();
+		srcData.localName = name.toStringNoQuotes(localData);
+		srcData.declaration = true;
+		if (((name instanceof DirectValueActionItem))
+				&& (((DirectValueActionItem) name).isString())
+				&& (!IdentifiersDeobfuscation.isValidName(false,
+						((DirectValueActionItem) name)
+								.toStringNoQuotes(localData), "this", "super"))) {
+			IdentifiersDeobfuscation.appendObfuscatedIdentifier(
+					((DirectValueActionItem) name).toStringNoQuotes(localData),
+					nwriter);
+		} else {
+			stripQuotes(name, localData, nwriter);
+		}
+		if (value == null) {
+			return nwriter;
+		}
+		nwriter.append(" = ");
+		value.toString(nwriter, localData);
+		writer.marge(nwriter);
+		return writer;
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(value.getNeededSources());
-        ret.addAll(name.getNeededSources());
-        return ret;
-    }
+	}
 
-    @Override
-    public GraphTargetItem getObject() {
-        return new DefineLocalActionItem(getSrc(), getLineStartItem(), name, null);
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(value.getNeededSources());
+		ret.addAll(name.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        if (value == null) {
-            return toSourceMerge(localData, generator, name, new ActionDefineLocal2());
-        } else {
-            return toSourceMerge(localData, generator, name, value, new ActionDefineLocal());
-        }
+	@Override
+	public GraphTargetItem getObject() {
+		return new DefineLocalActionItem(getSrc(), getLineStartItem(), name,
+				null);
+	}
 
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		if (value == null) {
+			return toSourceMerge(localData, generator, name,
+					new ActionDefineLocal2());
+		} else {
+			return toSourceMerge(localData, generator, name, value,
+					new ActionDefineLocal());
+		}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	}
+
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

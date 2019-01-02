@@ -34,7 +34,7 @@ public class EnumerationAssignmentValueActionItem extends ActionItem {
 
     @Override
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        return writer.append("Â§Â§enum_assign()");
+        return writer.append("¡ì¡ìenum_assign()");
     }
 
     @Override

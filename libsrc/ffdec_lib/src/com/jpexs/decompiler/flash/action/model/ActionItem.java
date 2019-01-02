@@ -12,8 +12,13 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.ActionPop;
@@ -25,73 +30,84 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.decompiler.graph.model.UnboundedTypeItem;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author JPEXS
  */
-public abstract class ActionItem extends GraphTargetItem implements Serializable {
+public abstract class ActionItem extends GraphTargetItem implements
+		Serializable {
 
-    public ActionItem() {
-        super(null, null, NOPRECEDENCE);
-    }
+	public ActionItem() {
+		super(null, null, NOPRECEDENCE);
+	}
 
-    public ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, int precedence) {
-        this(instruction, lineStartIns, precedence, null);
-    }
+	public ActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, int precedence) {
+		this(instruction, lineStartIns, precedence, null);
+	}
 
-    public ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, int precedence, GraphTargetItem value) {
-        super(instruction, lineStartIns, precedence, value);
-    }
+	public ActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, int precedence, GraphTargetItem value) {
+		super(instruction, lineStartIns, precedence, value);
+	}
 
-    protected boolean isEmptyString(GraphTargetItem target) {
-        if (target instanceof DirectValueActionItem) {
-            if (((DirectValueActionItem) target).value instanceof String) {
+	protected boolean isEmptyString(GraphTargetItem target) {
+		if (target instanceof DirectValueActionItem) {
+			if (((DirectValueActionItem) target).value instanceof String) {
 
-                if (((DirectValueActionItem) target).value.equals("")) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+				if (((DirectValueActionItem) target).value.equals("")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-    protected GraphTextWriter stripQuotes(GraphTargetItem target, LocalData localData, GraphTextWriter writer) throws InterruptedException {
-        if (target instanceof DirectValueActionItem) {
-            if (((DirectValueActionItem) target).value instanceof String) {
-                return writer.append((String) ((DirectValueActionItem) target).value);
-            }
-        }
-        if (target == null) {
-            return writer;
-        } else {
-            return target.toString(writer, localData);
-        }
-    }
+	protected GraphTextWriter stripQuotes(GraphTargetItem target,
+			LocalData localData, GraphTextWriter writer)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (target instanceof DirectValueActionItem) {
+			if (((DirectValueActionItem) target).value instanceof String) {
+				nwriter.append((String) ((DirectValueActionItem) target).value);
+				writer.marge(nwriter);
+				return writer;
+			}
+		}
+		if (target == null) {
+			return writer;
+		} else {
+			target.toString(nwriter, localData);
+			writer.marge(nwriter);
+			return writer;
+		}
+	}
 
-    protected List<GraphSourceItem> toSourceCall(SourceGeneratorLocalData localData, SourceGenerator gen, List<GraphTargetItem> list) throws CompilationException {
-        List<GraphSourceItem> ret = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            ret.addAll(0, list.get(i).toSource(localData, gen));
-        }
-        ret.add(new ActionPush((Long) (long) list.size()));
-        return ret;
-    }
+	protected List<GraphSourceItem> toSourceCall(
+			SourceGeneratorLocalData localData, SourceGenerator gen,
+			List<GraphTargetItem> list) throws CompilationException {
+		List<GraphSourceItem> ret = new ArrayList<>();
+		for (int i = 0; i < list.size(); i++) {
+			ret.addAll(0, list.get(i).toSource(localData, gen));
+		}
+		ret.add(new ActionPush((Long) (long) list.size()));
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSourceIgnoreReturnValue(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        List<GraphSourceItem> ret = toSource(localData, generator);
-        if (hasReturnValue()) {
-            ret.add(new ActionPop());
-        }
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItem> toSourceIgnoreReturnValue(
+			SourceGeneratorLocalData localData, SourceGenerator generator)
+			throws CompilationException {
+		List<GraphSourceItem> ret = toSource(localData, generator);
+		if (hasReturnValue()) {
+			ret.add(new ActionPop());
+		}
+		return ret;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return new UnboundedTypeItem();
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return new UnboundedTypeItem();
+	}
 }

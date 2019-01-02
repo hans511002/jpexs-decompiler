@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.ActionCloneSprite;
@@ -24,8 +28,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -33,57 +35,65 @@ import java.util.List;
  */
 public class CloneSpriteActionItem extends ActionItem {
 
-    public GraphTargetItem source;
+	public GraphTargetItem source;
 
-    public GraphTargetItem target;
+	public GraphTargetItem target;
 
-    public GraphTargetItem depth;
+	public GraphTargetItem depth;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(target);
-        ret.add(source);
-        ret.add(depth);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(target);
+		ret.add(source);
+		ret.add(depth);
+		return ret;
+	}
 
-    public CloneSpriteActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem source, GraphTargetItem target, GraphTargetItem depth) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.source = source;
-        this.target = target;
-        this.depth = depth;
-    }
+	public CloneSpriteActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem source,
+			GraphTargetItem target, GraphTargetItem depth) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.source = source;
+		this.target = target;
+		this.depth = depth;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("duplicateMovieClip");
-        writer.spaceBeforeCallParenthesies(3);
-        writer.append("(");
-        target.toString(writer, localData);
-        writer.append(",");
-        source.toString(writer, localData);
-        writer.append(",");
-        depth.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("duplicateMovieClip");
+		nwriter.spaceBeforeCallParenthesies(3);
+		nwriter.append("(");
+		target.toString(nwriter, localData);
+		nwriter.append(",");
+		source.toString(nwriter, localData);
+		nwriter.append(",");
+		depth.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(source.getNeededSources());
-        ret.addAll(target.getNeededSources());
-        ret.addAll(depth.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(source.getNeededSources());
+		ret.addAll(target.getNeededSources());
+		ret.addAll(depth.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, source, target, depth, new ActionCloneSprite());
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, source, target, depth,
+				new ActionCloneSprite());
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

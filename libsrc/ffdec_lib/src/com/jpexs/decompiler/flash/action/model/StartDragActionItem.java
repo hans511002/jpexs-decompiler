@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.ActionStartDrag;
@@ -24,7 +27,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -32,87 +34,98 @@ import java.util.List;
  */
 public class StartDragActionItem extends ActionItem {
 
-    public GraphTargetItem target;
+	public GraphTargetItem target;
 
-    public GraphTargetItem lockCenter;
+	public GraphTargetItem lockCenter;
 
-    public GraphTargetItem constrain;
+	public GraphTargetItem constrain;
 
-    public GraphTargetItem y2;
+	public GraphTargetItem y2;
 
-    public GraphTargetItem x2;
+	public GraphTargetItem x2;
 
-    public GraphTargetItem y1;
+	public GraphTargetItem y1;
 
-    public GraphTargetItem x1;
+	public GraphTargetItem x1;
 
-    public StartDragActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem target, GraphTargetItem lockCenter, GraphTargetItem constrain, GraphTargetItem x1, GraphTargetItem y1, GraphTargetItem x2, GraphTargetItem y2) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.target = target;
-        this.lockCenter = lockCenter;
-        this.constrain = constrain;
-        this.y2 = y2;
-        this.x2 = x2;
-        this.y1 = y1;
-        this.x1 = x1;
-    }
+	public StartDragActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem target,
+			GraphTargetItem lockCenter, GraphTargetItem constrain,
+			GraphTargetItem x1, GraphTargetItem y1, GraphTargetItem x2,
+			GraphTargetItem y2) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.target = target;
+		this.lockCenter = lockCenter;
+		this.constrain = constrain;
+		this.y2 = y2;
+		this.x2 = x2;
+		this.y1 = y1;
+		this.x1 = x1;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        boolean hasConstrains = true;
-        if (constrain instanceof DirectValueActionItem) {
-            if (Double.compare(constrain.getResultAsNumber(), 0) == 0) {
-                hasConstrains = false;
-            }
-        }
-        writer.append("startDrag");
-        writer.spaceBeforeCallParenthesies(2);
-        writer.append("(");
-        target.toString(writer, localData);
-        writer.append(",");
-        lockCenter.toString(writer, localData);
-        if (hasConstrains) {
-            writer.append(",");
-            x1.toString(writer, localData);
-            writer.append(",");
-            y1.toString(writer, localData);
-            writer.append(",");
-            x2.toString(writer, localData);
-            writer.append(",");
-            y2.toString(writer, localData);
-        }
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		boolean hasConstrains = true;
+		if (constrain instanceof DirectValueActionItem) {
+			if (Double.compare(constrain.getResultAsNumber(), 0) == 0) {
+				hasConstrains = false;
+			}
+		}
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("startDrag");
+		nwriter.spaceBeforeCallParenthesies(2);
+		nwriter.append("(");
+		target.toString(nwriter, localData);
+		nwriter.append(",");
+		lockCenter.toString(nwriter, localData);
+		if (hasConstrains) {
+			nwriter.append(",");
+			x1.toString(nwriter, localData);
+			nwriter.append(",");
+			y1.toString(nwriter, localData);
+			nwriter.append(",");
+			x2.toString(nwriter, localData);
+			nwriter.append(",");
+			y2.toString(nwriter, localData);
+		}
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(target.getNeededSources());
-        ret.addAll(constrain.getNeededSources());
-        ret.addAll(x1.getNeededSources());
-        ret.addAll(x2.getNeededSources());
-        ret.addAll(y1.getNeededSources());
-        ret.addAll(y2.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(target.getNeededSources());
+		ret.addAll(constrain.getNeededSources());
+		ret.addAll(x1.getNeededSources());
+		ret.addAll(x2.getNeededSources());
+		ret.addAll(y1.getNeededSources());
+		ret.addAll(y2.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        boolean hasConstrains = true;
-        if (constrain instanceof DirectValueActionItem) {
-            if (Double.compare(constrain.getResultAsNumber(), 0) == 0) {
-                hasConstrains = false;
-            }
-        }
-        if (hasConstrains) {
-            return toSourceMerge(localData, generator, x1, y1, x2, y2, constrain, lockCenter, target, new ActionStartDrag());
-        } else {
-            return toSourceMerge(localData, generator, constrain, lockCenter, target, new ActionStartDrag());
-        }
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		boolean hasConstrains = true;
+		if (constrain instanceof DirectValueActionItem) {
+			if (Double.compare(constrain.getResultAsNumber(), 0) == 0) {
+				hasConstrains = false;
+			}
+		}
+		if (hasConstrains) {
+			return toSourceMerge(localData, generator, x1, y1, x2, y2,
+					constrain, lockCenter, target, new ActionStartDrag());
+		} else {
+			return toSourceMerge(localData, generator, constrain, lockCenter,
+					target, new ActionStartDrag());
+		}
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

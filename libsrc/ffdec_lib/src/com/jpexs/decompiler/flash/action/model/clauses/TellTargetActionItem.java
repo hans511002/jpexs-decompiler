@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model.clauses;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.model.ActionItem;
@@ -28,8 +32,6 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -37,60 +39,68 @@ import java.util.List;
  */
 public class TellTargetActionItem extends ActionItem {
 
-    public List<GraphTargetItem> commands;
+	public List<GraphTargetItem> commands;
 
-    public GraphTargetItem target;
+	public GraphTargetItem target;
 
-    public TellTargetActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem target, List<GraphTargetItem> commands) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.target = target;
-        this.commands = commands;
-    }
+	public TellTargetActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem target,
+			List<GraphTargetItem> commands) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.target = target;
+		this.commands = commands;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("tellTarget");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        target.toString(writer, localData);
-        writer.append(")").newLine();
-        writer.append("{").newLine();
-        writer.indent();
-        for (GraphTargetItem ti : commands) {
-            ti.toStringSemicoloned(writer, localData).newLine();
-        }
-        writer.unindent();
-        return writer.append("}");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("tellTarget");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		target.toString(nwriter, localData);
+		nwriter.append(")").newLine();
+		nwriter.append("{").newLine();
+		nwriter.indent();
+		for (GraphTargetItem ti : commands) {
+			ti.toStringSemicoloned(nwriter, localData).newLine();
+		}
+		nwriter.unindent();
+		nwriter.append("}");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(target.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(target.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        List<GraphSourceItem> ret = new ArrayList<>();
-        if ((target instanceof DirectValueActionItem) && ((((DirectValueActionItem) target).value instanceof String) || (((DirectValueActionItem) target).value instanceof ConstantIndex))) {
-            ret.add(new ActionSetTarget((String) target.getResult()));
-        } else {
-            ret.addAll(target.toSource(localData, generator));
-            ret.add(new ActionSetTarget2());
-        }
-        ret.addAll(generator.generate(localData, commands));
-        ret.add(new ActionSetTarget(""));
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		List<GraphSourceItem> ret = new ArrayList<>();
+		if ((target instanceof DirectValueActionItem)
+				&& ((((DirectValueActionItem) target).value instanceof String) || (((DirectValueActionItem) target).value instanceof ConstantIndex))) {
+			ret.add(new ActionSetTarget((String) target.getResult()));
+		} else {
+			ret.addAll(target.toSource(localData, generator));
+			ret.add(new ActionSetTarget2());
+		}
+		ret.addAll(generator.generate(localData, commands));
+		ret.add(new ActionSetTarget(""));
+		return ret;
+	}
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

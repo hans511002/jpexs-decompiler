@@ -50,7 +50,7 @@ public class EnumerateActionItem extends ActionItem {
 
     @Override
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("Â§Â§enumerate(");
+        writer.append("¡ì¡ìenumerate(");
         object.toString(writer, localData);
         return writer.append(")");
     }

@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instructions;
@@ -24,7 +27,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -32,65 +34,72 @@ import java.util.List;
  */
 public class AlchemyStoreAVM2Item extends AVM2Item {
 
-    private final String type;
+	private final String type;
 
-    private final int size;
+	private final int size;
 
-    private final GraphTargetItem ofs;
+	private final GraphTargetItem ofs;
 
-    public AlchemyStoreAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value, GraphTargetItem ofs, String type, int size) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
-        this.ofs = ofs;
-        this.type = type;
-        this.size = size;
-    }
+	public AlchemyStoreAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem value,
+			GraphTargetItem ofs, String type, int size) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
+		this.ofs = ofs;
+		this.type = type;
+		this.size = size;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("s").append(type).append(size).append("(");
-        value.toString(writer, localData);
-        writer.append(",");
-        ofs.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("s").append(type).append(size).append("(");
+		value.toString(nwriter, localData);
+		nwriter.append(",");
+		ofs.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        String ts = "" + type + size;
-        if (type.equals("f4")) {
-            ts = "f32x4";
-        }
-        int code = 0;
-        switch (ts) {
-            case "i8":
-                code = AVM2Instructions.Si8;
-                break;
-            case "i16":
-                code = AVM2Instructions.Si16;
-                break;
-            case "i32":
-                code = AVM2Instructions.Si32;
-                break;
-            case "f32":
-                code = AVM2Instructions.Sf32;
-                break;
-            case "f32x4":
-                code = AVM2Instructions.Sf32x4;
-                break;
-            case "f64":
-                code = AVM2Instructions.Sf64;
-                break;
-        }
-        return toSourceMerge(localData, generator, ofs, ins(code));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		String ts = "" + type + size;
+		if (type.equals("f4")) {
+			ts = "f32x4";
+		}
+		int code = 0;
+		switch (ts) {
+		case "i8":
+			code = AVM2Instructions.Si8;
+			break;
+		case "i16":
+			code = AVM2Instructions.Si16;
+			break;
+		case "i32":
+			code = AVM2Instructions.Si32;
+			break;
+		case "f32":
+			code = AVM2Instructions.Sf32;
+			break;
+		case "f32x4":
+			code = AVM2Instructions.Sf32x4;
+			break;
+		case "f64":
+			code = AVM2Instructions.Sf64;
+			break;
+		}
+		return toSourceMerge(localData, generator, ofs, ins(code));
+	}
 }

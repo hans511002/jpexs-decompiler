@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf3.ActionGoToLabel;
@@ -23,7 +26,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.helpers.Helper;
-import java.util.List;
 
 /**
  *
@@ -31,29 +33,34 @@ import java.util.List;
  */
 public class GotoLabelActionItem extends ActionItem {
 
-    public String label;
+	public String label;
 
-    public GotoLabelActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, String label) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.label = label;
-    }
+	public GotoLabelActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, String label) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.label = label;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        writer.append("gotoAndStop");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(\"");
-        writer.append(Helper.escapeActionScriptString(label));
-        return writer.append("\")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("gotoAndStop");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(\"");
+		nwriter.append(Helper.escapeActionScriptString(label));
+		nwriter.append("\")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, new ActionGoToLabel(label));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, new ActionGoToLabel(label));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model.operations;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.model.DirectValueActionItem;
@@ -27,7 +30,6 @@ import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.BinaryOpItem;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.decompiler.graph.model.UnboundedTypeItem;
-import java.util.List;
 
 /**
  *
@@ -35,43 +37,53 @@ import java.util.List;
  */
 public class BitXorActionItem extends BinaryOpItem {
 
-    public BitXorActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem leftSide, GraphTargetItem rightSide) {
-        super(instruction, lineStartIns, PRECEDENCE_BITWISEXOR, leftSide, rightSide, "^", "int", "int");
-    }
+	public BitXorActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem leftSide,
+			GraphTargetItem rightSide) {
+		super(instruction, lineStartIns, PRECEDENCE_BITWISEXOR, leftSide,
+				rightSide, "^", "int", "int");
+	}
 
-    @Override
-    public Object getResult() {
-        return getResult(rightSide.getResult(), leftSide.getResult());
-    }
+	@Override
+	public Object getResult() {
+		return getResult(rightSide.getResult(), leftSide.getResult());
+	}
 
-    public static long getResult(Object rightResult, Object leftResult) {
-        return EcmaScript.toInt32(leftResult) ^ EcmaScript.toInt32(rightResult);
-    }
+	public static long getResult(Object rightResult, Object leftResult) {
+		return EcmaScript.toInt32(leftResult) ^ EcmaScript.toInt32(rightResult);
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if ((rightSide instanceof DirectValueActionItem) && (((DirectValueActionItem) rightSide).value.equals(4.294967295E9))) {
-            writer.append("~");
-            if (leftSide.getPrecedence() > PRECEDENCE_UNARY) {
-                writer.append("(");
-            }
-            leftSide.appendTry(writer, localData);
-            if (leftSide.getPrecedence() > PRECEDENCE_UNARY) {
-                writer.append(")");
-            }
-            return writer;
-        } else {
-            return super.appendTo(writer, localData);
-        }
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if ((rightSide instanceof DirectValueActionItem)
+				&& (((DirectValueActionItem) rightSide).value
+						.equals(4.294967295E9))) {
+			nwriter.append("~");
+			if (leftSide.getPrecedence() > PRECEDENCE_UNARY) {
+				nwriter.append("(");
+			}
+			leftSide.appendTry(nwriter, localData);
+			if (leftSide.getPrecedence() > PRECEDENCE_UNARY) {
+				nwriter.append(")");
+			}
+		} else {
+			super.appendTo(nwriter, localData);
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, leftSide, rightSide, new ActionBitXor());
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, leftSide, rightSide,
+				new ActionBitXor());
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return new UnboundedTypeItem();
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return new UnboundedTypeItem();
+	}
 }

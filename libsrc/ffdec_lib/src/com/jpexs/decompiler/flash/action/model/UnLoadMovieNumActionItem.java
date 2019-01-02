@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.model.operations.AddActionItem;
@@ -27,8 +31,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -36,42 +38,56 @@ import java.util.List;
  */
 public class UnLoadMovieNumActionItem extends ActionItem {
 
-    private final GraphTargetItem num;
+	private final GraphTargetItem num;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(num);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(num);
+		return ret;
+	}
 
-    public UnLoadMovieNumActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem num) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.num = num;
-    }
+	public UnLoadMovieNumActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem num) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.num = num;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("unloadMovieNum");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        num.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("unloadMovieNum");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		num.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        ActionSourceGenerator asGenerator = (ActionSourceGenerator) generator;
-        if ((num instanceof DirectValueActionItem) && (((DirectValueActionItem) num).value instanceof Long)) {
-            return toSourceMerge(localData, generator, new ActionGetURL("", "_level" + ((DirectValueActionItem) num).value));
-        } else {
-            return toSourceMerge(localData, generator, new ActionPush(""), new AddActionItem(getSrc(), getLineStartItem(), asGenerator.pushConstTargetItem("_level"), num, true), new ActionGetURL2(0, false, true));
-        }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		ActionSourceGenerator asGenerator = (ActionSourceGenerator) generator;
+		if ((num instanceof DirectValueActionItem)
+				&& (((DirectValueActionItem) num).value instanceof Long)) {
+			return toSourceMerge(localData, generator, new ActionGetURL("",
+					"_level" + ((DirectValueActionItem) num).value));
+		} else {
+			return toSourceMerge(
+					localData,
+					generator,
+					new ActionPush(""),
+					new AddActionItem(getSrc(), getLineStartItem(), asGenerator
+							.pushConstTargetItem("_level"), num, true),
+					new ActionGetURL2(0, false, true));
+		}
 
-    }
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

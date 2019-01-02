@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.ActionGetURL2;
@@ -24,8 +28,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -33,36 +35,43 @@ import java.util.List;
  */
 public class UnLoadMovieActionItem extends ActionItem {
 
-    private final GraphTargetItem targetString;
+	private final GraphTargetItem targetString;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(targetString);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(targetString);
+		return ret;
+	}
 
-    public UnLoadMovieActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem targetString) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.targetString = targetString;
-    }
+	public UnLoadMovieActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem targetString) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.targetString = targetString;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("unloadMovie");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        targetString.toString(writer, localData);
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("unloadMovie");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		targetString.toString(nwriter, localData);
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, new ActionPush(""), targetString, new ActionGetURL2(0, false, true));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, new ActionPush(""),
+				targetString, new ActionGetURL2(0, false, true));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

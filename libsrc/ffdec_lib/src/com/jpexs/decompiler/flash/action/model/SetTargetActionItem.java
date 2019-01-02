@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -22,7 +25,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.helpers.Helper;
-import java.util.List;
 
 /**
  *
@@ -30,27 +32,32 @@ import java.util.List;
  */
 public class SetTargetActionItem extends ActionItem {
 
-    public String target;
+	public String target;
 
-    public SetTargetActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, String target) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.target = target;
-    }
+	public SetTargetActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, String target) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.target = target;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        writer.append("tellTarget(\"");
-        writer.append(Helper.escapeActionScriptString(target));
-        return writer.append("\")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("tellTarget(\"");
+		nwriter.append(Helper.escapeActionScriptString(target));
+		nwriter.append("\")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        throw new UnsupportedOperationException();
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		throw new UnsupportedOperationException();
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -27,34 +28,36 @@ import com.jpexs.decompiler.graph.model.TernarOpItem;
  */
 public class NameValuePair extends AVM2Item {
 
-    public GraphTargetItem name;
+	public GraphTargetItem name;
 
-    public NameValuePair(GraphTargetItem name, GraphTargetItem value) {
-        super(name.getSrc(), name.getLineStartItem(), NOPRECEDENCE, value);
-        this.name = name;
-    }
+	public NameValuePair(GraphTargetItem name, GraphTargetItem value) {
+		super(name.getSrc(), name.getLineStartItem(), NOPRECEDENCE, value);
+		this.name = name;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        name.toStringString(writer, localData);
-        writer.append(":");
-        if (value instanceof TernarOpItem) { //Ternar operator contains ":"
-            writer.append("(");
-            value.toString(writer, localData);
-            writer.append(")");
-        } else {
-            value.toString(writer, localData);
-        }
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		name.toStringString(nwriter, localData);
+		nwriter.append(":");
+		if (value instanceof TernarOpItem) { // Ternar operator contains ":"
+			nwriter.append("(");
+			value.toString(nwriter, localData);
+			nwriter.append(")");
+		} else {
+			value.toString(nwriter, localData);
+		}
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

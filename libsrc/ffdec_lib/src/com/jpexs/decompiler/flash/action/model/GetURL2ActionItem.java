@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
@@ -33,61 +34,69 @@ import java.util.List;
  */
 public class GetURL2ActionItem extends ActionItem {
 
-    public GraphTargetItem urlString;
+	public GraphTargetItem urlString;
 
-    public GraphTargetItem targetString;
+	public GraphTargetItem targetString;
 
-    public int sendVarsMethod;
+	public int sendVarsMethod;
 
-    @Override
-    public List<GraphTargetItem> getAllSubItems() {
-        List<GraphTargetItem> ret = new ArrayList<>();
-        ret.add(urlString);
-        ret.add(targetString);
-        return ret;
-    }
+	@Override
+	public List<GraphTargetItem> getAllSubItems() {
+		List<GraphTargetItem> ret = new ArrayList<>();
+		ret.add(urlString);
+		ret.add(targetString);
+		return ret;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        String methodStr = "";
-        if (sendVarsMethod == 1) {
-            methodStr = ",\"GET\"";
-        }
-        if (sendVarsMethod == 2) {
-            methodStr = ",\"POST\"";
-        }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		String methodStr = "";
+		if (sendVarsMethod == 1) {
+			methodStr = ",\"GET\"";
+		}
+		if (sendVarsMethod == 2) {
+			methodStr = ",\"POST\"";
+		}
+		GraphTextWriter nwriter = writer.cloneNew();
 
-        writer.append("getURL");
-        writer.spaceBeforeCallParenthesies(2);
-        writer.append("(");
-        urlString.toString(writer, localData);
-        writer.append(",");
-        targetString.toString(writer, localData);
-        return writer.append(methodStr).append(")");
-    }
+		nwriter.append("getURL");
+		nwriter.spaceBeforeCallParenthesies(2);
+		nwriter.append("(");
+		urlString.toString(nwriter, localData);
+		nwriter.append(",");
+		targetString.toString(nwriter, localData);
+		nwriter.append(methodStr).append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    public GetURL2ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem urlString, GraphTargetItem targetString, int method) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.urlString = urlString;
-        this.targetString = targetString;
-        this.sendVarsMethod = method;
-    }
+	public GetURL2ActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem urlString,
+			GraphTargetItem targetString, int method) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.urlString = urlString;
+		this.targetString = targetString;
+		this.sendVarsMethod = method;
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(urlString.getNeededSources());
-        ret.addAll(targetString.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(urlString.getNeededSources());
+		ret.addAll(targetString.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, urlString, targetString, new ActionGetURL2(sendVarsMethod, false, false));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, urlString, targetString,
+				new ActionGetURL2(sendVarsMethod, false, false));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

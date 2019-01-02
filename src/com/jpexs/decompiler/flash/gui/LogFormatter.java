@@ -31,61 +31,65 @@ import java.util.logging.LogRecord;
  */
 public class LogFormatter extends Formatter {
 
-    private static final String lineSep = System.getProperty("line.separator");
+	private static final String lineSep = System.getProperty("line.separator");
 
-    private DateFormat dateFormat;
+	private DateFormat dateFormat;
+	static boolean printClass = true;
 
-    @Override
-    public String format(LogRecord record) {
-        StringBuilder buf = new StringBuilder(180);
+	@Override
+	public String format(LogRecord record) {
+		StringBuilder buf = new StringBuilder(180);
 
-        if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
-        }
-
-        buf.append(dateFormat.format(new Date(record.getMillis())));
-        buf.append(" > ");
-
-        if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
-            buf.append(record.getLevel());
-            buf.append(": ");
-        }
-        StackTraceElement stes[]= Thread.currentThread().getStackTrace();
-        StackTraceElement ste=null;
-        for (StackTraceElement stackTraceElement : stes) {
-			if(stackTraceElement.getClassName().equals(record.getSourceClassName()) && 
-					stackTraceElement.getMethodName().equals(record.getSourceMethodName())  
-					)
-			{
-				ste=stackTraceElement;
-				break;
-			}
+		if (dateFormat == null) {
+			dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 		}
-        if(ste==null){
-        	ste=stes[7];
-        }
-        buf.append(record.getSourceClassName());
-        buf.append(".");
-        buf.append(record.getSourceMethodName());
-        buf.append("(");
-        buf.append(ste.getFileName()); 
-        buf.append(":");
-        buf.append(ste.getLineNumber()); 
-        buf.append(") ");
-//        buf.append(ste.getMethodName()); 
-        buf.append(formatMessage(record));
-        buf.append(lineSep);
-        Throwable throwable = record.getThrown();
-        if (throwable != null) {
-            StringWriter sink = new StringWriter();
-            throwable.printStackTrace(new PrintWriter(sink, true));
-            buf.append(record.getSourceClassName());
-            buf.append(' ');
-            buf.append(record.getSourceMethodName());
-            buf.append(lineSep);
-            buf.append(sink.toString());
-        }
 
-        return buf.toString();
-    }
+		buf.append(dateFormat.format(new Date(record.getMillis())));
+		buf.append(" > ");
+
+		if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+			buf.append(record.getLevel());
+			buf.append(": ");
+		}
+		if (printClass) {
+			StackTraceElement stes[] = Thread.currentThread().getStackTrace();
+			StackTraceElement ste = null;
+			for (StackTraceElement stackTraceElement : stes) {
+				if (stackTraceElement.getClassName().equals(
+						record.getSourceClassName())
+						&& stackTraceElement.getMethodName().equals(
+								record.getSourceMethodName())) {
+					ste = stackTraceElement;
+					break;
+				}
+			}
+			if (ste == null) {
+				ste = stes[7];
+			}
+			buf.append(record.getSourceClassName());
+			buf.append(".");
+			buf.append(record.getSourceMethodName());
+			buf.append("(");
+			buf.append(ste.getFileName());
+			buf.append(":");
+			buf.append(ste.getLineNumber());
+			buf.append(") ");
+		}
+
+		// buf.append(ste.getMethodName());
+		buf.append(formatMessage(record));
+		buf.append(lineSep);
+		Throwable throwable = record.getThrown();
+		if (throwable != null) {
+			StringWriter sink = new StringWriter();
+			throwable.printStackTrace(new PrintWriter(sink, true));
+			buf.append(record.getSourceClassName());
+			buf.append(' ');
+			buf.append(record.getSourceMethodName());
+			buf.append(lineSep);
+			buf.append(sink.toString());
+		}
+
+		return buf.toString();
+	}
 }

@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model.clauses;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.model.ActionItem;
@@ -27,8 +31,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.ContinueItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -36,54 +38,62 @@ import java.util.List;
  */
 public class IfFrameLoadedActionItem extends ActionItem implements Block {
 
-    private final List<GraphTargetItem> actions;
+	private final List<GraphTargetItem> actions;
 
-    private final GraphTargetItem frame;
+	private final GraphTargetItem frame;
 
-    public IfFrameLoadedActionItem(GraphTargetItem frame, List<GraphTargetItem> actions, GraphSourceItem instruction, GraphSourceItem lineStartIns) {
-        super(instruction, lineStartIns, NOPRECEDENCE);
-        this.actions = actions;
-        this.frame = frame;
-    }
+	public IfFrameLoadedActionItem(GraphTargetItem frame,
+			List<GraphTargetItem> actions, GraphSourceItem instruction,
+			GraphSourceItem lineStartIns) {
+		super(instruction, lineStartIns, NOPRECEDENCE);
+		this.actions = actions;
+		this.frame = frame;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("ifFrameLoaded");
-        writer.spaceBeforeCallParenthesies(1);
-        writer.append("(");
-        frame.toString(writer, localData);
-        writer.append(")").startBlock();
-        Graph.graphToString(actions, writer, localData);
-        return writer.endBlock();
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("ifFrameLoaded");
+		nwriter.spaceBeforeCallParenthesies(1);
+		nwriter.append("(");
+		frame.toString(nwriter, localData);
+		nwriter.append(")").startBlock();
+		Graph.graphToString(actions, nwriter, localData);
+		nwriter.endBlock();
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public List<ContinueItem> getContinues() {
-        return new ArrayList<>();
-    }
+	@Override
+	public List<ContinueItem> getContinues() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public List<List<GraphTargetItem>> getSubs() {
-        List<List<GraphTargetItem>> ret = new ArrayList<>();
-        if (actions != null) {
-            ret.add(actions);
-        }
-        return ret;
-    }
+	@Override
+	public List<List<GraphTargetItem>> getSubs() {
+		List<List<GraphTargetItem>> ret = new ArrayList<>();
+		if (actions != null) {
+			ret.add(actions);
+		}
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        List<GraphSourceItem> body = generator.generate(localData, actions);
-        return toSourceMerge(localData, generator, frame, new ActionWaitForFrame2(body.size()), body);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		List<GraphSourceItem> body = generator.generate(localData, actions);
+		return toSourceMerge(localData, generator, frame,
+				new ActionWaitForFrame2(body.size()), body);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [11.2.0] - 2018-09-08
 ### Added
-- Warning panel on scripts containing Â§Â§ instructions (Tip for Settings/Automatic deobfuscation)
+- Warning panel on scripts containing ¡ì¡ì instructions (Tip for Settings/Automatic deobfuscation)
 - Export AS1/2 P-code as GraphViz
 - Display better Graph using GraphViz (Must be configured in Advanced settings / Path)
 - Copy AS1/2 Graph source (GraphViz) to clipboard - rightclick menu on graph
@@ -12,8 +12,8 @@ All notable changes to this project will be documented in this file.
 - AS1/2 deobfuscation of empty stack pops
 
 ### Changed
-- AS1/2 Better unresolved constant handling - Â§Â§constant(xx) func instead of Â§Â§constantxx
-- AS1/2 Using eval, set functions on obfuscated names instead of Â§Â§ syntax
+- AS1/2 Better unresolved constant handling - ¡ì¡ìconstant(xx) func instead of ¡ì¡ìconstantxx
+- AS1/2 Using eval, set functions on obfuscated names instead of ¡ì¡ì syntax
 - Default limit of maximum executed instructions during AS1/2 deobfuscation raised to 10000
 
 ### Fixed
@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - AS1/2 Using temporary registers after for..in (causing incorrect chained assignments handling, etc.)
 - AS1/2 getProperty, setProperty handling
 - AS1/2 callmethod action arguments
-- Fixed Â§Â§push after continue - should be before (usually on obfuscated code)
+- Fixed ¡ì¡ìpush after continue - should be before (usually on obfuscated code)
 - AS1/2 Delete operator with nonIdentifier parameters (e.g. spaces or obfuscated)
 - DefineBits (with JPEGTables) tag export
 - No disabling autoOpenLoadedSWFs checkbox when ActiveX player not available (User can use Run button)
@@ -209,7 +209,7 @@ All notable changes to this project will be documented in this file.
 - Simplify expression setting
 - [#1118] Loading characters through ImportAssets - show as readonly
 - [#409], [#1132], [SkinPart] metadata support - decompilation and direct editation in AS3
-- [#1134] compiling Â§Â§ instructions back while direct editation (Â§Â§goto is still missing)
+- [#1134] compiling ¡ì¡ì instructions back while direct editation (¡ì¡ìgoto is still missing)
 - [#1121] Ability to save binary data by its name
 - [#1052] Add object to existing frame
 - Allow adding tag to main timeline
@@ -381,7 +381,7 @@ All notable changes to this project will be documented in this file.
 
 ## [6.0.1] - 2015-07-06
 ### Added
-- Special Â§Â§ instructions marked as red
+- Special ¡ì¡ì instructions marked as red
 - [#949] Replace alpha channel from commandline
 - AS3 deobfuscation from commandline
 - Option to ignore FlashCC/Alchemy packages
@@ -396,7 +396,7 @@ All notable changes to this project will be documented in this file.
 ## [6.0.0] - 2015-07-04
 ### Added
 - New AS3 deobfuscation method
-- Internal "preprocessor" Â§Â§ actions introduced - Â§Â§pop,Â§Â§push,...
+- Internal "preprocessor" ¡ì¡ì actions introduced - ¡ì¡ìpop,¡ì¡ìpush,...
 - Allow reload FFDec when no SWF is opened
 - [#858] Allow to set compression type in header
 - [#905] Show codec details for sound items
@@ -589,7 +589,7 @@ All notable changes to this project will be documented in this file.
 - [#749] Internal viewer Sprite fill color
 - [#752] Sound is not stopped
 - [#753] Reload swf
-- [#759] Decompilation Â§ symbol
+- [#759] Decompilation ¡ì symbol
 - [#766] Can't extract all resources
 - [#768] Super calls not being correctly recognized
 - [#773] Scripts associated with ClipActions are not shown
@@ -709,7 +709,7 @@ All notable changes to this project will be documented in this file.
 ## [3.0.0] - 2014-09-20
 ### Added
 - Separated GUI (GPL) and library (now LGPL)
-- Editing obfuscated identifiers via new paragraph(Â§) syntax
+- Editing obfuscated identifiers via new paragraph(¡ì) syntax
 - Timeline View with preview and object hilighting
 - Show GFX data in dump view
 - [#650] New parameter to replace binarydata, images, sounds, scripts from commandline

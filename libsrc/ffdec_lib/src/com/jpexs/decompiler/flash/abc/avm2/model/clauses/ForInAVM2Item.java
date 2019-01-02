@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model.clauses;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.avm2.model.InAVM2Item;
@@ -33,8 +37,6 @@ import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.ContinueItem;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.decompiler.graph.model.LoopItem;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -42,96 +44,106 @@ import java.util.List;
  */
 public class ForInAVM2Item extends LoopItem implements Block {
 
-    public InAVM2Item expression;
+	public InAVM2Item expression;
 
-    public List<GraphTargetItem> commands;
+	public List<GraphTargetItem> commands;
 
-    private boolean labelUsed;
+	private boolean labelUsed;
 
-    @Override
-    public List<List<GraphTargetItem>> getSubs() {
-        List<List<GraphTargetItem>> ret = new ArrayList<>();
-        if (commands != null) {
-            ret.add(commands);
-        }
-        return ret;
-    }
+	@Override
+	public List<List<GraphTargetItem>> getSubs() {
+		List<List<GraphTargetItem>> ret = new ArrayList<>();
+		if (commands != null) {
+			ret.add(commands);
+		}
+		return ret;
+	}
 
-    public ForInAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, Loop loop, InAVM2Item expression, List<GraphTargetItem> commands) {
-        super(instruction, lineStartIns, loop);
-        if (!commands.isEmpty()) {
-            GraphTargetItem firstAssign = commands.get(0);
-            if (firstAssign instanceof SetTypeAVM2Item) {
-                if (expression.object instanceof LocalRegAVM2Item) {
-                    if (((SetTypeAVM2Item) firstAssign).getValue().getNotCoerced() instanceof LocalRegAVM2Item) {
-                        if (((LocalRegAVM2Item) ((SetTypeAVM2Item) firstAssign).getValue().getNotCoerced()).regIndex == ((LocalRegAVM2Item) expression.object).regIndex) {
-                            commands.remove(0);
-                            expression.object = ((SetTypeAVM2Item) firstAssign).getObject();
-                        }
-                    }
+	public ForInAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, Loop loop, InAVM2Item expression,
+			List<GraphTargetItem> commands) {
+		super(instruction, lineStartIns, loop);
+		if (!commands.isEmpty()) {
+			GraphTargetItem firstAssign = commands.get(0);
+			if (firstAssign instanceof SetTypeAVM2Item) {
+				if (expression.object instanceof LocalRegAVM2Item) {
+					if (((SetTypeAVM2Item) firstAssign).getValue()
+							.getNotCoerced() instanceof LocalRegAVM2Item) {
+						if (((LocalRegAVM2Item) ((SetTypeAVM2Item) firstAssign)
+								.getValue().getNotCoerced()).regIndex == ((LocalRegAVM2Item) expression.object).regIndex) {
+							commands.remove(0);
+							expression.object = ((SetTypeAVM2Item) firstAssign)
+									.getObject();
+						}
+					}
 
-                }
-                //locAssign.
-            }
-        }
-        this.expression = expression;
-        this.commands = commands;
-    }
+				}
+				// locAssign.
+			}
+		}
+		this.expression = expression;
+		this.commands = commands;
+	}
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (writer instanceof NulWriter) {
-            ((NulWriter) writer).startLoop(loop.id, LoopWithType.LOOP_TYPE_LOOP);
-        }
-        if (labelUsed) {
-            writer.append("loop").append(loop.id).append(":").newLine();
-        }
-        writer.append("for");
-        if (writer.getFormatting().spaceBeforeParenthesesForParentheses) {
-            writer.append(" ");
-        }
-        writer.append("(");
-        expression.toString(writer, localData);
-        writer.append(")");
-        appendBlock(expression, writer, localData, commands);
-        if (writer instanceof NulWriter) {
-            LoopWithType loopOjb = ((NulWriter) writer).endLoop(loop.id);
-            labelUsed = loopOjb.used;
-        }
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (nwriter instanceof NulWriter) {
+			((NulWriter) nwriter).startLoop(loop.id,
+					LoopWithType.LOOP_TYPE_LOOP);
+		}
+		if (labelUsed) {
+			nwriter.append("loop").append(loop.id).append(":").newLine();
+		}
+		nwriter.append("for");
+		if (nwriter.getFormatting().spaceBeforeParenthesesForParentheses) {
+			nwriter.append(" ");
+		}
+		nwriter.append("(");
+		expression.toString(nwriter, localData);
+		nwriter.append(")");
+		appendBlock(expression, nwriter, localData, commands);
+		if (nwriter instanceof NulWriter) {
+			LoopWithType loopOjb = ((NulWriter) nwriter).endLoop(loop.id);
+			labelUsed = loopOjb.used;
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<ContinueItem> getContinues() {
-        List<ContinueItem> ret = new ArrayList<>();
-        for (GraphTargetItem ti : commands) {
-            if (ti instanceof ContinueItem) {
-                ret.add((ContinueItem) ti);
-            }
-            if (ti instanceof Block) {
-                ret.addAll(((Block) ti).getContinues());
-            }
-        }
-        return ret;
-    }
+	@Override
+	public List<ContinueItem> getContinues() {
+		List<ContinueItem> ret = new ArrayList<>();
+		for (GraphTargetItem ti : commands) {
+			if (ti instanceof ContinueItem) {
+				ret.add((ContinueItem) ti);
+			}
+			if (ti instanceof Block) {
+				ret.addAll(((Block) ti).getContinues());
+			}
+		}
+		return ret;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return ((AVM2SourceGenerator) generator).generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return ((AVM2SourceGenerator) generator).generate(localData, this);
+	}
 }

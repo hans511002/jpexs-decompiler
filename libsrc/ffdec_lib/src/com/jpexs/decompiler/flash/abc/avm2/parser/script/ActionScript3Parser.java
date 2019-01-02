@@ -2228,9 +2228,9 @@ public class ActionScript3Parser {
                         break;
                     case "goto": //TODO
                     case "multiname":
-                        throw new AVM2ParseException("Compiling Â§Â§" + s.value + " is not available, sorry", lexer.yyline());
+                        throw new AVM2ParseException("Compiling ¡ì¡ì" + s.value + " is not available, sorry", lexer.yyline());
                     default:
-                        throw new AVM2ParseException("Unknown preprocessor instruction: Â§Â§" + s.value, lexer.yyline());
+                        throw new AVM2ParseException("Unknown preprocessor instruction: ¡ì¡ì" + s.value, lexer.yyline());
                 }
                 expectedType(SymbolType.PARENT_CLOSE);
                 break;

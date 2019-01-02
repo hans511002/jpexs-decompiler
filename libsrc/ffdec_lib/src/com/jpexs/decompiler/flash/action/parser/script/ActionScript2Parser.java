@@ -1608,9 +1608,9 @@ public class ActionScript2Parser {
                         ret = new PopItem(null, null);
                         break;
                     case "goto": //TODO
-                        throw new ActionParseException("Compiling Â§Â§" + s.value + " is not available, sorry", lexer.yyline());
+                        throw new ActionParseException("Compiling ¡ì¡ì" + s.value + " is not available, sorry", lexer.yyline());
                     default:
-                        throw new ActionParseException("Unknown preprocessor instruction: Â§Â§" + s.value, lexer.yyline());
+                        throw new ActionParseException("Unknown preprocessor instruction: ¡ì¡ì" + s.value, lexer.yyline());
 
                 }
                 expectedType(SymbolType.PARENT_CLOSE);

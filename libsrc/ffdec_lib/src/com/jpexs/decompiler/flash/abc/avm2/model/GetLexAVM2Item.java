@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
@@ -30,34 +31,41 @@ import com.jpexs.decompiler.graph.model.LocalData;
  */
 public class GetLexAVM2Item extends AVM2Item {
 
-    public Multiname propertyName;
+	public Multiname propertyName;
 
-    private final DottedChain fullPropertyName;
+	private final DottedChain fullPropertyName;
 
-    public GetLexAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, Multiname propertyName, AVM2ConstantPool constants) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.propertyName = propertyName;
-        this.fullPropertyName = propertyName.getNameWithNamespace(constants, true);
-    }
+	public GetLexAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, Multiname propertyName,
+			AVM2ConstantPool constants) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.propertyName = propertyName;
+		this.fullPropertyName = propertyName.getNameWithNamespace(constants,
+				true);
+	}
 
-    public String getRawPropertyName() {
-        return fullPropertyName.toRawString();
-    }
+	public String getRawPropertyName() {
+		return fullPropertyName.toRawString();
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-        String localName = propertyName.getName(localData.constantsAvm2, localData.fullyQualifiedNames, false, true);
-        getSrcData().localName = localName;
-        return writer.append(propertyName.getName(localData.constantsAvm2, localData.fullyQualifiedNames, false, true));
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		String localName = propertyName.getName(localData.constantsAvm2,
+				localData.fullyQualifiedNames, false, true);
+		getSrcData().localName = localName;
+		nwriter.append(propertyName.getName(localData.constantsAvm2,
+				localData.fullyQualifiedNames, false, true));
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

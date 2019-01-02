@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
 
 import com.jpexs.decompiler.flash.abc.avm2.model.clauses.AssignmentAVM2Item;
@@ -29,83 +30,96 @@ import com.jpexs.decompiler.graph.model.LocalData;
  *
  * @author JPEXS
  */
-public class SetSlotAVM2Item extends AVM2Item implements SetTypeAVM2Item, AssignmentAVM2Item {
+public class SetSlotAVM2Item extends AVM2Item implements SetTypeAVM2Item,
+		AssignmentAVM2Item {
 
-    public Multiname slotName;
+	public Multiname slotName;
 
-    public GraphTargetItem scope;
+	public GraphTargetItem scope;
 
-    public DeclarationAVM2Item declaration;
+	public DeclarationAVM2Item declaration;
 
-    @Override
-    public DeclarationAVM2Item getDeclaration() {
-        return declaration;
-    }
+	@Override
+	public DeclarationAVM2Item getDeclaration() {
+		return declaration;
+	}
 
-    @Override
-    public void setDeclaration(DeclarationAVM2Item declaration) {
-        this.declaration = declaration;
-    }
+	@Override
+	public void setDeclaration(DeclarationAVM2Item declaration) {
+		this.declaration = declaration;
+	}
 
-    public SetSlotAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem scope, Multiname slotName, GraphTargetItem value) {
-        super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
-        this.slotName = slotName;
-        this.scope = scope;
-    }
+	public SetSlotAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem scope,
+			Multiname slotName, GraphTargetItem value) {
+		super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
+		this.slotName = slotName;
+		this.scope = scope;
+	}
 
-    @Override
-    public GraphPart getFirstPart() {
-        return value.getFirstPart();
-    }
+	@Override
+	public GraphPart getFirstPart() {
+		return value.getFirstPart();
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        getSrcData().localName = slotName == null ? "/*UnknownSlot*/" : slotName.getName(localData.constantsAvm2, localData.fullyQualifiedNames, false, true);
-        if (getSrcData().localName.equals(value.toString(localData))) {
-            //assigning parameters to activation reg
-            return writer;
-        }
-        getName(writer, localData);
-        writer.append(" = ");
-        if (declaration != null && !declaration.type.equals(TypeItem.UNBOUNDED) && (value instanceof ConvertAVM2Item)) {
-            return value.value.toString(writer, localData);
-        }
-        return value.toString(writer, localData);
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		getSrcData().localName = slotName == null ? "/*UnknownSlot*/"
+				: slotName.getName(localData.constantsAvm2,
+						localData.fullyQualifiedNames, false, true);
+		if (getSrcData().localName.equals(value.toString(localData))) {
+			// assigning parameters to activation reg
+			return nwriter;
+		}
+		getName(nwriter, localData);
+		nwriter.append(" = ");
+		if (declaration != null && !declaration.type.equals(TypeItem.UNBOUNDED)
+				&& (value instanceof ConvertAVM2Item)) {
+			return value.value.toString(nwriter, localData);
+		}
+		value.toString(nwriter, localData);
+		return writer.marge(nwriter);
+	}
 
-    public String getNameAsStr(LocalData localData) {
-        return slotName == null ? "/*UnknownSlot*/" : slotName.getName(localData.constantsAvm2, localData.fullyQualifiedNames, false, true);
-    }
+	public String getNameAsStr(LocalData localData) {
+		return slotName == null ? "/*UnknownSlot*/" : slotName.getName(
+				localData.constantsAvm2, localData.fullyQualifiedNames, false,
+				true);
+	}
 
-    public GraphTextWriter getName(GraphTextWriter writer, LocalData localData) {
-        if (slotName == null) {
-            return writer.append("/*UnknownSlot*/");
-        }
-        return writer.append(slotName.getName(localData.constantsAvm2, localData.fullyQualifiedNames, false, true));
-    }
+	public GraphTextWriter getName(GraphTextWriter writer, LocalData localData) {
+		if (slotName == null) {
+			return writer.append("/*UnknownSlot*/");
+		}
+		return writer.append(slotName.getName(localData.constantsAvm2,
+				localData.fullyQualifiedNames, false, true));
+	}
 
-    @Override
-    public GraphTargetItem getObject() {
-        return new GetSlotAVM2Item(getInstruction(), getLineStartIns(), scope, slotName);
-    }
+	@Override
+	public GraphTargetItem getObject() {
+		return new GetSlotAVM2Item(getInstruction(), getLineStartIns(), scope,
+				slotName);
+	}
 
-    @Override
-    public GraphTargetItem getValue() {
-        return value;
-    }
+	@Override
+	public GraphTargetItem getValue() {
+		return value;
+	}
 
-    @Override
-    public boolean hasSideEffect() {
-        return true;
-    }
+	@Override
+	public boolean hasSideEffect() {
+		return true;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }

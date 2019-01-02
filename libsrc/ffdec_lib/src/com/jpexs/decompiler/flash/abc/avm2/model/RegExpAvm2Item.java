@@ -12,8 +12,14 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.abc.ABC;
@@ -35,10 +41,6 @@ import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.Callable;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.helpers.Helper;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -46,139 +48,146 @@ import java.util.regex.Pattern;
  */
 public class RegExpAvm2Item extends AVM2Item implements Callable {
 
-    public String pattern;
+	public String pattern;
 
-    public String modifier;
+	public String modifier;
 
-    public RegExpAvm2Item(String pattern, String modifier, GraphSourceItem instruction, GraphSourceItem lineStartIns) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.pattern = pattern;
-        this.modifier = modifier;
-    }
+	public RegExpAvm2Item(String pattern, String modifier,
+			GraphSourceItem instruction, GraphSourceItem lineStartIns) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.pattern = pattern;
+		this.modifier = modifier;
+	}
 
-    @Override
-    public boolean isCompileTime() {
-        return true;
-    }
+	@Override
+	public boolean isCompileTime() {
+		return true;
+	}
 
-    public static String escapeRegExpString(String s) {
-        StringBuilder ret = new StringBuilder(s.length());
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '\n') {
-                ret.append("\\n");
-            } else if (c == '\r') {
-                ret.append("\\r");
-            } else if (c == '\t') {
-                ret.append("\\t");
-            } else if (c == '\b') {
-                ret.append("\\b");
-            } else if (c == '\f') {
-                ret.append("\\f");
-            } else if (c < 32) {
-                ret.append("\\x").append(Helper.byteToHex((byte) c));
-            } else {
-                ret.append(c);
-            }
-        }
+	public static String escapeRegExpString(String s) {
+		StringBuilder ret = new StringBuilder(s.length());
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c == '\n') {
+				ret.append("\\n");
+			} else if (c == '\r') {
+				ret.append("\\r");
+			} else if (c == '\t') {
+				ret.append("\\t");
+			} else if (c == '\b') {
+				ret.append("\\b");
+			} else if (c == '\f') {
+				ret.append("\\f");
+			} else if (c < 32) {
+				ret.append("\\x").append(Helper.byteToHex((byte) c));
+			} else {
+				ret.append(c);
+			}
+		}
 
-        return ret.toString();
-    }
+		return ret.toString();
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (Configuration.useRegExprLiteral.get()) {
-            writer.append("/");
-            writer.append(escapeRegExpString(pattern));
-            writer.append("/");
-            writer.append(modifier);
-        } else {
-            writer.append("new RegExp(");
-            writer.append("\"" + Helper.escapeActionScriptString(pattern) + "\"");
-            if (!(modifier == null || modifier.isEmpty())) {
-                writer.append(",");
-                writer.append("\"" + modifier + "\"");
-            }
-            writer.append(")");
-        }
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (Configuration.useRegExprLiteral.get()) {
+			nwriter.append("/");
+			nwriter.append(escapeRegExpString(pattern));
+			nwriter.append("/");
+			nwriter.append(modifier);
+		} else {
+			nwriter.append("new RegExp(");
+			nwriter.append("\"" + Helper.escapeActionScriptString(pattern)
+					+ "\"");
+			if (!(modifier == null || modifier.isEmpty())) {
+				nwriter.append(",");
+				nwriter.append("\"" + modifier + "\"");
+			}
+			nwriter.append(")");
+		}
+		return writer.marge(nwriter);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return new TypeItem("RegExp");
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return new TypeItem("RegExp");
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
-        ABC abc = g.abcIndex.getSelectedAbc();
-        AVM2ConstantPool constants = abc.constants;
-        boolean hasModifier = !(modifier == null || modifier.isEmpty());
-        return toSourceMerge(localData, generator,
-                ins(AVM2Instructions.GetLex, constants.getQnameId("RegExp", Namespace.KIND_PACKAGE, "", true)),
-                new StringAVM2Item(null, null, pattern),
-                hasModifier ? new StringAVM2Item(null, null, modifier) : null,
-                ins(AVM2Instructions.Construct, hasModifier ? 2 : 1)
-        );
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
+		ABC abc = g.abcIndex.getSelectedAbc();
+		AVM2ConstantPool constants = abc.constants;
+		boolean hasModifier = !(modifier == null || modifier.isEmpty());
+		return toSourceMerge(
+				localData,
+				generator,
+				ins(AVM2Instructions.GetLex, constants.getQnameId("RegExp",
+						Namespace.KIND_PACKAGE, "", true)), new StringAVM2Item(
+						null, null, pattern), hasModifier ? new StringAVM2Item(
+						null, null, modifier) : null,
+				ins(AVM2Instructions.Construct, hasModifier ? 2 : 1));
+	}
 
-    @Override
-    public Object call(String methodName, List<Object> args) {
-        int flags = 0;
-        for (char c : modifier.toCharArray()) {
-            switch (c) {
-                case 'g':
-                    //global (??)
-                    break;
-                case 'i':
-                    flags |= Pattern.CASE_INSENSITIVE;
-                    break;
-                case 's':
-                    flags |= Pattern.DOTALL;
-                    break;
-                case 'm':
-                    flags |= Pattern.MULTILINE;
-                    break;
-                case 'x':
-                    flags |= Pattern.COMMENTS; //?
-                    break;
-                default:
-                    //?
-                    break;
-            }
-        }
-        Pattern p = Pattern.compile(pattern, flags);
-        switch (methodName) {
-            case "exec":
-                String estr = EcmaScript.toString(args.get(0));
-                Matcher m = p.matcher(estr);
-                if (m.find()) {
-                    List<Object> avals = new ArrayList<>();
-                    for (int i = 0; i <= m.groupCount(); i++) {
-                        avals.add(m.group(i));
-                    }
-                    ArrayType a = new ArrayType(avals);
-                    a.setAttribute("input", estr);
-                    a.setAttribute("index", m.start());
-                    return a;
-                } else {
-                    return Null.INSTANCE;
-                }
-            case "test":
-                String tstr = EcmaScript.toString(args.get(0));
-                return p.matcher(tstr).find(); //boolean
-        }
-        return Undefined.INSTANCE; //?
-    }
+	@Override
+	public Object call(String methodName, List<Object> args) {
+		int flags = 0;
+		for (char c : modifier.toCharArray()) {
+			switch (c) {
+			case 'g':
+				// global (??)
+				break;
+			case 'i':
+				flags |= Pattern.CASE_INSENSITIVE;
+				break;
+			case 's':
+				flags |= Pattern.DOTALL;
+				break;
+			case 'm':
+				flags |= Pattern.MULTILINE;
+				break;
+			case 'x':
+				flags |= Pattern.COMMENTS; // ?
+				break;
+			default:
+				// ?
+				break;
+			}
+		}
+		Pattern p = Pattern.compile(pattern, flags);
+		switch (methodName) {
+		case "exec":
+			String estr = EcmaScript.toString(args.get(0));
+			Matcher m = p.matcher(estr);
+			if (m.find()) {
+				List<Object> avals = new ArrayList<>();
+				for (int i = 0; i <= m.groupCount(); i++) {
+					avals.add(m.group(i));
+				}
+				ArrayType a = new ArrayType(avals);
+				a.setAttribute("input", estr);
+				a.setAttribute("index", m.start());
+				return a;
+			} else {
+				return Null.INSTANCE;
+			}
+		case "test":
+			String tstr = EcmaScript.toString(args.get(0));
+			return p.matcher(tstr).find(); // boolean
+		}
+		return Undefined.INSTANCE; // ?
+	}
 
-    @Override
-    public Object call(List<Object> args) {
-        return call("exec", args);
-    }
+	@Override
+	public Object call(List<Object> args) {
+		return call("exec", args);
+	}
 }

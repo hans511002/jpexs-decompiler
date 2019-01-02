@@ -12,18 +12,21 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
 
-import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
-import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
-import com.jpexs.helpers.utf8.Utf8OutputStreamWriter;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
+import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
+import com.jpexs.helpers.utf8.Utf8OutputStreamWriter;
 
 /**
  * Provides methods for highlighting positions of instructions in the text.
@@ -32,105 +35,130 @@ import java.util.logging.Logger;
  */
 public class StreamTextWriter extends GraphTextWriter implements AutoCloseable {
 
-    private final Writer writer;
+	private final Writer writer;
 
-    private boolean newLine = true;
+	private boolean newLine = true;
 
-    private int indent;
+	private int indent;
 
-    private int writtenBytes;
+	private int writtenBytes;
+	OutputStream os;
 
-    public StreamTextWriter(CodeFormatting formatting, OutputStream os) {
-        super(formatting);
-        this.writer = new Utf8OutputStreamWriter(new BufferedOutputStream(os));
-    }
+	public StreamTextWriter(CodeFormatting formatting, OutputStream os) {
+		super(formatting);
+		this.os = os;
+		this.writer = new Utf8OutputStreamWriter(new BufferedOutputStream(os));
+	}
 
-    @Override
-    public GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue, HighlightData data) {
-        writeToOutputStream(text);
-        return this;
-    }
+	public GraphTextWriter cloneNew() {
+		return new StreamTextWriter(formatting,
+				new java.io.ByteArrayOutputStream(64 * 1024));
+	};
 
-    @Override
-    public StreamTextWriter append(String str) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public GraphTextWriter marge(GraphTextWriter w) {
+		super.marge(w);
+		StreamTextWriter o = (StreamTextWriter) w;
+		if (this.os instanceof ByteArrayOutputStream) {
+			o.sb.append(new String(((ByteArrayOutputStream) os).toByteArray()));
+			this.append(o.sb.toString());
+		}
+		return this;
+	};
 
-    @Override
-    public GraphTextWriter appendWithData(String str, HighlightData data) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public String toTmpString() {
+		return new String(((ByteArrayOutputStream) os).toByteArray());
+	}
 
-    @Override
-    public StreamTextWriter append(String str, long offset, long fileOffset) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public GraphTextWriter hilightSpecial(String text,
+			HighlightSpecialType type, String specialValue, HighlightData data) {
+		writeToOutputStream(text);
+		return this;
+	}
 
-    @Override
-    public StreamTextWriter appendNoHilight(int i) {
-        writeToOutputStream(Integer.toString(i));
-        return this;
-    }
+	@Override
+	public StreamTextWriter append(String str) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public StreamTextWriter appendNoHilight(String str) {
-        writeToOutputStream(str);
-        return this;
-    }
+	@Override
+	public GraphTextWriter appendWithData(String str, HighlightData data) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public StreamTextWriter indent() {
-        indent++;
-        return this;
-    }
+	@Override
+	public StreamTextWriter append(String str, long offset, long fileOffset) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public StreamTextWriter unindent() {
-        indent--;
-        return this;
-    }
+	@Override
+	public StreamTextWriter appendNoHilight(int i) {
+		writeToOutputStream(Integer.toString(i));
+		return this;
+	}
 
-    @Override
-    public StreamTextWriter newLine() {
-        writeToOutputStream(formatting.newLineChars);
-        newLine = true;
-        return this;
-    }
+	@Override
+	public StreamTextWriter appendNoHilight(String str) {
+		writeToOutputStream(str);
+		return this;
+	}
 
-    @Override
-    public int getLength() {
-        return writtenBytes;
-    }
+	@Override
+	public StreamTextWriter indent() {
+		indent++;
+		return this;
+	}
 
-    @Override
-    public int getIndent() {
-        return indent;
-    }
+	@Override
+	public StreamTextWriter unindent() {
+		indent--;
+		return this;
+	}
 
-    private void writeToOutputStream(String str) {
-        if (newLine) {
-            newLine = false;
-            appendIndent();
-        }
-        try {
-            writer.write(str);
-            writtenBytes += str.length();
-        } catch (IOException ex) {
-            Logger.getLogger(StreamTextWriter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+	@Override
+	public StreamTextWriter newLine() {
+		writeToOutputStream(formatting.newLineChars);
+		newLine = true;
+		return this;
+	}
 
-    private void appendIndent() {
-        for (int i = 0; i < indent; i++) {
-            writeToOutputStream(formatting.indentString);
-        }
-    }
+	@Override
+	public int getLength() {
+		return writtenBytes;
+	}
 
-    @Override
-    public void close() throws IOException {
-        writer.close();
-    }
+	@Override
+	public int getIndent() {
+		return indent;
+	}
+
+	private void writeToOutputStream(String str) {
+		if (newLine) {
+			newLine = false;
+			appendIndent();
+		}
+		try {
+			writer.write(str);
+			writtenBytes += str.length();
+		} catch (IOException ex) {
+			Logger.getLogger(StreamTextWriter.class.getName()).log(
+					Level.SEVERE, null, ex);
+		}
+	}
+
+	private void appendIndent() {
+		for (int i = 0; i < indent; i++) {
+			writeToOutputStream(formatting.indentString);
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		writer.close();
+	}
 }

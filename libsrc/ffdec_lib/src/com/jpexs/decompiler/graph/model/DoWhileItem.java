@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -26,8 +30,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.Loop;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -35,101 +37,108 @@ import java.util.List;
  */
 public class DoWhileItem extends LoopItem implements Block {
 
-    public List<GraphTargetItem> commands;
+	public List<GraphTargetItem> commands;
 
-    public List<GraphTargetItem> expression;
+	public List<GraphTargetItem> expression;
 
-    private boolean labelUsed;
+	private boolean labelUsed;
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public List<List<GraphTargetItem>> getSubs() {
-        List<List<GraphTargetItem>> ret = new ArrayList<>();
-        if (expression != null) {
-            ret.add(expression);
-        }
-        if (commands != null) {
-            ret.add(commands);
-        }
-        return ret;
-    }
+	@Override
+	public List<List<GraphTargetItem>> getSubs() {
+		List<List<GraphTargetItem>> ret = new ArrayList<>();
+		if (expression != null) {
+			ret.add(expression);
+		}
+		if (commands != null) {
+			ret.add(commands);
+		}
+		return ret;
+	}
 
-    public DoWhileItem(GraphSourceItem src, GraphSourceItem lineStartIns, Loop loop, List<GraphTargetItem> commands, List<GraphTargetItem> expression) {
-        super(src, lineStartIns, loop);
-        this.expression = expression;
-        this.commands = commands;
-    }
+	public DoWhileItem(GraphSourceItem src, GraphSourceItem lineStartIns,
+			Loop loop, List<GraphTargetItem> commands,
+			List<GraphTargetItem> expression) {
+		super(src, lineStartIns, loop);
+		this.expression = expression;
+		this.commands = commands;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (writer instanceof NulWriter) {
-            ((NulWriter) writer).startLoop(loop.id, LoopWithType.LOOP_TYPE_LOOP);
-        }
-        if (labelUsed) {
-            writer.append("loop").append(loop.id).append(":").newLine();
-        }
-        writer.append("do");
-        appendBlock(null, writer, localData, commands);
-        writer.newLine();
-        writer.append("while");
-        if (writer.getFormatting().spaceBeforeParenthesesWhileParentheses) {
-            writer.append(" ");
-        }
-        writer.append("(");
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (nwriter instanceof NulWriter) {
+			((NulWriter) nwriter).startLoop(loop.id,
+					LoopWithType.LOOP_TYPE_LOOP);
+		}
+		if (labelUsed) {
+			nwriter.append("loop").append(loop.id).append(":").newLine();
+		}
+		nwriter.append("do");
+		appendBlock(null, nwriter, localData, commands);
+		nwriter.newLine();
+		nwriter.append("while");
+		if (nwriter.getFormatting().spaceBeforeParenthesesWhileParentheses) {
+			nwriter.append(" ");
+		}
+		nwriter.append("(");
 
-        for (int i = 0; i < expression.size(); i++) {
-            if (expression.get(i).isEmpty()) {
-                continue;
-            }
-            if (i != 0) {
-                writer.append(", ");
-            }
-            if (i == expression.size() - 1) {
-                expression.get(i).toStringBoolean(writer, localData);
-            } else {
-                expression.get(i).toString(writer, localData);
-            }
+		for (int i = 0; i < expression.size(); i++) {
+			if (expression.get(i).isEmpty()) {
+				continue;
+			}
+			if (i != 0) {
+				nwriter.append(", ");
+			}
+			if (i == expression.size() - 1) {
+				expression.get(i).toStringBoolean(nwriter, localData);
+			} else {
+				expression.get(i).toString(nwriter, localData);
+			}
 
-        }
+		}
 
-        writer.append(");").newLine();
-        if (writer instanceof NulWriter) {
-            LoopWithType loopOjb = ((NulWriter) writer).endLoop(loop.id);
-            labelUsed = loopOjb.used;
-        }
-        return writer;
-    }
+		nwriter.append(");").newLine();
+		if (nwriter instanceof NulWriter) {
+			LoopWithType loopOjb = ((NulWriter) nwriter).endLoop(loop.id);
+			labelUsed = loopOjb.used;
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public List<ContinueItem> getContinues() {
-        List<ContinueItem> ret = new ArrayList<>();
-        for (GraphTargetItem ti : commands) {
-            if (ti instanceof ContinueItem) {
-                ret.add((ContinueItem) ti);
-            }
-            if (ti instanceof Block) {
-                ret.addAll(((Block) ti).getContinues());
-            }
-        }
-        return ret;
-    }
+	@Override
+	public List<ContinueItem> getContinues() {
+		List<ContinueItem> ret = new ArrayList<>();
+		for (GraphTargetItem ti : commands) {
+			if (ti instanceof ContinueItem) {
+				ret.add((ContinueItem) ti);
+			}
+			if (ti instanceof Block) {
+				ret.addAll(((Block) ti).getContinues());
+			}
+		}
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return generator.generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return generator.generate(localData, this);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 }

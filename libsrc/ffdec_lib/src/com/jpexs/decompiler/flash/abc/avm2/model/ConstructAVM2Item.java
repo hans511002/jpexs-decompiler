@@ -12,14 +12,16 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -27,51 +29,60 @@ import java.util.List;
  */
 public class ConstructAVM2Item extends AVM2Item {
 
-    public GraphTargetItem object;
+	public GraphTargetItem object;
 
-    public List<GraphTargetItem> args;
+	public List<GraphTargetItem> args;
 
-    public ConstructAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem object, List<GraphTargetItem> args) {
-        super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
-        this.object = object;
-        this.args = args;
-    }
+	public ConstructAVM2Item(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, GraphTargetItem object,
+			List<GraphTargetItem> args) {
+		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
+		this.object = object;
+		this.args = args;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (object instanceof NewFunctionAVM2Item) {
-            writer.append("new ");
-            return object.toString(writer, localData);
-        }
-        writer.append("new ");
-        if (object.getPrecedence() > getPrecedence()) {
-            writer.append("(");
-        }
-        object.toString(writer, localData);
-        if (object.getPrecedence() > getPrecedence()) {
-            writer.append(")");
-        }
-        writer.spaceBeforeCallParenthesies(args.size());
-        if (object instanceof InitVectorAVM2Item) {
-            return writer;
-        }
-        writer.append("(");
-        for (int a = 0; a < args.size(); a++) {
-            if (a > 0) {
-                writer.append(",");
-            }
-            args.get(a).toString(writer, localData);
-        }
-        return writer.append(")");
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (object instanceof NewFunctionAVM2Item) {
+			nwriter.append("new ");
+			object.toString(nwriter, localData);
+			writer.marge(nwriter);
+			return writer;
+		}
+		nwriter.append("new ");
+		if (object.getPrecedence() > getPrecedence()) {
+			nwriter.append("(");
+		}
+		object.toString(nwriter, localData);
+		if (object.getPrecedence() > getPrecedence()) {
+			nwriter.append(")");
+		}
+		nwriter.spaceBeforeCallParenthesies(args.size());
+		if (object instanceof InitVectorAVM2Item) {
+			writer.marge(nwriter);
+			return writer;
+		}
+		nwriter.append("(");
+		for (int a = 0; a < args.size(); a++) {
+			if (a > 0) {
+				nwriter.append(",");
+			}
+			args.get(a).toString(nwriter, localData);
+		}
+		nwriter.append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return object.returnType();
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return object.returnType();
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 }

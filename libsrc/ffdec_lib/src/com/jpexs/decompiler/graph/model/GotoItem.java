@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
 
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -26,31 +27,35 @@ import com.jpexs.decompiler.graph.TypeItem;
  */
 public class GotoItem extends GraphTargetItem {
 
-    public String labelName;
+	public String labelName;
 
-    public GotoItem(GraphSourceItem src, GraphSourceItem lineStartIns, String labelName) {
-        super(src, lineStartIns, PRECEDENCE_PRIMARY);
-        this.labelName = labelName;
-    }
+	public GotoItem(GraphSourceItem src, GraphSourceItem lineStartIns,
+			String labelName) {
+		super(src, lineStartIns, PRECEDENCE_PRIMARY);
+		this.labelName = labelName;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("Â§Â§goto(").append(labelName).append(")");
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("¡ì¡ìgoto(").append(labelName).append(")");
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public Object getResult() {
-        return null;
-    }
+	@Override
+	public Object getResult() {
+		return null;
+	}
 }

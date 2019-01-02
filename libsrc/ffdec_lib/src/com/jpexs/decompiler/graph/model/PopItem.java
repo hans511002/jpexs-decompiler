@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.ecma.Null;
@@ -23,7 +26,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
-import java.util.List;
 
 /**
  *
@@ -31,34 +33,37 @@ import java.util.List;
  */
 public class PopItem extends GraphTargetItem {
 
-    public PopItem(GraphSourceItem src, GraphSourceItem lineStartIns) {
-        super(src, lineStartIns, PRECEDENCE_PRIMARY);
-    }
+	public PopItem(GraphSourceItem src, GraphSourceItem lineStartIns) {
+		super(src, lineStartIns, PRECEDENCE_PRIMARY);
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        //Logger.getLogger(PopItem.class.getName()).log(Level.WARNING, "Pop item left in the source code");
-        writer.append("Â§Â§pop()");
-        return writer;
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		// Logger.getLogger(PopItem.class.getName()).log(Level.WARNING,
+		// "Pop item left in the source code");
+		writer.append("¡ì¡ìpop()");
+		return writer;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 
-    @Override
-    public Object getResult() {
-        return Null.INSTANCE;
-    }
+	@Override
+	public Object getResult() {
+		return Null.INSTANCE;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return generator.generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return generator.generate(localData, this);
+	}
 }

@@ -12,8 +12,12 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.action.model;
+
+import java.util.List;
+import java.util.Set;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.swf4.RegisterNumber;
@@ -28,107 +32,114 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
  * @author JPEXS
  */
-public class StoreRegisterActionItem extends ActionItem implements SetTypeActionItem {
+public class StoreRegisterActionItem extends ActionItem implements
+		SetTypeActionItem {
 
-    public RegisterNumber register;
+	public RegisterNumber register;
 
-    public boolean define = false;
+	public boolean define = false;
 
-    public boolean temporary = false;
+	public boolean temporary = false;
 
-    @Override
-    public GraphPart getFirstPart() {
-        return value.getFirstPart();
-    }
+	@Override
+	public GraphPart getFirstPart() {
+		return value.getFirstPart();
+	}
 
-    @Override
-    public void setValue(GraphTargetItem value) {
-        this.value = value;
-    }
+	@Override
+	public void setValue(GraphTargetItem value) {
+		this.value = value;
+	}
 
-    private int tempRegister = -1;
+	private int tempRegister = -1;
 
-    @Override
-    public int getTempRegister() {
-        return tempRegister;
-    }
+	@Override
+	public int getTempRegister() {
+		return tempRegister;
+	}
 
-    @Override
-    public void setTempRegister(int tempRegister) {
-        this.tempRegister = tempRegister;
-    }
+	@Override
+	public void setTempRegister(int tempRegister) {
+		this.tempRegister = tempRegister;
+	}
 
-    @Override
-    public GraphTargetItem getValue() {
-        return value;
-    }
+	@Override
+	public GraphTargetItem getValue() {
+		return value;
+	}
 
-    public StoreRegisterActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, RegisterNumber register, GraphTargetItem value, boolean define) {
-        super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
-        this.register = register;
-        this.define = define;
-    }
+	public StoreRegisterActionItem(GraphSourceItem instruction,
+			GraphSourceItem lineStartIns, RegisterNumber register,
+			GraphTargetItem value, boolean define) {
+		super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
+		this.register = register;
+		this.define = define;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        if (temporary) {
-            value.toString(writer, localData);
-        } else {
-            HighlightData srcData = getSrcData();
-            srcData.localName = register.translate();
-            srcData.regIndex = register.number;
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (temporary) {
+			value.toString(nwriter, localData);
+		} else {
+			HighlightData srcData = getSrcData();
+			srcData.localName = register.translate();
+			srcData.regIndex = register.number;
 
-            if (define) {
-                srcData.declaration = true;
-                srcData.declaredType = DottedChain.ALL;
-                writer.append("var ");
-            }
-            writer.append(register.translate()).append(" = ");
-            value.toString(writer, localData);
-        }
-        return writer;
-    }
+			if (define) {
+				srcData.declaration = true;
+				srcData.declaredType = DottedChain.ALL;
+				nwriter.append("var ");
+			}
+			nwriter.append(register.translate()).append(" = ");
+			value.toString(nwriter, localData);
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public GraphTargetItem getObject() {
-        return new DirectValueActionItem(getSrc(), getLineStartItem(), -1, register, null);
-    }
+	@Override
+	public GraphTargetItem getObject() {
+		return new DirectValueActionItem(getSrc(), getLineStartItem(), -1,
+				register, null);
+	}
 
-    @Override
-    public List<GraphSourceItemPos> getNeededSources() {
-        List<GraphSourceItemPos> ret = super.getNeededSources();
-        ret.addAll(value.getNeededSources());
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItemPos> getNeededSources() {
+		List<GraphSourceItemPos> ret = super.getNeededSources();
+		ret.addAll(value.getNeededSources());
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return toSourceMerge(localData, generator, value, new ActionStoreRegister(register.number));
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return toSourceMerge(localData, generator, value,
+				new ActionStoreRegister(register.number));
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return true;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return true;
+	}
 
-    @Override
-    public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
-        if (dependencies.contains(value)) {
-            return false;
-        }
-        dependencies.add(value);
-        return value.isCompileTime(dependencies);
-    }
+	@Override
+	public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
+		if (dependencies.contains(value)) {
+			return false;
+		}
+		dependencies.add(value);
+		return value.isCompileTime(dependencies);
+	}
 
-    @Override
-    public Object getResult() {
-        return value.getResult();
-    }
+	@Override
+	public Object getResult() {
+		return value.getResult();
+	}
 }

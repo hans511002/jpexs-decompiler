@@ -51,7 +51,7 @@ public class DuplicateItem extends GraphTargetItem implements SimpleValue {
         if (((value instanceof SimpleValue) && (((SimpleValue) value).isSimpleValue())) || !Configuration.displayDupInstructions.get()) {
             return value.appendTry(writer, localData);
         }
-        writer.append("Â§Â§dup(");
+        writer.append("¡ì¡ìdup(");
         value.appendTry(writer, localData);
         return writer.append(")");
     }

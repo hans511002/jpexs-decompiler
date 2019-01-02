@@ -12,8 +12,13 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.types.traits;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
@@ -37,220 +42,271 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.helpers.Helper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import sun.util.logging.resources.logging;
-
 /**
  *
  * @author JPEXS
  */
 public class TraitSlotConst extends Trait implements TraitWithSlot {
 
-    public int slot_id;
+	public int slot_id;
 
-    public int type_index;
+	public int type_index;
 
-    public int value_index;
+	public int value_index;
 
-    public int value_kind;
+	public int value_kind;
 
-    @Override
-    public void delete(ABC abc, boolean d) {
-        abc.constants.getMultiname(name_index).deleted = d;
-    }
+	@Override
+	public void delete(ABC abc, boolean d) {
+		abc.constants.getMultiname(name_index).deleted = d;
+	}
 
-    @Override
-    public int getSlotIndex() {
-        return slot_id;
-    }
+	@Override
+	public int getSlotIndex() {
+		return slot_id;
+	}
 
-    @Override
-    public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
-        String typeStr = "*";
-        if (type_index > 0) {
-            typeStr = abc.constants.getMultiname(type_index).toString(abc.constants, fullyQualifiedNames);
-        }
-        return "0x" + Helper.formatAddress(fileOffset) + " " + Helper.byteArrToString(bytes) + " SlotConst " + abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames) + " slot=" + slot_id + " type=" + typeStr + " value=" + (new ValueKind(value_index, value_kind)).toString(abc.constants) + " metadata=" + Helper.intArrToString(metadata);
-    }
+	@Override
+	public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
+		String typeStr = "*";
+		if (type_index > 0) {
+			typeStr = abc.constants.getMultiname(type_index).toString(
+					abc.constants, fullyQualifiedNames);
+		}
+		return "0x"
+				+ Helper.formatAddress(fileOffset)
+				+ " "
+				+ Helper.byteArrToString(bytes)
+				+ " SlotConst "
+				+ abc.constants.getMultiname(name_index).toString(
+						abc.constants, fullyQualifiedNames)
+				+ " slot="
+				+ slot_id
+				+ " type="
+				+ typeStr
+				+ " value="
+				+ (new ValueKind(value_index, value_kind))
+						.toString(abc.constants) + " metadata="
+				+ Helper.intArrToString(metadata);
+	}
 
-    public String getType(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
-        String typeStr = "*";
-        if (type_index > 0) {
-            typeStr = constants.getMultiname(type_index).getName(constants, fullyQualifiedNames, false, true);
-        }
-        return typeStr;
-    }
+	public String getType(AVM2ConstantPool constants,
+			List<DottedChain> fullyQualifiedNames) {
+		String typeStr = "*";
+		if (type_index > 0) {
+			typeStr = constants.getMultiname(type_index).getName(constants,
+					fullyQualifiedNames, false, true);
+		}
+		return typeStr;
+	}
 
-    public GraphTextWriter getNameStr(GraphTextWriter writer, ABC abc, List<DottedChain> fullyQualifiedNames) {
-        String typeStr = getType(abc.constants, fullyQualifiedNames);
-        if (typeStr.equals("*")) {
-            typeStr = "";
-        } else {
-            typeStr = ":" + typeStr;
-        }
-        ValueKind val = null;
-        if (value_kind != 0) {
-            val = new ValueKind(value_index, value_kind);
-        }
+	public GraphTextWriter getNameStr(GraphTextWriter nwriter, ABC abc,
+			List<DottedChain> fullyQualifiedNames) {
+		// GraphTextWriter nwriter = writer.cloneNew();
+		String typeStr = getType(abc.constants, fullyQualifiedNames);
+		if (typeStr.equals("*")) {
+			typeStr = "";
+		} else {
+			typeStr = ":" + typeStr;
+		}
+		ValueKind val = null;
+		if (value_kind != 0) {
+			val = new ValueKind(value_index, value_kind);
+		}
 
-        String slotconst = "var";
-        if (kindType == TRAIT_CONST) {
-            slotconst = "const";
-        }
-        if (val != null && val.isNamespace()) {
-            slotconst = "namespace";
-        }
-        String txt=getName(abc).getName(abc.constants, fullyQualifiedNames, false, true);
-        writer.hilightSpecial(slotconst + " ", HighlightSpecialType.TRAIT_TYPE);
-        writer.hilightSpecial(txt, HighlightSpecialType.TRAIT_NAME);
-        writer.hilightSpecial(typeStr, HighlightSpecialType.TRAIT_TYPE_NAME);
-//        logger.info(slotconst+" " + txt + typeStr);
-        return writer;
-    } 
+		String slotconst = "var";
+		if (kindType == TRAIT_CONST) {
+			slotconst = "const";
+		}
+		if (val != null && val.isNamespace()) {
+			slotconst = "namespace";
+		}
+		String txt = getName(abc).getName(abc.constants, fullyQualifiedNames,
+				false, true);
+		nwriter.hilightSpecial(slotconst + " ", HighlightSpecialType.TRAIT_TYPE);
+		nwriter.hilightSpecial(txt, HighlightSpecialType.TRAIT_NAME);
+		nwriter.hilightSpecial(typeStr, HighlightSpecialType.TRAIT_TYPE_NAME);
+		// writer.marge(nwriter);
+		return nwriter;
+	}
 
-    public void getValueStr(ScriptExportMode exportMode, Trait parent, ConvertData convertData, GraphTextWriter writer, ABC abc, List<DottedChain> fullyQualifiedNames) throws InterruptedException {
-        if (convertData.assignedValues.containsKey(this)) {
+	public void getValueStr(ScriptExportMode exportMode, Trait parent,
+			ConvertData convertData, GraphTextWriter writer, ABC abc,
+			List<DottedChain> fullyQualifiedNames) throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		if (convertData.assignedValues.containsKey(this)) {
+			AssignedValue assignment = convertData.assignedValues.get(this);
+			nwriter.startTrait(assignment.initializer);
+			nwriter.startMethod(assignment.method);
+			if (Configuration.showMethodBodyId.get()) {
+				nwriter.appendNoHilight("// method body index: ");
+				nwriter.appendNoHilight(abc.findBodyIndex(assignment.method));
+				nwriter.appendNoHilight(" method index: ");
+				nwriter.appendNoHilight(assignment.method);
+				nwriter.newLine();
+			}
+			if (exportMode != ScriptExportMode.AS_METHOD_STUBS) {
+				assignment.value.toString(nwriter, LocalData.create(
+						abc.constants, new HashMap<>(), fullyQualifiedNames));
+			}
+			nwriter.endMethod();
+			nwriter.endTrait();
+			writer.marge(nwriter);
+			return;
+		}
+		if (value_kind != 0) {
+			ValueKind val = new ValueKind(value_index, value_kind);
+			nwriter.hilightSpecial(val.toString(abc.constants),
+					HighlightSpecialType.TRAIT_VALUE);
+		}
+		writer.marge(nwriter);
+	}
 
-            AssignedValue assignment = convertData.assignedValues.get(this);
-            writer.startTrait(assignment.initializer);
-            writer.startMethod(assignment.method);
-            if (Configuration.showMethodBodyId.get()) {
-                writer.appendNoHilight("// method body index: ");
-                writer.appendNoHilight(abc.findBodyIndex(assignment.method));
-                writer.appendNoHilight(" method index: ");
-                writer.appendNoHilight(assignment.method);
-                writer.newLine();
-            }
-            if (exportMode != ScriptExportMode.AS_METHOD_STUBS) {
-                assignment.value.toString(writer, LocalData.create(abc.constants, new HashMap<>(), fullyQualifiedNames));
-            }
-            writer.endMethod();
-            writer.endTrait();
-            return;
-        }
+	public boolean isNamespace() {
+		if (value_kind != 0) {
+			ValueKind val = new ValueKind(value_index, value_kind);
+			return val.isNamespace();
+		}
+		return false;
+	}
 
-        if (value_kind != 0) {
-            ValueKind val = new ValueKind(value_index, value_kind);
-            writer.hilightSpecial(val.toString(abc.constants), HighlightSpecialType.TRAIT_VALUE);
-        }
-    }
+	@Override
+	public GraphTextWriter toString(Trait parent, ConvertData convertData,
+			String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex,
+			GraphTextWriter nwriter, List<DottedChain> fullyQualifiedNames,
+			boolean parallel) throws InterruptedException {
+		// GraphTextWriter nwriter = writer.cloneNew();
+		getMetaData(parent, convertData, abc, nwriter);
+		Multiname n = getName(abc);
+		boolean showModifier = true;
+		if ((classIndex == -1) && (n != null)) {
+			Namespace ns = n.getNamespace(abc.constants);
+			if (ns == null) {
+				showModifier = false;
+			} else if ((ns.kind != Namespace.KIND_PACKAGE)
+					&& (ns.kind != Namespace.KIND_PACKAGE_INTERNAL)) {
+				showModifier = false;
+			}
+		}
+		if (showModifier) {
+			getModifiers(abc, isStatic, nwriter);
+		}
+		if (convertData.assignedValues.containsKey(this)) {
+			GraphTargetItem val = convertData.assignedValues.get(this).value;
+			if (val instanceof NewFunctionAVM2Item) {
+				val.toString(nwriter, LocalData.create(abc.constants,
+						new HashMap<>(), fullyQualifiedNames));
+				// writer.marge(nwriter);
+				return nwriter;
+			}
+		}
+		getNameStr(nwriter, abc, fullyQualifiedNames);
+		if (value_kind != 0 || convertData.assignedValues.containsKey(this)) {
+			nwriter.appendNoHilight(" = ");
+			getValueStr(exportMode, parent, convertData, nwriter, abc,
+					fullyQualifiedNames);
+		}
+		nwriter.appendNoHilight(";").newLine();
+		// writer.marge(nwriter);
+		return nwriter;
+	}
 
-    public boolean isNamespace() {
-        if (value_kind != 0) {
-            ValueKind val = new ValueKind(value_index, value_kind);
-            return val.isNamespace();
-        }
-        return false;
-    }
+	@Override
+	public void convert(Trait parent, ConvertData convertData, String path,
+			ABC abc, boolean isStatic, ScriptExportMode exportMode,
+			int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel)
+			throws InterruptedException {
+		getNameStr(writer, abc, fullyQualifiedNames);
+		if (value_kind != 0 || convertData.assignedValues.containsKey(this)) {
+			getValueStr(exportMode, parent, convertData, writer, abc,
+					fullyQualifiedNames);
+		}
+	}
 
-    @Override
-    public GraphTextWriter toString(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
-        getMetaData(parent, convertData, abc, writer);
-        Multiname n = getName(abc);
-        boolean showModifier = true;
-        if ((classIndex == -1) && (n != null)) {
-            Namespace ns = n.getNamespace(abc.constants);
-            if (ns == null) {
-                showModifier = false;
-            } else if ((ns.kind != Namespace.KIND_PACKAGE) && (ns.kind != Namespace.KIND_PACKAGE_INTERNAL)) {
-                showModifier = false;
-            }
-        }
-        if (showModifier) {
-            getModifiers(abc, isStatic, writer);
-        }
-        if (convertData.assignedValues.containsKey(this)) {
-            GraphTargetItem val = convertData.assignedValues.get(this).value;
-            if (val instanceof NewFunctionAVM2Item) {
-                return val.toString(writer, LocalData.create(abc.constants, new HashMap<>(), fullyQualifiedNames));
-            }
-        }
-        getNameStr(writer, abc, fullyQualifiedNames);
-        if (value_kind != 0 || convertData.assignedValues.containsKey(this)) {
-            writer.appendNoHilight(" = ");
-            getValueStr(exportMode, parent, convertData, writer, abc, fullyQualifiedNames);
-        }
-        return writer.appendNoHilight(";").newLine();
-    }
+	public boolean isConst() {
+		return kindType == TRAIT_CONST;
+	}
 
-    @Override
-    public void convert(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
-        getNameStr(writer, abc, fullyQualifiedNames);
-        if (value_kind != 0 || convertData.assignedValues.containsKey(this)) {
-            getValueStr(exportMode, parent, convertData, writer, abc, fullyQualifiedNames);
-        }
-    }
+	public boolean isVar() {
+		return kindType == TRAIT_SLOT;
+	}
 
-    public boolean isConst() {
-        return kindType == TRAIT_CONST;
-    }
+	@Override
+	public int removeTraps(int scriptIndex, int classIndex, boolean isStatic,
+			ABC abc, String path) {
+		// do nothing
+		return 0;
+	}
 
-    public boolean isVar() {
-        return kindType == TRAIT_SLOT;
-    }
+	@Override
+	public TraitSlotConst clone() {
+		TraitSlotConst ret = (TraitSlotConst) super.clone();
+		return ret;
+	}
 
-    @Override
-    public int removeTraps(int scriptIndex, int classIndex, boolean isStatic, ABC abc, String path) {
-        //do nothing
-        return 0;
-    }
+	@Override
+	public void getDependencies(String customNs, ABC abc,
+			List<Dependency> dependencies, List<String> uses,
+			DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames) {
+		if (ignorePackage == null) {
+			ignorePackage = getPackage(abc);
+		}
+		super.getDependencies(customNs, abc, dependencies, uses, ignorePackage,
+				fullyQualifiedNames);
+		DependencyParser.parseDependenciesFromMultiname(customNs, abc,
+				dependencies, uses, abc.constants.getMultiname(type_index),
+				getPackage(abc), fullyQualifiedNames, DependencyType.SIGNATURE);
+	}
 
-    @Override
-    public TraitSlotConst clone() {
-        TraitSlotConst ret = (TraitSlotConst) super.clone();
-        return ret;
-    }
+	@Override
+	public boolean isVisible(boolean isStatic, ABC abc) {
 
-    @Override
-    public void getDependencies(String customNs, ABC abc, List<Dependency> dependencies, List<String> uses, DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames) {
-        if (ignorePackage == null) {
-            ignorePackage = getPackage(abc);
-        }
-        super.getDependencies(customNs, abc, dependencies, uses, ignorePackage, fullyQualifiedNames);
-        DependencyParser.parseDependenciesFromMultiname(customNs, abc, dependencies, uses, abc.constants.getMultiname(type_index), getPackage(abc), fullyQualifiedNames, DependencyType.SIGNATURE);
-    }
+		if (Configuration.handleSkinPartsAutomatically.get()) {
+			/*
+			 * Hide: private static var _skinParts (part of [SkinPart]
+			 * compilations)
+			 */
+			if (isStatic
+					&& "_skinParts".equals(getName(abc).getName(abc.constants,
+							new ArrayList<>(), true, true))) {
+				if (kindType == Trait.TRAIT_SLOT) {
+					if ("_skinParts".equals(getName(abc).getName(abc.constants,
+							new ArrayList<>(), true, true))) {
+						if (getName(abc).getNamespace(abc.constants).kind == Namespace.KIND_PRIVATE) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
 
-    @Override
-    public boolean isVisible(boolean isStatic, ABC abc) {
+	@Override
+	public GraphTextWriter convertTraitHeader(ABC abc, GraphTextWriter writer) {
+		GraphTextWriter nwriter = writer.cloneNew();
+		convertCommonHeaderFlags(isConst() ? "const" : "slot", abc, nwriter);
+		nwriter.newLine();
+		nwriter.appendNoHilight("slotid ");
+		nwriter.hilightSpecial(Integer.toString(slot_id),
+				HighlightSpecialType.SLOT_ID);
+		nwriter.newLine();
+		nwriter.appendNoHilight("type ");
+		nwriter.hilightSpecial(abc.constants.multinameToString(type_index),
+				HighlightSpecialType.TRAIT_TYPE_NAME);
+		nwriter.newLine();
+		nwriter.appendNoHilight("value ");
+		nwriter.hilightSpecial((new ValueKind(value_index, value_kind)
+				.toASMString(abc.constants)), HighlightSpecialType.TRAIT_VALUE);
+		nwriter.newLine();
+		writer.marge(nwriter);
+		return writer;
+	}
 
-        if (Configuration.handleSkinPartsAutomatically.get()) {
-            /*
-             Hide: private static var _skinParts
-             (part of [SkinPart] compilations)
-             */
-            if (isStatic && "_skinParts".equals(getName(abc).getName(abc.constants, new ArrayList<>(), true, true))) {
-                if (kindType == Trait.TRAIT_SLOT) {
-                    if ("_skinParts".equals(getName(abc).getName(abc.constants, new ArrayList<>(), true, true))) {
-                        if (getName(abc).getNamespace(abc.constants).kind == Namespace.KIND_PRIVATE) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public GraphTextWriter convertTraitHeader(ABC abc, GraphTextWriter writer) {
-        convertCommonHeaderFlags(isConst() ? "const" : "slot", abc, writer);
-        writer.newLine();
-        writer.appendNoHilight("slotid ");
-        writer.hilightSpecial(Integer.toString(slot_id), HighlightSpecialType.SLOT_ID);
-        writer.newLine();
-        writer.appendNoHilight("type ");
-        writer.hilightSpecial(abc.constants.multinameToString(type_index), HighlightSpecialType.TRAIT_TYPE_NAME);
-        writer.newLine();
-        writer.appendNoHilight("value ");
-        writer.hilightSpecial((new ValueKind(value_index, value_kind).toASMString(abc.constants)), HighlightSpecialType.TRAIT_VALUE);
-        writer.newLine();
-        return writer;
-    }
-
-    @Override
-    public void getMethodInfos(ABC abc, int traitId, int classIndex, List<MethodId> methodInfos) {
-    }
+	@Override
+	public void getMethodInfos(ABC abc, int traitId, int classIndex,
+			List<MethodId> methodInfos) {
+	}
 }

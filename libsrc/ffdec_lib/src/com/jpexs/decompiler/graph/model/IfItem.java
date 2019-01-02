@@ -12,8 +12,13 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.graph.model;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
@@ -23,9 +28,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.TypeItem;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -33,122 +35,129 @@ import java.util.Set;
  */
 public class IfItem extends GraphTargetItem implements Block {
 
-    public GraphTargetItem expression;
+	public GraphTargetItem expression;
 
-    public List<GraphTargetItem> onTrue;
+	public List<GraphTargetItem> onTrue;
 
-    public List<GraphTargetItem> onFalse;
+	public List<GraphTargetItem> onFalse;
 
-    @Override
-    public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
-        if (dependencies.contains(expression)) {
-            return false;
-        }
-        dependencies.add(expression);
-        return expression.isCompileTime(dependencies);
-    }
+	@Override
+	public boolean isCompileTime(Set<GraphTargetItem> dependencies) {
+		if (dependencies.contains(expression)) {
+			return false;
+		}
+		dependencies.add(expression);
+		return expression.isCompileTime(dependencies);
+	}
 
-    @Override
-    public List<List<GraphTargetItem>> getSubs() {
-        List<List<GraphTargetItem>> ret = new ArrayList<>();
-        if (onTrue != null) {
-            ret.add(onTrue);
-        }
-        if (onFalse != null) {
-            ret.add(onFalse);
-        }
-        return ret;
-    }
+	@Override
+	public List<List<GraphTargetItem>> getSubs() {
+		List<List<GraphTargetItem>> ret = new ArrayList<>();
+		if (onTrue != null) {
+			ret.add(onTrue);
+		}
+		if (onFalse != null) {
+			ret.add(onFalse);
+		}
+		return ret;
+	}
 
-    public IfItem(GraphSourceItem src, GraphSourceItem lineStartIns, GraphTargetItem expression, List<GraphTargetItem> onTrue, List<GraphTargetItem> onFalse) {
-        super(src, lineStartIns, NOPRECEDENCE);
-        this.expression = expression;
-        this.onTrue = onTrue;
-        this.onFalse = onFalse;
-    }
+	public IfItem(GraphSourceItem src, GraphSourceItem lineStartIns,
+			GraphTargetItem expression, List<GraphTargetItem> onTrue,
+			List<GraphTargetItem> onFalse) {
+		super(src, lineStartIns, NOPRECEDENCE);
+		this.expression = expression;
+		this.onTrue = onTrue;
+		this.onFalse = onFalse;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        GraphTargetItem expr = expression;
-        List<GraphTargetItem> ifBranch = onTrue;
-        List<GraphTargetItem> elseBranch = onFalse;
-        if (onTrue.isEmpty()) {
-            if (onFalse.isEmpty()) {
-                if (expr instanceof NotItem) {
-                    expr = ((NotItem) expr).getOriginal();
-                }
-            } else {
-                expr = expr.invert(null);
-                ifBranch = onFalse;
-                elseBranch = onTrue;
-            }
-        }
-        writer.append("if");
-        if (writer.getFormatting().spaceBeforeParenthesesIfParentheses) {
-            writer.append(" ");
-        }
-        writer.append("(");
-        expr.toStringBoolean(writer, localData);
-        writer.append(")");
-        appendBlock(expr, writer, localData, ifBranch);
-        if (elseBranch.size() > 0) {
-            boolean elseIf = elseBranch.size() == 1 && (elseBranch.get(0) instanceof IfItem);
-            if (writer.getFormatting().beginBlockOnNewLine) {
-                writer.newLine();
-            } else {
-                writer.append(" ");
-            }
-            writer.append("else");
-            if (!elseIf) {
-                appendBlock(expr, writer, localData, elseBranch);
-            } else {
-                writer.append(" ");
-                elseBranch.get(0).toStringSemicoloned(writer, localData);
-            }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTargetItem expr = expression;
+		List<GraphTargetItem> ifBranch = onTrue;
+		List<GraphTargetItem> elseBranch = onFalse;
+		if (onTrue.isEmpty()) {
+			if (onFalse.isEmpty()) {
+				if (expr instanceof NotItem) {
+					expr = ((NotItem) expr).getOriginal();
+				}
+			} else {
+				expr = expr.invert(null);
+				ifBranch = onFalse;
+				elseBranch = onTrue;
+			}
+		}
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.append("if");
+		if (nwriter.getFormatting().spaceBeforeParenthesesIfParentheses) {
+			nwriter.append(" ");
+		}
+		nwriter.append("(");
+		expr.toStringBoolean(nwriter, localData);
+		nwriter.append(")");
+		appendBlock(expr, nwriter, localData, ifBranch);
+		if (elseBranch.size() > 0) {
+			boolean elseIf = elseBranch.size() == 1
+					&& (elseBranch.get(0) instanceof IfItem);
+			if (nwriter.getFormatting().beginBlockOnNewLine) {
+				nwriter.newLine();
+			} else {
+				nwriter.append(" ");
+			}
+			nwriter.append("else");
+			if (!elseIf) {
+				appendBlock(expr, nwriter, localData, elseBranch);
+			} else {
+				nwriter.append(" ");
+				elseBranch.get(0).toStringSemicoloned(nwriter, localData);
+			}
 
-        }
-        return writer;
-    }
+		}
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public List<ContinueItem> getContinues() {
-        List<ContinueItem> ret = new ArrayList<>();
-        for (GraphTargetItem ti : onTrue) {
-            if (ti instanceof ContinueItem) {
-                ret.add((ContinueItem) ti);
-            }
-            if (ti instanceof Block) {
-                ret.addAll(((Block) ti).getContinues());
-            }
-        }
-        for (GraphTargetItem ti : onFalse) {
-            if (ti instanceof ContinueItem) {
-                ret.add((ContinueItem) ti);
-            }
-            if (ti instanceof Block) {
-                ret.addAll(((Block) ti).getContinues());
-            }
-        }
-        return ret;
-    }
+	@Override
+	public List<ContinueItem> getContinues() {
+		List<ContinueItem> ret = new ArrayList<>();
+		for (GraphTargetItem ti : onTrue) {
+			if (ti instanceof ContinueItem) {
+				ret.add((ContinueItem) ti);
+			}
+			if (ti instanceof Block) {
+				ret.addAll(((Block) ti).getContinues());
+			}
+		}
+		for (GraphTargetItem ti : onFalse) {
+			if (ti instanceof ContinueItem) {
+				ret.add((ContinueItem) ti);
+			}
+			if (ti instanceof Block) {
+				ret.addAll(((Block) ti).getContinues());
+			}
+		}
+		return ret;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        return generator.generate(localData, this);
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		return generator.generate(localData, this);
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 
-    @Override
-    public GraphTargetItem returnType() {
-        return TypeItem.UNBOUNDED;
-    }
+	@Override
+	public GraphTargetItem returnType() {
+		return TypeItem.UNBOUNDED;
+	}
 }

@@ -16,6 +16,9 @@
  */
 package com.jpexs.decompiler.flash.action.model.clauses;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
 import com.jpexs.decompiler.flash.action.Action;
 import com.jpexs.decompiler.flash.action.model.ActionItem;
@@ -27,8 +30,6 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SourceGenerator;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -36,50 +37,59 @@ import java.util.List;
  */
 public class InterfaceActionItem extends ActionItem {
 
-    public GraphTargetItem name;
+	public GraphTargetItem name;
 
-    public List<GraphTargetItem> superInterfaces;
+	public List<GraphTargetItem> superInterfaces;
 
-    public InterfaceActionItem(GraphTargetItem name, List<GraphTargetItem> superInterfaces) {
-        super(null, null, NOPRECEDENCE);
-        this.name = name;
-        this.superInterfaces = superInterfaces;
-    }
+	public InterfaceActionItem(GraphTargetItem name,
+			List<GraphTargetItem> superInterfaces) {
+		super(null, null, NOPRECEDENCE);
+		this.name = name;
+		this.superInterfaces = superInterfaces;
+	}
 
-    @Override
-    public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.startClass(name.toStringNoQuotes(localData));
-        writer.append("interface ");
-        name.toStringNoQuotes(writer, localData);
-        boolean first = true;
-        if (!superInterfaces.isEmpty()) {
-            writer.append(" extends ");
-        }
-        for (GraphTargetItem ti : superInterfaces) {
-            if (!first) {
-                writer.append(", ");
-            }
-            first = false;
-            Action.getWithoutGlobal(ti).toStringNoQuotes(writer, localData);
-        }
-        return writer.startBlock().endBlock().endClass();
-    }
+	@Override
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
+			throws InterruptedException {
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.startClass(name.toStringNoQuotes(localData));
+		nwriter.append("interface ");
+		name.toStringNoQuotes(nwriter, localData);
+		boolean first = true;
+		if (!superInterfaces.isEmpty()) {
+			nwriter.append(" extends ");
+		}
+		for (GraphTargetItem ti : superInterfaces) {
+			if (!first) {
+				nwriter.append(", ");
+			}
+			first = false;
+			Action.getWithoutGlobal(ti).toStringNoQuotes(nwriter, localData);
+		}
+		nwriter.startBlock().endBlock().endClass();
+		writer.marge(nwriter);
+		return writer;
+	}
 
-    @Override
-    public boolean needsSemicolon() {
-        return false;
-    }
+	@Override
+	public boolean needsSemicolon() {
+		return false;
+	}
 
-    @Override
-    public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-        List<GraphSourceItem> ret = new ArrayList<>();
-        ActionSourceGenerator asGenerator = (ActionSourceGenerator) generator;
-        ret.addAll(asGenerator.generateTraits(localData, true, name, null, superInterfaces, new ArrayList<MyEntry<GraphTargetItem, GraphTargetItem>>(), new ArrayList<>()));
-        return ret;
-    }
+	@Override
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
+			SourceGenerator generator) throws CompilationException {
+		List<GraphSourceItem> ret = new ArrayList<>();
+		ActionSourceGenerator asGenerator = (ActionSourceGenerator) generator;
+		ret.addAll(asGenerator.generateTraits(localData, true, name, null,
+				superInterfaces,
+				new ArrayList<MyEntry<GraphTargetItem, GraphTargetItem>>(),
+				new ArrayList<>()));
+		return ret;
+	}
 
-    @Override
-    public boolean hasReturnValue() {
-        return false;
-    }
+	@Override
+	public boolean hasReturnValue() {
+		return false;
+	}
 }
