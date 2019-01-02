@@ -50,10 +50,31 @@ public class LogFormatter extends Formatter {
             buf.append(record.getLevel());
             buf.append(": ");
         }
+        StackTraceElement stes[]= Thread.currentThread().getStackTrace();
+        StackTraceElement ste=null;
+        for (StackTraceElement stackTraceElement : stes) {
+			if(stackTraceElement.getClassName().equals(record.getSourceClassName()) && 
+					stackTraceElement.getMethodName().equals(record.getSourceMethodName())  
+					)
+			{
+				ste=stackTraceElement;
+				break;
+			}
+		}
+        if(ste==null){
+        	ste=stes[7];
+        }
+        buf.append(record.getSourceClassName());
+        buf.append(".");
+        buf.append(record.getSourceMethodName());
+        buf.append("(");
+        buf.append(ste.getFileName()); 
+        buf.append(":");
+        buf.append(ste.getLineNumber()); 
+        buf.append(") ");
+//        buf.append(ste.getMethodName()); 
         buf.append(formatMessage(record));
-
         buf.append(lineSep);
-
         Throwable throwable = record.getThrown();
         if (throwable != null) {
             StringWriter sink = new StringWriter();

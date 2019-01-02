@@ -30,6 +30,7 @@ import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.exporters.script.Dependency;
 import com.jpexs.decompiler.flash.exporters.script.DependencyParser;
 import com.jpexs.decompiler.flash.exporters.script.DependencyType;
+import com.jpexs.decompiler.flash.gui.Main;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.helpers.NulWriter;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
@@ -37,6 +38,7 @@ import com.jpexs.decompiler.flash.search.MethodId;
 import com.jpexs.decompiler.flash.tags.ABCContainerTag;
 import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.helpers.Helper;
+
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -46,12 +48,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  *
  * @author JPEXS
  */
 public abstract class Trait implements Cloneable, Serializable {
+
+      static final Logger logger = Logger.getLogger(Trait.class.getName());
 
     public static final String METADATA_CTOR_DEFINITION = "__go_to_ctor_definition_help";
 
@@ -378,6 +383,7 @@ public abstract class Trait implements Cloneable, Serializable {
 
     public GraphTextWriter toString(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
         writer.appendNoHilight(abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames) + " kind=" + kindType + " metadata=" + Helper.intArrToString(metadata));
+        logger.info(writer.sb.toString());
         return writer;
     }
 
@@ -448,7 +454,8 @@ public abstract class Trait implements Cloneable, Serializable {
         Namespace ns = abc.constants.getMultiname(name_index).getNamespace(abc.constants);
         if ((ns.kind == Namespace.KIND_PACKAGE) || (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
             String nsname = ns.getName(abc.constants).toPrintableString(true);
-            writer.appendNoHilight("package");
+//            writer.appendNoHilight("package");
+            writer.appendNoHilight("module");
             if (!nsname.isEmpty()) {
                 writer.appendNoHilight(" " + nsname); //assume not null name
             }
@@ -457,6 +464,7 @@ public abstract class Trait implements Cloneable, Serializable {
             writer.endBlock();
             writer.newLine();
         }
+//        logger.info(writer.sb.toString());
         return writer;
     }
 
@@ -470,6 +478,7 @@ public abstract class Trait implements Cloneable, Serializable {
 
     public GraphTextWriter toStringHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
         toString(parent, convertData, path, abc, isStatic, exportMode, scriptIndex, classIndex, writer, fullyQualifiedNames, parallel);
+//        logger.info(writer.sb.toString());
         return writer;
     }
 

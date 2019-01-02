@@ -20,10 +20,12 @@ import com.jpexs.decompiler.flash.abc.types.ConvertData;
 import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.exporters.script.Dependency;
+import com.jpexs.decompiler.flash.gui.abc.TraitsListItem;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.helpers.NulWriter;
 import com.jpexs.decompiler.flash.search.MethodId;
 import com.jpexs.decompiler.graph.DottedChain;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ import java.util.logging.Logger;
  * @author JPEXS
  */
 public class Traits implements Cloneable, Serializable {
+    static final Logger logger = Logger.getLogger(Traits.class.getName());
 
     public List<Trait> traits;
 
@@ -187,6 +190,7 @@ public class Traits implements Cloneable, Serializable {
                 writer.endTrait();
             }
         }
+//        logger.info(writer.sb.toString());
         return writer;
     }
 

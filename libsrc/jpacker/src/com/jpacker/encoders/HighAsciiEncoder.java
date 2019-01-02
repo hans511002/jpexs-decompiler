@@ -13,7 +13,7 @@
 package com.jpacker.encoders;
 
 /**
- * High-Ascii (base95) encoder: [¡-ÿ] SHOULD BE USED WITH CAUTION! Not fully
+ * High-Ascii (base95) encoder: [隆-每] SHOULD BE USED WITH CAUTION! Not fully
  * tested.
  * 
  * @author Pablo Santiago <pablo.santiago @ gmail.com>
@@ -21,8 +21,6 @@ package com.jpacker.encoders;
 public class HighAsciiEncoder implements Encoder {
 
     private static String LOOKUP_95 = "¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-
-    @Override
     public String encode(int code) {
         String encoded = "";
         int i = 0;

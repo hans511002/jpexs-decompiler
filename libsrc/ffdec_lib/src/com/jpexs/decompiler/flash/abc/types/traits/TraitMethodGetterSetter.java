@@ -98,9 +98,10 @@ public class TraitMethodGetterSetter extends Trait {
         writer.hilightSpecial(getName(abc).getName(abc.constants, fullyQualifiedNames, false, true), HighlightSpecialType.TRAIT_NAME);
         writer.appendNoHilight("(");
         abc.method_info.get(method_info).getParamStr(writer, abc.constants, body, abc, fullyQualifiedNames);
-        writer.appendNoHilight(") : ");
+        writer.appendNoHilight("):");
         abc.method_info.get(method_info).getReturnTypeStr(writer, abc.constants, fullyQualifiedNames);
-        return writer;
+//        logger.info(writer.sb.toString());
+      return writer;
     }
 
     @Override
@@ -124,7 +125,6 @@ public class TraitMethodGetterSetter extends Trait {
 
     @Override
     public GraphTextWriter toString(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
-
         if (classIndex < 0) {
             writeImportsUsages(abc, writer, getPackage(abc), fullyQualifiedNames);
         }
@@ -169,7 +169,8 @@ public class TraitMethodGetterSetter extends Trait {
         }
         writer.newLine();
         writer.endMethod();
-        return writer;
+        logger.info(writer.sb.toString());
+       return writer;
     }
 
     @Override

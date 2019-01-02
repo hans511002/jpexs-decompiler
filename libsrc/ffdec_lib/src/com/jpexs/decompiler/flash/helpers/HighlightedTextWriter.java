@@ -33,8 +33,7 @@ import java.util.Stack;
  */
 public class HighlightedTextWriter extends GraphTextWriter {
 
-    private final StringBuilder sb = new StringBuilder();
-
+ 
     private final boolean hilight;
 
     private boolean newLine = true;

@@ -412,7 +412,7 @@ public class AS3ScriptExporter {
                         }
                         return null;
                     }
-                }, Configuration.exportTimeout.get(), TimeUnit.SECONDS);
+                }, (long)Configuration.exportTimeout.get(), TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
                 logger.log(Level.SEVERE, Helper.formatTimeToText(Configuration.exportTimeout.get()) + " ActionScript export limit reached", ex);
             } catch (ExecutionException | InterruptedException ex) {

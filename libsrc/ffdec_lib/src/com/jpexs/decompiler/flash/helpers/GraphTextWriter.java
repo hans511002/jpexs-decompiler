@@ -29,6 +29,7 @@ public abstract class GraphTextWriter {
     protected long startTime;
 
     protected long suspendTime;
+    public final StringBuilder sb = new StringBuilder();
 
     protected CodeFormatting formatting;
 

@@ -25,15 +25,19 @@ import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.helpers.HighlightedTextWriter;
 import com.jpexs.decompiler.flash.helpers.NulWriter;
 import com.jpexs.decompiler.flash.search.ABCSearchResult;
+
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import sun.util.logging.resources.logging;
 
 /**
  *
  * @author JPEXS
  */
 public class TraitsListItem {
+    static final Logger logger = Logger.getLogger(TraitsListItem.class.getName());
 
     private final TraitType type;
 
@@ -116,6 +120,7 @@ public class TraitsListItem {
             Logger.getLogger(TraitsListItem.class.getName()).log(Level.SEVERE, null, ex);
         }
         s = s.replaceAll("[ \r\n]+", " ");
+        logger.info(s);
         return s;
     }
 

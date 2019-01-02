@@ -49,7 +49,7 @@ public class DeobfuscatorSample implements SWFDecompilerListener {
     }
 
     @Override
-    public void methodBodyParsed(MethodBody body, SWF swf) {
+    public void methodBodyParsed(ABC abc,MethodBody body, SWF swf) {
         System.out.println("methodBodyParsed");
     }
 
@@ -57,4 +57,5 @@ public class DeobfuscatorSample implements SWFDecompilerListener {
     public void avm2CodeRemoveTraps(String path, int classIndex, boolean isStatic, int scriptIndex, ABC abc, Trait trait, int methodInfo, MethodBody body) throws InterruptedException {
         System.out.println("avm2CodeRemoveTraps");
     }
+ 
 }

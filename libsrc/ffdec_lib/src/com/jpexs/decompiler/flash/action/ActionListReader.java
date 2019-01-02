@@ -85,7 +85,7 @@ public class ActionListReader {
                 public ActionList call() throws IOException, InterruptedException {
                     return readActionList(listeners, sis, version, ip, endIp, path, deobfuscationMode);
                 }
-            }, Configuration.decompilationTimeoutSingleMethod.get(), TimeUnit.SECONDS);
+            }, (long)Configuration.decompilationTimeoutSingleMethod.get(), TimeUnit.SECONDS);
 
             return actions;
         } catch (ExecutionException ex) {

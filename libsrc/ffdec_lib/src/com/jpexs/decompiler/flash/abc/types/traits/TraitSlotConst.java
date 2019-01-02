@@ -36,9 +36,12 @@ import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.model.LocalData;
 import com.jpexs.helpers.Helper;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import sun.util.logging.resources.logging;
 
 /**
  *
@@ -100,11 +103,13 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
         if (val != null && val.isNamespace()) {
             slotconst = "namespace";
         }
+        String txt=getName(abc).getName(abc.constants, fullyQualifiedNames, false, true);
         writer.hilightSpecial(slotconst + " ", HighlightSpecialType.TRAIT_TYPE);
-        writer.hilightSpecial(getName(abc).getName(abc.constants, fullyQualifiedNames, false, true), HighlightSpecialType.TRAIT_NAME);
+        writer.hilightSpecial(txt, HighlightSpecialType.TRAIT_NAME);
         writer.hilightSpecial(typeStr, HighlightSpecialType.TRAIT_TYPE_NAME);
+//        logger.info(slotconst+" " + txt + typeStr);
         return writer;
-    }
+    } 
 
     public void getValueStr(ScriptExportMode exportMode, Trait parent, ConvertData convertData, GraphTextWriter writer, ABC abc, List<DottedChain> fullyQualifiedNames) throws InterruptedException {
         if (convertData.assignedValues.containsKey(this)) {

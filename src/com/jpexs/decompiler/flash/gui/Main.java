@@ -2297,6 +2297,10 @@ public class Main {
 
         try {
             fileName = Configuration.getFFDecHome() + "logs" + File.separator;
+            File[] logs=new File(fileName).listFiles();
+            for (File file : logs) {
+				file.delete();
+			}
             if (Configuration.useDetailedLogging.get()) {
                 fileName += "log-" + sdf.format(new Date()) + ".txt";
             } else {
@@ -2368,7 +2372,8 @@ public class Main {
 
             ConsoleHandler conHan = new ConsoleHandler();
             conHan.setLevel(debug ? Level.CONFIG : Level.WARNING);
-            SimpleFormatter formatterTxt = new SimpleFormatter();
+            Formatter formatterTxt = new LogFormatter();
+//            SimpleFormatter formatterTxt = new SimpleFormatter();
             conHan.setFormatter(formatterTxt);
             logger.addHandler(conHan);
             clearLogFile();
