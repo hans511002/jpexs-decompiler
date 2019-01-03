@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.instructions.construction;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.AVM2LocalData;
@@ -26,7 +29,6 @@ import com.jpexs.decompiler.flash.helpers.HighlightedTextWriter;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.TranslateStack;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.List;
 
 /**
  *
@@ -34,27 +36,41 @@ import java.util.List;
  */
 public class NewClassIns extends InstructionDefinition {
 
-    public NewClassIns() {
-        super(0x58, "newclass", new int[]{AVM2Code.DAT_CLASS_INDEX}, true);
-    }
+	public NewClassIns() {
+		super(0x58, "newclass", new int[] { AVM2Code.DAT_CLASS_INDEX }, true);
+	}
 
-    @Override
-    public void translate(AVM2LocalData localData, TranslateStack stack, AVM2Instruction ins, List<GraphTargetItem> output, String path) throws InterruptedException {
-        int clsIndex = ins.operands[0];
-        HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
-        stack.pop().toString(writer, LocalData.create(localData.getConstants(), localData.localRegNames, localData.fullyQualifiedNames));
-        String baseType = writer.toString();
-        ABC abc = localData.abc;
-        stack.push(new UnparsedAVM2Item(ins, localData.lineStartInstruction, "new " + abc.constants.getMultiname(abc.instance_info.get(clsIndex).name_index).getName(localData.getConstants(), localData.fullyQualifiedNames, false, true) + ".class extends " + baseType));
-    }
+	@Override
+	public void translate(AVM2LocalData localData, TranslateStack stack,
+			AVM2Instruction ins, List<GraphTargetItem> output, String path)
+			throws InterruptedException {
+		int clsIndex = ins.operands[0];
+		HighlightedTextWriter writer = new HighlightedTextWriter(
+				Configuration.getCodeFormatting(), false);
+		stack.pop()
+				.toString(
+						writer,
+						LocalData.create(localData.getConstants(),
+								localData.localRegNames,
+								localData.fullyQualifiedNames));
+		String baseType = writer.toText();
+		ABC abc = localData.abc;
+		stack.push(new UnparsedAVM2Item(ins, localData.lineStartInstruction,
+				"new "
+						+ abc.constants.getMultiname(
+								abc.instance_info.get(clsIndex).name_index)
+								.getName(localData.getConstants(),
+										localData.fullyQualifiedNames, false,
+										true) + ".class extends " + baseType));
+	}
 
-    @Override
-    public int getStackPopCount(AVM2Instruction ins, ABC abc) {
-        return 1;
-    }
+	@Override
+	public int getStackPopCount(AVM2Instruction ins, ABC abc) {
+		return 1;
+	}
 
-    @Override
-    public int getStackPushCount(AVM2Instruction ins, ABC abc) {
-        return 1;
-    }
+	@Override
+	public int getStackPushCount(AVM2Instruction ins, ABC abc) {
+		return 1;
+	}
 }

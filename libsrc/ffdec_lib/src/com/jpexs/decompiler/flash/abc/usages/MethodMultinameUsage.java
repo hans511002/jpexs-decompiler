@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.usages;
+
+import java.util.ArrayList;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.types.ConvertData;
@@ -23,7 +26,6 @@ import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.helpers.HighlightedTextWriter;
 import com.jpexs.decompiler.flash.helpers.NulWriter;
-import java.util.ArrayList;
 
 /**
  *
@@ -31,92 +33,126 @@ import java.util.ArrayList;
  */
 public abstract class MethodMultinameUsage extends TraitMultinameUsage {
 
-    private boolean isInitializer;
+	private boolean isInitializer;
 
-    public MethodMultinameUsage(ABC abc, int multinameIndex, int scriptIndex, int classIndex, int traitIndex, int traitsType, boolean isInitializer, Traits traits, int parentTraitIndex) {
-        super(abc, multinameIndex, scriptIndex, classIndex, traitIndex, traitsType, traits, parentTraitIndex);
-        this.isInitializer = isInitializer;
-    }
+	public MethodMultinameUsage(ABC abc, int multinameIndex, int scriptIndex,
+			int classIndex, int traitIndex, int traitsType,
+			boolean isInitializer, Traits traits, int parentTraitIndex) {
+		super(abc, multinameIndex, scriptIndex, classIndex, traitIndex,
+				traitsType, traits, parentTraitIndex);
+		this.isInitializer = isInitializer;
+	}
 
-    public boolean isInitializer() {
-        return isInitializer;
-    }
+	public boolean isInitializer() {
+		return isInitializer;
+	}
 
-    @Override
-    public String toString() {
-        NulWriter nulWriter = new NulWriter();
-        ConvertData convertData = new ConvertData();
-        if (!isInitializer) {
-            if (parentTraitIndex > -1) {
-                if (traitsType == TRAITS_TYPE_CLASS) {
-                    ((TraitMethodGetterSetter) abc.class_info.get(classIndex).static_traits.traits.get(parentTraitIndex)).convertHeader(null, convertData, "", abc, traitsType == TRAITS_TYPE_CLASS, ScriptExportMode.AS, -1/*FIXME*/, classIndex, nulWriter, new ArrayList<>(), false);
-                } else {
-                    ((TraitMethodGetterSetter) abc.instance_info.get(classIndex).instance_traits.traits.get(parentTraitIndex)).convertHeader(null, convertData, "", abc, traitsType == TRAITS_TYPE_CLASS, ScriptExportMode.AS, -1/*FIXME*/, classIndex, nulWriter, new ArrayList<>(), false);
-                }
-            }
-            ((TraitMethodGetterSetter) traits.traits.get(traitIndex)).convertHeader(null, convertData, "", abc, traitsType == TRAITS_TYPE_CLASS, ScriptExportMode.AS, -1/*FIXME*/, classIndex, nulWriter, new ArrayList<>(), false);
-        }
+	@Override
+	public String toString() {
+		NulWriter nulWriter = new NulWriter();
+		ConvertData convertData = new ConvertData();
+		if (!isInitializer) {
+			if (parentTraitIndex > -1) {
+				if (traitsType == TRAITS_TYPE_CLASS) {
+					((TraitMethodGetterSetter) abc.class_info.get(classIndex).static_traits.traits
+							.get(parentTraitIndex)).convertHeader(null,
+							convertData, "", abc,
+							traitsType == TRAITS_TYPE_CLASS,
+							ScriptExportMode.AS, -1/* FIXME */, classIndex,
+							nulWriter, new ArrayList<>(), false);
+				} else {
+					((TraitMethodGetterSetter) abc.instance_info
+							.get(classIndex).instance_traits.traits
+							.get(parentTraitIndex)).convertHeader(null,
+							convertData, "", abc,
+							traitsType == TRAITS_TYPE_CLASS,
+							ScriptExportMode.AS, -1/* FIXME */, classIndex,
+							nulWriter, new ArrayList<>(), false);
+				}
+			}
+			((TraitMethodGetterSetter) traits.traits.get(traitIndex))
+					.convertHeader(null, convertData, "", abc,
+							traitsType == TRAITS_TYPE_CLASS,
+							ScriptExportMode.AS, -1/* FIXME */, classIndex,
+							nulWriter, new ArrayList<>(), false);
+		}
 
-        HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
-        writer.appendNoHilight(super.toString());
-        writer.appendNoHilight(" ");
-        if (isInitializer) {
-            switch (traitsType) {
-                case TRAITS_TYPE_CLASS:
-                    writer.appendNoHilight("class initializer");
-                    break;
-                case TRAITS_TYPE_INSTANCE:
-                    writer.appendNoHilight("instance initializer");
-                    break;
-                case TRAITS_TYPE_SCRIPT:
-                    writer.appendNoHilight("script initializer");
-                    break;
-                default:
-                    break;
-            }
-        } else {
-            if (parentTraitIndex > -1) {
-                if (traitsType == TRAITS_TYPE_CLASS) {
-                    ((TraitMethodGetterSetter) abc.class_info.get(classIndex).static_traits.traits.get(parentTraitIndex)).toStringHeader(null, convertData, "", abc, traitsType == TRAITS_TYPE_CLASS, ScriptExportMode.AS, -1/*FIXME*/, classIndex, writer, new ArrayList<>(), false);
-                } else {
-                    ((TraitMethodGetterSetter) abc.instance_info.get(classIndex).instance_traits.traits.get(parentTraitIndex)).toStringHeader(null, convertData, "", abc, traitsType == TRAITS_TYPE_CLASS, ScriptExportMode.AS, -1/*FIXME*/, classIndex, writer, new ArrayList<>(), false);
-                }
-                writer.appendNoHilight(" ");
-            }
-            ((TraitMethodGetterSetter) traits.traits.get(traitIndex)).toStringHeader(null, convertData, "", abc, traitsType == TRAITS_TYPE_CLASS, ScriptExportMode.AS, -1/*FIXME*/, classIndex, writer, new ArrayList<>(), false);
-        }
-        return writer.toString().trim();
-    }
+		HighlightedTextWriter writer = new HighlightedTextWriter(
+				Configuration.getCodeFormatting(), false);
+		writer.appendNoHilight(super.toString());
+		writer.appendNoHilight(" ");
+		if (isInitializer) {
+			switch (traitsType) {
+			case TRAITS_TYPE_CLASS:
+				writer.appendNoHilight("class initializer");
+				break;
+			case TRAITS_TYPE_INSTANCE:
+				writer.appendNoHilight("instance initializer");
+				break;
+			case TRAITS_TYPE_SCRIPT:
+				writer.appendNoHilight("script initializer");
+				break;
+			default:
+				break;
+			}
+		} else {
+			if (parentTraitIndex > -1) {
+				if (traitsType == TRAITS_TYPE_CLASS) {
+					((TraitMethodGetterSetter) abc.class_info.get(classIndex).static_traits.traits
+							.get(parentTraitIndex)).toStringHeader(null,
+							convertData, "", abc,
+							traitsType == TRAITS_TYPE_CLASS,
+							ScriptExportMode.AS, -1/* FIXME */, classIndex,
+							writer, new ArrayList<>(), false);
+				} else {
+					((TraitMethodGetterSetter) abc.instance_info
+							.get(classIndex).instance_traits.traits
+							.get(parentTraitIndex)).toStringHeader(null,
+							convertData, "", abc,
+							traitsType == TRAITS_TYPE_CLASS,
+							ScriptExportMode.AS, -1/* FIXME */, classIndex,
+							writer, new ArrayList<>(), false);
+				}
+				writer.appendNoHilight(" ");
+			}
+			((TraitMethodGetterSetter) traits.traits.get(traitIndex))
+					.toStringHeader(null, convertData, "", abc,
+							traitsType == TRAITS_TYPE_CLASS,
+							ScriptExportMode.AS, -1/* FIXME */, classIndex,
+							writer, new ArrayList<>(), false);
+		}
+		return writer.toText();
+	}
 
-    @Override
-    public int hashCode() {
-        int hash = super.hashCode();
-        hash = 61 * hash + (this.isInitializer ? 1 : 0);
-        return hash;
-    }
+	@Override
+	public int hashCode() {
+		int hash = super.hashCode();
+		hash = 61 * hash + (this.isInitializer ? 1 : 0);
+		return hash;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        final MethodMultinameUsage other = (MethodMultinameUsage) obj;
-        if (this.isInitializer != other.isInitializer) {
-            return false;
-        }
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		final MethodMultinameUsage other = (MethodMultinameUsage) obj;
+		if (this.isInitializer != other.isInitializer) {
+			return false;
+		}
+		return true;
+	}
 
-    public boolean isStatic() {
-        return traitsType == TRAITS_TYPE_CLASS;
-    }
+	public boolean isStatic() {
+		return traitsType == TRAITS_TYPE_CLASS;
+	}
 }

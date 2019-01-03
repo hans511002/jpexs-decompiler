@@ -36,8 +36,7 @@ import com.jpexs.decompiler.graph.model.LocalData;
  *
  * @author JPEXS
  */
-public class DefineLocalActionItem extends ActionItem implements
-		SetTypeActionItem {
+public class DefineLocalActionItem extends ActionItem implements SetTypeActionItem {
 
 	public GraphTargetItem name;
 
@@ -73,19 +72,17 @@ public class DefineLocalActionItem extends ActionItem implements
 		return value;
 	}
 
-	public DefineLocalActionItem(GraphSourceItem instruction,
-			GraphSourceItem lineStartIns, GraphTargetItem name,
+	public DefineLocalActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem name,
 			GraphTargetItem value) {
 		super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
 		this.name = name;
 	}
 
 	@Override
-	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
-			throws InterruptedException {
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		GraphTextWriter nwriter = writer.cloneNew();
 
-		nwriter.append("var ");
+		nwriter.append("let ");
 
 		HighlightData srcData = getSrcData();
 		srcData.localName = name.toStringNoQuotes(localData);
@@ -93,11 +90,9 @@ public class DefineLocalActionItem extends ActionItem implements
 		if (((name instanceof DirectValueActionItem))
 				&& (((DirectValueActionItem) name).isString())
 				&& (!IdentifiersDeobfuscation.isValidName(false,
-						((DirectValueActionItem) name)
-								.toStringNoQuotes(localData), "this", "super"))) {
+						((DirectValueActionItem) name).toStringNoQuotes(localData), "this", "super"))) {
 			IdentifiersDeobfuscation.appendObfuscatedIdentifier(
-					((DirectValueActionItem) name).toStringNoQuotes(localData),
-					nwriter);
+					((DirectValueActionItem) name).toStringNoQuotes(localData), nwriter);
 		} else {
 			stripQuotes(name, localData, nwriter);
 		}
@@ -121,19 +116,16 @@ public class DefineLocalActionItem extends ActionItem implements
 
 	@Override
 	public GraphTargetItem getObject() {
-		return new DefineLocalActionItem(getSrc(), getLineStartItem(), name,
-				null);
+		return new DefineLocalActionItem(getSrc(), getLineStartItem(), name, null);
 	}
 
 	@Override
-	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
-			SourceGenerator generator) throws CompilationException {
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator)
+			throws CompilationException {
 		if (value == null) {
-			return toSourceMerge(localData, generator, name,
-					new ActionDefineLocal2());
+			return toSourceMerge(localData, generator, name, new ActionDefineLocal2());
 		} else {
-			return toSourceMerge(localData, generator, name, value,
-					new ActionDefineLocal());
+			return toSourceMerge(localData, generator, name, value, new ActionDefineLocal());
 		}
 
 	}

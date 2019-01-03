@@ -21,6 +21,7 @@ import java.util.List;
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
 import com.jpexs.decompiler.flash.abc.types.traits.Traits;
+import com.jpexs.decompiler.flash.helpers.Convert2Ts;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
 import com.jpexs.decompiler.flash.types.annotations.Internal;
@@ -111,13 +112,13 @@ public class InstanceInfo {
 		if (!modifiers.isEmpty()) {
 			modifiers += " ";
 		}
-
-		if (isFinal()) {
-			modifiers += "final ";
-		}
-		if (!isInterface() && isDynamic()) {
-			modifiers += "dynamic ";
-		}
+		modifiers = "export ";
+		// if (isFinal()) {
+		// modifiers += "final ";
+		// }
+		// if (!isInterface() && isDynamic()) {
+		// modifiers += "dynamic ";
+		// }
 		String objType = "class ";
 		if (isInterface()) {
 			objType = "interface ";
@@ -135,6 +136,8 @@ public class InstanceInfo {
 			String parentName = abc.constants.getMultiname(super_index)
 					.getName(abc.constants, fullyQualifiedNames, false, true);
 			if (!parentName.equals("Object")) {
+
+				parentName = Convert2Ts.convertType(parentName);
 				nwriter.appendNoHilight(" extends ");
 				nwriter.hilightSpecial(parentName,
 						HighlightSpecialType.TYPE_NAME, typeName);
@@ -153,10 +156,11 @@ public class InstanceInfo {
 				String typeName = abc.constants.getMultiname(interfaces[i])
 						.getNameWithNamespace(abc.constants, true)
 						.toRawString();
-				nwriter.hilightSpecial(
-						abc.constants.getMultiname(interfaces[i])
-								.getName(abc.constants, fullyQualifiedNames,
-										false, true),
+				String parentName = abc.constants.getMultiname(interfaces[i])
+						.getName(abc.constants, fullyQualifiedNames, false,
+								true);
+				parentName = Convert2Ts.convertType(parentName);
+				nwriter.hilightSpecial(parentName,
 						HighlightSpecialType.TYPE_NAME, typeName);
 			}
 		}

@@ -100,18 +100,15 @@ public abstract class Trait implements Cloneable, Serializable {
 
 	public abstract void delete(ABC abc, boolean d);
 
-	public final List<Entry<String, Map<String, String>>> getMetaDataTable(
-			Trait parent, ConvertData convertData, ABC abc) {
+	public final List<Entry<String, Map<String, String>>> getMetaDataTable(Trait parent, ConvertData convertData,
+			ABC abc) {
 		List<Entry<String, Map<String, String>>> ret = new ArrayList<>();
 		for (int m : metadata) {
 			if (m >= 0 && m < abc.metadata_info.size()) {
-				String name = abc.constants
-						.getString(abc.metadata_info.get(m).name_index);
+				String name = abc.constants.getString(abc.metadata_info.get(m).name_index);
 				Map<String, String> data = new HashMap<>();
 				for (int i = 0; i < abc.metadata_info.get(m).keys.length; i++) {
-					data.put(
-							abc.constants
-									.getString(abc.metadata_info.get(m).keys[i]),
+					data.put(abc.constants.getString(abc.metadata_info.get(m).keys[i]),
 							abc.constants.getString(abc.metadata_info.get(m).values[i]));
 				}
 				ret.add(new SimpleEntry<>(name, data));
@@ -119,45 +116,31 @@ public abstract class Trait implements Cloneable, Serializable {
 		}
 		if (Configuration.handleSkinPartsAutomatically.get()) {
 			/*
-			 * private static var _skinParts:Object =
-			 * {"attr":false,"attr2":true}; => [SkinPart required="false"]
-			 * public var attr; [SkinPart required="true"] public var attr2;
+			 * private static var _skinParts:Object = {"attr":false,"attr2":true}; => [SkinPart required="false"] public
+			 * var attr; [SkinPart required="true"] public var attr2;
 			 */
 			if (parent instanceof TraitClass) {
-				String thisName = getName(abc).getName(abc.constants,
-						new ArrayList<>(), true, true);
-				List<Trait> classTraits = abc.class_info
-						.get(((TraitClass) parent).class_info).static_traits.traits;
+				String thisName = getName(abc).getName(abc.constants, new ArrayList<>(), true, true);
+				List<Trait> classTraits = abc.class_info.get(((TraitClass) parent).class_info).static_traits.traits;
 				for (Trait t : classTraits) {
 					if (t.kindType == Trait.TRAIT_SLOT) {
-						if ("_skinParts".equals(t.getName(abc).getName(
-								abc.constants, new ArrayList<>(), true, true))) {
+						if ("_skinParts".equals(t.getName(abc).getName(abc.constants, new ArrayList<>(), true, true))) {
 							if (t.getName(abc).getNamespace(abc.constants).kind == Namespace.KIND_PRIVATE) {
 								if (convertData.assignedValues.containsKey(t)) {
 									if (convertData.assignedValues.get(t).value instanceof NewObjectAVM2Item) {
-										NewObjectAVM2Item no = (NewObjectAVM2Item) convertData.assignedValues
-												.get(t).value;
+										NewObjectAVM2Item no = (NewObjectAVM2Item) convertData.assignedValues.get(t).value;
 										for (NameValuePair nvp : no.pairs) {
 											if (nvp.name instanceof StringAVM2Item) {
-												if (thisName
-														.equals(((StringAVM2Item) nvp.name)
-																.getValue())) {
-													String newReq = ""
-															+ nvp.value
-																	.getResult();
+												if (thisName.equals(((StringAVM2Item) nvp.name).getValue())) {
+													String newReq = "" + nvp.value.getResult();
 													boolean found = false;
 													// if already has SkinPart
 													// metadata, change required
 													// value only
-													for (int i = 0; i < ret
-															.size(); i++) {
-														Entry<String, Map<String, String>> e = ret
-																.get(i);
-														if ("SkinPart".equals(e
-																.getKey())) {
-															e.getValue().put(
-																	"required",
-																	newReq);
+													for (int i = 0; i < ret.size(); i++) {
+														Entry<String, Map<String, String>> e = ret.get(i);
+														if ("SkinPart".equals(e.getKey())) {
+															e.getValue().put("required", newReq);
 															found = true;
 															break;
 														}
@@ -167,12 +150,9 @@ public abstract class Trait implements Cloneable, Serializable {
 													// found
 													if (!found) {
 														Map<String, String> data = new HashMap<>();
-														data.put("required",
-																newReq);
+														data.put("required", newReq);
 
-														ret.add(new SimpleEntry<>(
-																"SkinPart",
-																data));
+														ret.add(new SimpleEntry<>("SkinPart", data));
 													}
 												}
 											}
@@ -192,8 +172,7 @@ public abstract class Trait implements Cloneable, Serializable {
 		return getName(abc).getNamespace(abc.constants).getName(abc.constants);
 	}
 
-	public void getDependencies(String ignoredCustom, ABC abc,
-			List<Dependency> dependencies, List<String> uses,
+	public void getDependencies(String ignoredCustom, ABC abc, List<Dependency> dependencies, List<String> uses,
 			DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames) {
 		if (ignoredCustom == null) {
 			Namespace n = getName(abc).getNamespace(abc.constants);
@@ -201,18 +180,14 @@ public abstract class Trait implements Cloneable, Serializable {
 				ignoredCustom = n.getName(abc.constants).toRawString();
 			}
 		}
-		DependencyParser.parseUsagesFromMultiname(ignoredCustom, abc,
-				dependencies, uses, getName(abc), ignorePackage,
+		DependencyParser.parseUsagesFromMultiname(ignoredCustom, abc, dependencies, uses, getName(abc), ignorePackage,
 				fullyQualifiedNames, DependencyType.NAMESPACE);
 	}
 
-	private static final String[] builtInClasses = { "ArgumentError",
-			"arguments", "Array", "Boolean", "Class", "Date",
-			"DefinitionError", "Error", "EvalError", "Function", "int", "JSON",
-			"Math", "Namespace", "Number", "Object", "QName", "RangeError",
-			"ReferenceError", "RegExp", "SecurityError", "String",
-			"SyntaxError", "TypeError", "uint", "URIError", "VerifyError",
-			"XML", "XMLList" };
+	private static final String[] builtInClasses = { "ArgumentError", "arguments", "Array", "Boolean", "Class", "Date",
+			"DefinitionError", "Error", "EvalError", "Function", "int", "JSON", "Math", "Namespace", "Number",
+			"Object", "QName", "RangeError", "ReferenceError", "RegExp", "SecurityError", "String", "SyntaxError",
+			"TypeError", "uint", "URIError", "VerifyError", "XML", "XMLList" };
 
 	private static boolean isBuiltInClass(String name) {
 		for (String g : builtInClasses) {
@@ -223,8 +198,8 @@ public abstract class Trait implements Cloneable, Serializable {
 		return false;
 	}
 
-	public void writeImportsUsages(ABC abc, GraphTextWriter writer,
-			DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames) {
+	public void writeImportsUsages(ABC abc, GraphTextWriter writer, DottedChain ignorePackage,
+			List<DottedChain> fullyQualifiedNames) {
 		GraphTextWriter nwriter = writer.cloneNew();
 
 		List<String> namesInThisPackage = new ArrayList<>();
@@ -247,8 +222,7 @@ public abstract class Trait implements Cloneable, Serializable {
 		if (ns.kind == Namespace.KIND_NAMESPACE) {
 			customNs = ns.getName(abc.constants).toRawString();
 		}
-		getDependencies(customNs, abc, dependencies, uses, ignorePackage,
-				new ArrayList<>());
+		getDependencies(customNs, abc, dependencies, uses, ignorePackage, new ArrayList<>());
 
 		List<DottedChain> imports = new ArrayList<>();
 		for (Dependency d : dependencies) {
@@ -300,9 +274,7 @@ public abstract class Trait implements Cloneable, Serializable {
 		Collections.sort(imports);
 		for (DottedChain imp : imports) {
 			if (imp.size() > 1) { // No imports from root package
-				nwriter.appendNoHilight(
-						"import " + imp.toPrintableString(true) + ";")
-						.newLine();
+				nwriter.appendNoHilight("//import " + imp.toPrintableString(true) + ";").newLine();
 				hasImport = true;
 			}
 		}
@@ -318,19 +290,15 @@ public abstract class Trait implements Cloneable, Serializable {
 		writer.marge(nwriter);
 	}
 
-	public final GraphTextWriter getMetaData(Trait parent,
-			ConvertData convertData, ABC abc, GraphTextWriter nwriter) {
-		List<Entry<String, Map<String, String>>> md = getMetaDataTable(parent,
-				convertData, abc);
+	public final GraphTextWriter getMetaData(Trait parent, ConvertData convertData, ABC abc, GraphTextWriter nwriter) {
+		List<Entry<String, Map<String, String>>> md = getMetaDataTable(parent, convertData, abc);
 		// GraphTextWriter nwriter = writer.cloneNew();
 		for (Entry<String, Map<String, String>> en : md) {
 			String name = en.getKey();
-			if (METADATA_DEFINITION.equals(name)
-					|| METADATA_CTOR_DEFINITION.equals(name)) {
+			if (METADATA_DEFINITION.equals(name) || METADATA_CTOR_DEFINITION.equals(name)) {
 				continue;
 			}
-			nwriter.append("[").append(
-					IdentifiersDeobfuscation.printIdentifier(true, name));
+			nwriter.append("[").append(IdentifiersDeobfuscation.printIdentifier(true, name));
 			if (!en.getValue().isEmpty()) {
 				nwriter.append("(");
 				boolean first = true;
@@ -340,9 +308,7 @@ public abstract class Trait implements Cloneable, Serializable {
 					}
 					first = false;
 					if (key != null && !key.isEmpty()) {
-						nwriter.append(
-								IdentifiersDeobfuscation.printIdentifier(true,
-										key)).append("=");
+						nwriter.append(IdentifiersDeobfuscation.printIdentifier(true, key)).append("=");
 					}
 					nwriter.append("\"");
 					String val = en.getValue().get(key);
@@ -382,11 +348,10 @@ public abstract class Trait implements Cloneable, Serializable {
 		return null;
 	}
 
-	public final GraphTextWriter getModifiers(ABC abc, boolean isStatic,
-			GraphTextWriter writer) {
-		GraphTextWriter nwriter = writer.cloneNew();
+	public final GraphTextWriter getModifiers(ABC abc, boolean isStatic, GraphTextWriter nwriter) {
+		// GraphTextWriter nwriter = writer.cloneNew();
 		if ((kindFlags & ATTR_Override) > 0) {
-			nwriter.appendNoHilight("override ");
+			// nwriter.appendNoHilight("override ");
 		}
 		Multiname m = getName(abc);
 		if (m != null) {
@@ -396,8 +361,7 @@ public abstract class Trait implements Cloneable, Serializable {
 			Namespace ns = m.getNamespace(abc.constants);
 
 			if (nsname != null) {
-				String identifier = IdentifiersDeobfuscation.printIdentifier(
-						true, nsname);
+				String identifier = IdentifiersDeobfuscation.printIdentifier(true, nsname);
 				if (identifier != null && !identifier.isEmpty()) {
 					nwriter.appendNoHilight(identifier).appendNoHilight(" ");
 				}
@@ -410,8 +374,7 @@ public abstract class Trait implements Cloneable, Serializable {
 			}
 		}
 		if (isStatic) {
-			if ((this instanceof TraitSlotConst)
-					&& ((TraitSlotConst) this).isNamespace()) {
+			if ((this instanceof TraitSlotConst) && ((TraitSlotConst) this).isNamespace()) {
 				// static is automatic
 			} else {
 				nwriter.appendNoHilight("static ");
@@ -419,60 +382,46 @@ public abstract class Trait implements Cloneable, Serializable {
 		}
 		if ((kindFlags & ATTR_Final) > 0) {
 			if (!isStatic) {
-				nwriter.appendNoHilight("final ");
+				// nwriter.appendNoHilight("final ");
 			}
 		}
-		writer.marge(nwriter);
-		return writer;
+		// writer.marge(nwriter);
+		return nwriter;
 	}
 
 	@Override
 	public String toString() {
-		return "name_index=" + name_index + " kind=" + kindType + " metadata="
-				+ Helper.intArrToString(metadata);
+		return "name_index=" + name_index + " kind=" + kindType + " metadata=" + Helper.intArrToString(metadata);
 	}
 
 	public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
-		return abc.constants.getMultiname(name_index).toString(abc.constants,
-				fullyQualifiedNames)
-				+ " kind="
-				+ kindType
-				+ " metadata="
-				+ Helper.intArrToString(metadata);
+		return abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames) + " kind="
+				+ kindType + " metadata=" + Helper.intArrToString(metadata);
 	}
 
-	public GraphTextWriter toString(Trait parent, ConvertData convertData,
-			String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			GraphTextWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
+	public GraphTextWriter toString(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
 		GraphTextWriter nwriter = writer.cloneNew();
-		nwriter.appendNoHilight(abc.constants.getMultiname(name_index)
-				.toString(abc.constants, fullyQualifiedNames)
-				+ " kind="
-				+ kindType + " metadata=" + Helper.intArrToString(metadata));
+		nwriter.appendNoHilight(abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames)
+				+ " kind=" + kindType + " metadata=" + Helper.intArrToString(metadata));
 		writer.marge(nwriter);
 		return writer;
 	}
 
-	public void convert(Trait parent, ConvertData convertData, String path,
-			ABC abc, boolean isStatic, ScriptExportMode exportMode,
-			int scriptIndex, int classIndex, NulWriter writer,
-			List<DottedChain> fullyQualifiedNames, boolean parallel)
-			throws InterruptedException {
+	public void convert(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
 	}
 
-	public abstract GraphTextWriter convertTraitHeader(ABC abc,
-			GraphTextWriter writer);
+	public abstract GraphTextWriter convertTraitHeader(ABC abc, GraphTextWriter writer);
 
-	public GraphTextWriter convertCommonHeaderFlags(String traitType, ABC abc,
-			GraphTextWriter writer) {
+	public GraphTextWriter convertCommonHeaderFlags(String traitType, ABC abc, GraphTextWriter writer) {
 		GraphTextWriter nwriter = writer.cloneNew();
 		nwriter.appendNoHilight("trait ");
 		nwriter.hilightSpecial(traitType, HighlightSpecialType.TRAIT_TYPE);
 		nwriter.appendNoHilight(" ");
-		nwriter.hilightSpecial(abc.constants.multinameToString(name_index),
-				HighlightSpecialType.TRAIT_NAME);
+		nwriter.hilightSpecial(abc.constants.multinameToString(name_index), HighlightSpecialType.TRAIT_NAME);
 
 		if ((kindFlags & ATTR_Final) > 0) {
 			nwriter.newLine();
@@ -482,14 +431,12 @@ public abstract class Trait implements Cloneable, Serializable {
 		if ((kindFlags & ATTR_Override) > 0) {
 			nwriter.newLine();
 			nwriter.append("flag ");
-			nwriter.hilightSpecial("OVERRIDE",
-					HighlightSpecialType.ATTR_OVERRIDE);
+			nwriter.hilightSpecial("OVERRIDE", HighlightSpecialType.ATTR_OVERRIDE);
 		}
 		if ((kindFlags & ATTR_Metadata) > 0) {
 			nwriter.newLine();
 			nwriter.append("flag ");
-			nwriter.hilightSpecial("METADATA",
-					HighlightSpecialType.ATTR_METADATA);
+			nwriter.hilightSpecial("METADATA", HighlightSpecialType.ATTR_METADATA);
 		}
 		if ((kindFlags & ATTR_0x8) > 0) {
 			nwriter.newLine();
@@ -501,8 +448,7 @@ public abstract class Trait implements Cloneable, Serializable {
 			for (int m : metadata) {
 				nwriter.append("metadata");
 				nwriter.append("\"");
-				nwriter.append(Helper.escapeActionScriptString(abc.constants
-						.getString(abc.metadata_info.get(m).name_index)));
+				nwriter.append(Helper.escapeActionScriptString(abc.constants.getString(abc.metadata_info.get(m).name_index)));
 				nwriter.append("\"");
 				nwriter.newLine();
 				if (m >= 0 && m < abc.metadata_info.size()) {
@@ -512,17 +458,13 @@ public abstract class Trait implements Cloneable, Serializable {
 						nwriter.append("item ");
 
 						nwriter.append("\"");
-						nwriter.append(Helper
-								.escapeActionScriptString(abc.constants
-										.getString(key)));
+						nwriter.append(Helper.escapeActionScriptString(abc.constants.getString(key)));
 						nwriter.append("\"");
 
 						nwriter.append(" ");
 
 						nwriter.append("\"");
-						nwriter.append(Helper
-								.escapeActionScriptString(abc.constants
-										.getString(val)));
+						nwriter.append(Helper.escapeActionScriptString(abc.constants.getString(val)));
 						nwriter.append("\"");
 						nwriter.newLine();
 					}
@@ -534,69 +476,57 @@ public abstract class Trait implements Cloneable, Serializable {
 		return writer;
 	}
 
-	public GraphTextWriter toStringPackaged(Trait parent,
-			ConvertData convertData, String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			GraphTextWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
+	public GraphTextWriter toStringPackaged(Trait parent, ConvertData convertData, String path, ABC abc,
+			boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter nwriter,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
 
-		GraphTextWriter nwriter = writer.cloneNew();
-		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(
-				abc.constants);
-		if ((ns.kind == Namespace.KIND_PACKAGE)
-				|| (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
+		// GraphTextWriter nwriter = writer.cloneNew();
+		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(abc.constants);
+		if ((ns.kind == Namespace.KIND_PACKAGE) || (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
 			String nsname = ns.getName(abc.constants).toPrintableString(true);
 			// writer.appendNoHilight("package");
 			nwriter.appendNoHilight("module");
 			if (!nsname.isEmpty()) {
 				nwriter.appendNoHilight(" " + nsname); // assume not null name
+				nwriter.startBlock();
 			}
-			nwriter.startBlock();
-			toString(parent, convertData, path, abc, isStatic, exportMode,
-					scriptIndex, classIndex, nwriter, fullyQualifiedNames,
-					parallel);
-			nwriter.endBlock();
+			toString(parent, convertData, path, abc, isStatic, exportMode, scriptIndex, classIndex, nwriter,
+					fullyQualifiedNames, parallel);
+			if (!nsname.isEmpty()) {
+				nwriter.endBlock();
+			}
 			nwriter.newLine();
 		}
-		writer.marge(nwriter);
+		// writer.marge(nwriter);
 		// logger.info(nwriter.toTmpString());
-		return writer;
+		return nwriter;
 	}
 
-	public void convertPackaged(Trait parent, ConvertData convertData,
-			String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			NulWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
-		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(
-				abc.constants);
-		if ((ns.kind == Namespace.KIND_PACKAGE)
-				|| (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
+	public void convertPackaged(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
+		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(abc.constants);
+		if ((ns.kind == Namespace.KIND_PACKAGE) || (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
 			String nsname = ns.getName(abc.constants).toPrintableString(true);
-			convert(parent, convertData, path + nsname, abc, isStatic,
-					exportMode, scriptIndex, classIndex, writer,
+			convert(parent, convertData, path + nsname, abc, isStatic, exportMode, scriptIndex, classIndex, writer,
 					fullyQualifiedNames, parallel);
 		}
 	}
 
-	public GraphTextWriter toStringHeader(Trait parent,
-			ConvertData convertData, String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			GraphTextWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
-		toString(parent, convertData, path, abc, isStatic, exportMode,
-				scriptIndex, classIndex, writer, fullyQualifiedNames, parallel);
+	public GraphTextWriter toStringHeader(Trait parent, ConvertData convertData, String path, ABC abc,
+			boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
+		toString(parent, convertData, path, abc, isStatic, exportMode, scriptIndex, classIndex, writer,
+				fullyQualifiedNames, parallel);
 		// logger.info(writer.toTmpString());
 		return writer;
 	}
 
-	public void convertHeader(Trait parent, ConvertData convertData,
-			String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			NulWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
-		convert(parent, convertData, path, abc, isStatic, exportMode,
-				scriptIndex, classIndex, writer, fullyQualifiedNames, parallel);
+	public void convertHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
+		convert(parent, convertData, path, abc, isStatic, exportMode, scriptIndex, classIndex, writer,
+				fullyQualifiedNames, parallel);
 	}
 
 	public final Multiname getName(ABC abc) {
@@ -607,14 +537,13 @@ public abstract class Trait implements Cloneable, Serializable {
 		}
 	}
 
-	public abstract int removeTraps(int scriptIndex, int classIndex,
-			boolean isStatic, ABC abc, String path) throws InterruptedException;
+	public abstract int removeTraps(int scriptIndex, int classIndex, boolean isStatic, ABC abc, String path)
+			throws InterruptedException;
 
 	public final ClassPath getPath(ABC abc) {
 		Multiname name = getName(abc);
 		Namespace ns = name.getNamespace(abc.constants);
-		DottedChain packageName = ns == null ? DottedChain.EMPTY : ns
-				.getName(abc.constants);
+		DottedChain packageName = ns == null ? DottedChain.EMPTY : ns.getName(abc.constants);
 		String objectName = name.getName(abc.constants, null, true, false);
 		String namespaceSuffix = name.getNamespaceSuffix();
 		return new ClassPath(packageName, objectName, namespaceSuffix); // assume
@@ -637,6 +566,5 @@ public abstract class Trait implements Cloneable, Serializable {
 		return true;
 	}
 
-	public abstract void getMethodInfos(ABC abc, int traitId, int classIndex,
-			List<MethodId> methodInfos);
+	public abstract void getMethodInfos(ABC abc, int traitId, int classIndex, List<MethodId> methodInfos);
 }

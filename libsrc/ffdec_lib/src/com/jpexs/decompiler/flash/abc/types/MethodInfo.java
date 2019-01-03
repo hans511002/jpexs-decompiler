@@ -26,6 +26,7 @@ import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instruction;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.construction.NewFunctionIns;
 import com.jpexs.decompiler.flash.configuration.Configuration;
+import com.jpexs.decompiler.flash.helpers.Convert2Ts;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightData;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
@@ -48,8 +49,7 @@ public class MethodInfo {
 		if (body != null) {
 			for (AVM2Instruction ins : body.getCode().code) {
 				if (ins.definition instanceof NewFunctionIns) {
-					if (ins.operands[0] < abc.method_info.size()
-							&& !abc.method_info.get(ins.operands[0]).deleted) {
+					if (ins.operands[0] < abc.method_info.size() && !abc.method_info.get(ins.operands[0]).deleted) {
 						abc.method_info.get(ins.operands[0]).delete(abc, d);
 					}
 				}
@@ -224,8 +224,7 @@ public class MethodInfo {
 	public MethodInfo() {
 	}
 
-	public MethodInfo(int[] param_types, int ret_type, int name_index,
-			int flags, ValueKind[] optional, int[] paramNames) {
+	public MethodInfo(int[] param_types, int ret_type, int name_index, int flags, ValueKind[] optional, int[] paramNames) {
 		this.param_types = param_types;
 		this.ret_type = ret_type;
 		this.name_index = name_index;
@@ -239,9 +238,8 @@ public class MethodInfo {
 		StringBuilder ret = new StringBuilder();
 		ret.append("MethodInfo: param_types=");
 		Helper.intArrToStringBuilder(param_types, ret);
-		ret.append(" ret_type=").append(ret_type).append(" name_index=")
-				.append(name_index).append(" flags=").append(flags)
-				.append(" optional=[");
+		ret.append(" ret_type=").append(ret_type).append(" name_index=").append(name_index).append(" flags=")
+				.append(flags).append(" optional=[");
 		if (optional != null) {
 			for (int i = 0; i < optional.length; i++) {
 				if (i > 0) {
@@ -256,8 +254,7 @@ public class MethodInfo {
 		return ret.toString();
 	}
 
-	public String toString(AVM2ConstantPool constants,
-			List<DottedChain> fullyQualifiedNames) {
+	public String toString(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
 		StringBuilder optionalStr = new StringBuilder();
 		optionalStr.append("[");
 		if (optional != null) {
@@ -278,8 +275,7 @@ public class MethodInfo {
 			if (param_types[i] == 0) {
 				param_typesStr.append("*");
 			} else {
-				param_typesStr.append(constants.getMultiname(param_types[i])
-						.toString(constants, fullyQualifiedNames));
+				param_typesStr.append(constants.getMultiname(param_types[i]).toString(constants, fullyQualifiedNames));
 			}
 		}
 
@@ -295,13 +291,11 @@ public class MethodInfo {
 		if (ret_type == 0) {
 			ret_typeStr = "*";
 		} else {
-			ret_typeStr = constants.getMultiname(ret_type).toString(constants,
-					fullyQualifiedNames);
+			ret_typeStr = constants.getMultiname(ret_type).toString(constants, fullyQualifiedNames);
 		}
 
-		return "param_types=" + param_typesStr + " ret_type=" + ret_typeStr
-				+ " name=\"" + constants.getString(name_index) + "\" flags="
-				+ flags + " optional=" + optionalStr + " paramNames="
+		return "param_types=" + param_typesStr + " ret_type=" + ret_typeStr + " name=\""
+				+ constants.getString(name_index) + "\" flags=" + flags + " optional=" + optionalStr + " paramNames="
 				+ paramNamesStr;
 	}
 
@@ -313,26 +307,23 @@ public class MethodInfo {
 	}
 
 	public int getMaxReservedReg() {
-		return param_types.length + (flagNeed_rest() ? 1 : 0)
-				+ (flagNeed_arguments() ? 1 : 0);
+		return param_types.length + (flagNeed_rest() ? 1 : 0) + (flagNeed_arguments() ? 1 : 0);
 	}
 
-	public GraphTextWriter getParamStr(GraphTextWriter writer,
-			AVM2ConstantPool constants, MethodBody body, ABC abc,
+	public GraphTextWriter getParamStr(GraphTextWriter writer, AVM2ConstantPool constants, MethodBody body, ABC abc,
 			List<DottedChain> fullyQualifiedNames) {
 		Map<Integer, String> localRegNames = new HashMap<>();
 		if (body != null && Configuration.getLocalNamesFromDebugInfo.get()) {
 			localRegNames = body.getCode().getLocalRegNamesFromDebug(abc);
 		}
-		GraphTextWriter nwriter = writer.cloneNew();
 		for (int i = 0; i < param_types.length; i++) {
+			GraphTextWriter nwriter = writer.cloneNew();
 			if (i > 0) {
 				nwriter.appendNoHilight(", ");
 			}
 			DottedChain ptype = DottedChain.ALL;
 			if (param_types[i] > 0) {
-				ptype = constants.getMultiname(param_types[i])
-						.getNameWithNamespace(constants, true);
+				ptype = constants.getMultiname(param_types[i]).getNameWithNamespace(constants, true);
 			}
 
 			HighlightData pdata = new HighlightData();
@@ -340,41 +331,37 @@ public class MethodInfo {
 			pdata.declaredType = ptype;
 			pdata.regIndex = i + 1;
 			if (!localRegNames.isEmpty()) {
-				pdata.localName = localRegNames.get(i + 1); // assuming it is a
-															// slot
-				nwriter.hilightSpecial(IdentifiersDeobfuscation
-						.printIdentifier(true, localRegNames.get(i + 1)),
+				pdata.localName = localRegNames.get(i + 1);
+				// assuming it is a slot
+				nwriter.hilightSpecial(IdentifiersDeobfuscation.printIdentifier(true, localRegNames.get(i + 1)),
 						HighlightSpecialType.PARAM_NAME, i, pdata);
-			} else if ((paramNames.length > i) && (paramNames[i] != 0)
-					&& Configuration.paramNamesEnable.get()) {
+			} else if ((paramNames.length > i) && (paramNames[i] != 0) && Configuration.paramNamesEnable.get()) {
 				pdata.localName = constants.getString(paramNames[i]);
-				nwriter.hilightSpecial(IdentifiersDeobfuscation
-						.printIdentifier(true,
-								constants.getString(paramNames[i])),
+				nwriter.hilightSpecial(
+						IdentifiersDeobfuscation.printIdentifier(true, constants.getString(paramNames[i])),
 						HighlightSpecialType.PARAM_NAME, i, pdata);
 			} else {
 				pdata.localName = "param" + (i + 1);
-				nwriter.hilightSpecial(pdata.localName,
-						HighlightSpecialType.PARAM_NAME, i, pdata);
+				nwriter.hilightSpecial(pdata.localName, HighlightSpecialType.PARAM_NAME, i, pdata);
 			}
-			nwriter.appendNoHilight(":");
+			nwriter.appendNoHilight(": ");
 			if (param_types[i] == 0) {
-				nwriter.hilightSpecial("*", HighlightSpecialType.PARAM, i);
+				nwriter.hilightSpecial("any", HighlightSpecialType.PARAM, i);
 			} else {
-				nwriter.hilightSpecial(constants.getMultiname(param_types[i])
-						.getName(constants, fullyQualifiedNames, false, true),
-						HighlightSpecialType.PARAM, i);
+				String rname = constants.getMultiname(param_types[i]).getName(constants, fullyQualifiedNames, false,
+						true);
+				rname = Convert2Ts.convertType(rname);
+				nwriter.hilightSpecial(rname, HighlightSpecialType.PARAM, i);
 			}
 			if (optional != null) {
 				if (i >= param_types.length - optional.length) {
-					int optionalIndex = i
-							- (param_types.length - optional.length);
+					int optionalIndex = i - (param_types.length - optional.length);
 					nwriter.appendNoHilight(" = ");
-					nwriter.hilightSpecial(
-							optional[optionalIndex].toString(constants),
-							HighlightSpecialType.OPTIONAL, optionalIndex);
+					nwriter.hilightSpecial(optional[optionalIndex].toString(constants), HighlightSpecialType.OPTIONAL,
+							optionalIndex);
 				}
 			}
+			writer.marge(nwriter);
 		}
 		if (flagNeed_rest()) {
 			String restAdd = "";
@@ -394,48 +381,45 @@ public class MethodInfo {
 			pdata.declaredType = DottedChain.ALL;
 			pdata.regIndex = param_types.length + 1;
 			pdata.localName = restName;
+			GraphTextWriter nwriter = writer.cloneNew();
 			nwriter.append(restAdd);
-			nwriter.hilightSpecial(restName,
-					HighlightSpecialType.FLAG_NEED_REST, 0, pdata);
+			nwriter.hilightSpecial(restName, HighlightSpecialType.FLAG_NEED_REST, 0, pdata);
+			writer.marge(nwriter);
 		}
-		writer.marge(nwriter);
 		return writer;
 	}
 
-	public GraphTextWriter getReturnTypeStr(GraphTextWriter writer,
-			AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
+	public GraphTextWriter getReturnTypeStr(GraphTextWriter writer, AVM2ConstantPool constants,
+			List<DottedChain> fullyQualifiedNames) {
 		GraphTextWriter nwriter = writer.cloneNew();
-		String rname = "*";
+		String rname = "any";
 		if (ret_type > 0) {
 			Multiname multiname = constants.getMultiname(ret_type);
-			if (multiname.kind != Multiname.TYPENAME
-					&& multiname.name_index > 0
+			if (multiname.kind != Multiname.TYPENAME && multiname.name_index > 0
 					&& constants.getString(multiname.name_index).equals("void")) {
 				rname = "void";
 			} else {
-				rname = multiname.getName(constants, fullyQualifiedNames,
-						false, true);
+				rname = multiname.getName(constants, fullyQualifiedNames, false, true);
 			}
 		}
+		rname = Convert2Ts.convertType(rname);
 		nwriter.hilightSpecial(rname, HighlightSpecialType.RETURNS);
 		writer.marge(nwriter);
 		return writer;
 	}
 
-	public String getReturnTypeRaw(AVM2ConstantPool constants,
-			List<DottedChain> fullyQualifiedNames) {
+	public String getReturnTypeRaw(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
 		String rname = "*";
 		if (ret_type > 0) {
 			Multiname multiname = constants.getMultiname(ret_type);
-			if (multiname.kind != Multiname.TYPENAME
-					&& multiname.name_index > 0
+			if (multiname.kind != Multiname.TYPENAME && multiname.name_index > 0
 					&& constants.getString(multiname.name_index).equals("void")) {
 				rname = "void";
 			} else {
-				rname = multiname.getName(constants, fullyQualifiedNames,
-						false, true);
+				rname = multiname.getName(constants, fullyQualifiedNames, false, true);
 			}
 		}
+		rname = Convert2Ts.convertType(rname);
 		return rname;
 	}
 }

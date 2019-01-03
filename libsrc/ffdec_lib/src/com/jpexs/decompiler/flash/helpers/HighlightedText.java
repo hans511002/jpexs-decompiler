@@ -12,13 +12,15 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.helpers;
 
-import com.jpexs.decompiler.flash.helpers.hilight.Highlighting;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.jpexs.decompiler.flash.helpers.hilight.Highlighting;
 
 /**
  * Provides methods for highlighting positions of instructions in the text.
@@ -27,59 +29,59 @@ import java.util.List;
  */
 public class HighlightedText implements Serializable {
 
-    public static HighlightedText EMPTY = new HighlightedText();
+	public static HighlightedText EMPTY = new HighlightedText();
 
-    public String text;
+	public String text;
 
-    private final List<Highlighting> traitHighlights;
+	private final List<Highlighting> traitHighlights;
 
-    private final List<Highlighting> classHighlights;
+	private final List<Highlighting> classHighlights;
 
-    private final List<Highlighting> methodHighlights;
+	private final List<Highlighting> methodHighlights;
 
-    private final List<Highlighting> instructionHighlights;
+	private final List<Highlighting> instructionHighlights;
 
-    private final List<Highlighting> specialHighlights;
+	private final List<Highlighting> specialHighlights;
 
-    public List<Highlighting> getTraitHighlights() {
-        return traitHighlights;
-    }
+	public List<Highlighting> getTraitHighlights() {
+		return traitHighlights;
+	}
 
-    public List<Highlighting> getMethodHighlights() {
-        return methodHighlights;
-    }
+	public List<Highlighting> getMethodHighlights() {
+		return methodHighlights;
+	}
 
-    public List<Highlighting> getClassHighlights() {
-        return classHighlights;
-    }
+	public List<Highlighting> getClassHighlights() {
+		return classHighlights;
+	}
 
-    public List<Highlighting> getInstructionHighlights() {
-        return instructionHighlights;
-    }
+	public List<Highlighting> getInstructionHighlights() {
+		return instructionHighlights;
+	}
 
-    public List<Highlighting> getSpecialHighlights() {
-        return specialHighlights;
-    }
+	public List<Highlighting> getSpecialHighlights() {
+		return specialHighlights;
+	}
 
-    public HighlightedText(HighlightedTextWriter writer) {
-        this.text = writer.toString();
-        this.traitHighlights = writer.traitHilights;
-        this.classHighlights = writer.classHilights;
-        this.methodHighlights = writer.methodHilights;
-        this.instructionHighlights = writer.instructionHilights;
-        this.specialHighlights = writer.specialHilights;
-    }
+	public HighlightedText(HighlightedTextWriter writer) {
+		this.text = writer.toText();
+		this.traitHighlights = writer.traitHilights;
+		this.classHighlights = writer.classHilights;
+		this.methodHighlights = writer.methodHilights;
+		this.instructionHighlights = writer.instructionHilights;
+		this.specialHighlights = writer.specialHilights;
+	}
 
-    private HighlightedText() {
-        this("");
-    }
+	private HighlightedText() {
+		this("");
+	}
 
-    public HighlightedText(String text) {
-        this.text = text;
-        this.traitHighlights = new ArrayList<>();
-        this.classHighlights = new ArrayList<>();
-        this.methodHighlights = new ArrayList<>();
-        this.instructionHighlights = new ArrayList<>();
-        this.specialHighlights = new ArrayList<>();
-    }
+	public HighlightedText(String text) {
+		this.text = text;
+		this.traitHighlights = new ArrayList<>();
+		this.classHighlights = new ArrayList<>();
+		this.methodHighlights = new ArrayList<>();
+		this.instructionHighlights = new ArrayList<>();
+		this.specialHighlights = new ArrayList<>();
+	}
 }

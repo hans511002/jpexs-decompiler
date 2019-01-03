@@ -12,8 +12,11 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.instructions.xml;
+
+import java.util.List;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.AVM2LocalData;
@@ -24,7 +27,6 @@ import com.jpexs.decompiler.flash.abc.avm2.instructions.InstructionDefinition;
 import com.jpexs.decompiler.flash.abc.avm2.model.DefaultXMLNamespace;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.TranslateStack;
-import java.util.List;
 
 /**
  *
@@ -32,26 +34,29 @@ import java.util.List;
  */
 public class DXNSLateIns extends InstructionDefinition {
 
-    public DXNSLateIns() {
-        super(0x07, "dxnslate", new int[]{}, true);
-    }
+	public DXNSLateIns() {
+		super(0x07, "dxnslate", new int[] {}, true);
+	}
 
-    @Override
-    public boolean execute(LocalDataArea lda, AVM2ConstantPool constants, AVM2Instruction ins) {
-        String s = lda.operandStack.pop().toString();
-        System.out.println("Set default XML space " + s);
-        return true;
-    }
+	@Override
+	public boolean execute(LocalDataArea lda, AVM2ConstantPool constants,
+			AVM2Instruction ins) {
+		String s = lda.operandStack.pop().toString();
+		System.out.println("Set default XML space " + s);
+		return true;
+	}
 
-    @Override
-    public void translate(AVM2LocalData localData, TranslateStack stack, AVM2Instruction ins, List<GraphTargetItem> output, String path) {
-        GraphTargetItem xmlns = stack.pop();
-        output.add(new DefaultXMLNamespace(ins, localData.lineStartInstruction, xmlns));
+	@Override
+	public void translate(AVM2LocalData localData, TranslateStack stack,
+			AVM2Instruction ins, List<GraphTargetItem> output, String path) {
+		GraphTargetItem xmlns = stack.pop();
+		output.add(new DefaultXMLNamespace(ins, localData.lineStartInstruction,
+				xmlns));
 
-    }
+	}
 
-    @Override
-    public int getStackPopCount(AVM2Instruction ins, ABC abc) {
-        return 1;
-    }
+	@Override
+	public int getStackPopCount(AVM2Instruction ins, ABC abc) {
+		return 1;
+	}
 }

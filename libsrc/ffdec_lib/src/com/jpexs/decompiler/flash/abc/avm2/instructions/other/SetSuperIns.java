@@ -12,8 +12,13 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.abc.avm2.instructions.other;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Stack;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.AVM2LocalData;
@@ -31,9 +36,6 @@ import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.TranslateStack;
 import com.jpexs.decompiler.graph.model.LocalData;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
 
 /**
  *
@@ -41,33 +43,45 @@ import java.util.Stack;
  */
 public class SetSuperIns extends InstructionDefinition implements SetTypeIns {
 
-    public SetSuperIns() {
-        super(0x05, "setsuper", new int[]{AVM2Code.DAT_MULTINAME_INDEX}, true);
-    }
+	public SetSuperIns() {
+		super(0x05, "setsuper", new int[] { AVM2Code.DAT_MULTINAME_INDEX },
+				true);
+	}
 
-    @Override
-    public void translate(AVM2LocalData localData, TranslateStack stack, AVM2Instruction ins, List<GraphTargetItem> output, String path) {
-        int multinameIndex = ins.operands[0];
+	@Override
+	public void translate(AVM2LocalData localData, TranslateStack stack,
+			AVM2Instruction ins, List<GraphTargetItem> output, String path) {
+		int multinameIndex = ins.operands[0];
 
-        GraphTargetItem value = stack.pop();
-        FullMultinameAVM2Item multiname = resolveMultiname(localData, true, stack, localData.getConstants(), multinameIndex, ins);
-        GraphTargetItem obj = stack.pop();
-        output.add(new SetSuperAVM2Item(ins, localData.lineStartInstruction, value, obj, multiname));
-    }
+		GraphTargetItem value = stack.pop();
+		FullMultinameAVM2Item multiname = resolveMultiname(localData, true,
+				stack, localData.getConstants(), multinameIndex, ins);
+		GraphTargetItem obj = stack.pop();
+		output.add(new SetSuperAVM2Item(ins, localData.lineStartInstruction,
+				value, obj, multiname));
+	}
 
-    @Override
-    public int getStackPopCount(AVM2Instruction ins, ABC abc) {
-        int multinameIndex = ins.operands[0];
-        return 2 + getMultinameRequiredStackSize(abc.constants, multinameIndex);
-    }
+	@Override
+	public int getStackPopCount(AVM2Instruction ins, ABC abc) {
+		int multinameIndex = ins.operands[0];
+		return 2 + getMultinameRequiredStackSize(abc.constants, multinameIndex);
+	}
 
-    @Override
-    public String getObject(Stack<AVM2Item> stack, ABC abc, AVM2Instruction ins, List<AVM2Item> output, MethodBody body, HashMap<Integer, String> localRegNames, List<DottedChain> fullyQualifiedNames) throws InterruptedException {
-        int multinameIndex = ins.operands[0];
-        String multiname = resolveMultinameNoPop(1, stack, abc.constants, multinameIndex, ins, fullyQualifiedNames);
-        HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
-        stack.get(1 + resolvedCount(abc.constants, multinameIndex)).toString(writer, LocalData.create(abc.constants, localRegNames, fullyQualifiedNames));
-        String obj = writer.toString();
-        return obj + ".super." + multiname;
-    }
+	@Override
+	public String getObject(Stack<AVM2Item> stack, ABC abc,
+			AVM2Instruction ins, List<AVM2Item> output, MethodBody body,
+			HashMap<Integer, String> localRegNames,
+			List<DottedChain> fullyQualifiedNames) throws InterruptedException {
+		int multinameIndex = ins.operands[0];
+		String multiname = resolveMultinameNoPop(1, stack, abc.constants,
+				multinameIndex, ins, fullyQualifiedNames);
+		HighlightedTextWriter writer = new HighlightedTextWriter(
+				Configuration.getCodeFormatting(), false);
+		stack.get(1 + resolvedCount(abc.constants, multinameIndex)).toString(
+				writer,
+				LocalData.create(abc.constants, localRegNames,
+						fullyQualifiedNames));
+		String obj = writer.toText();
+		return obj + ".super." + multiname;
+	}
 }

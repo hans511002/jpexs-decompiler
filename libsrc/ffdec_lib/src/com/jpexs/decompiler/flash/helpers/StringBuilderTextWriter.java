@@ -65,6 +65,16 @@ public class StringBuilderTextWriter extends GraphTextWriter {
 	}
 
 	@Override
+	public String toString() {
+		return writer.toString();
+	}
+
+	@Override
+	public String toText() {
+		return writer.toString();
+	}
+
+	@Override
 	public GraphTextWriter hilightSpecial(String text,
 			HighlightSpecialType type, String specialValue, HighlightData data) {
 		writeToOutputStream(text);

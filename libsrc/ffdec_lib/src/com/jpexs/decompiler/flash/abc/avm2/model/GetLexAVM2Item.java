@@ -49,14 +49,14 @@ public class GetLexAVM2Item extends AVM2Item {
 	}
 
 	@Override
-	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) {
-		GraphTextWriter nwriter = writer.cloneNew();
+	public GraphTextWriter appendTo(GraphTextWriter nwriter, LocalData localData) {
+		// GraphTextWriter nwriter = writer.cloneNew();
 		String localName = propertyName.getName(localData.constantsAvm2,
 				localData.fullyQualifiedNames, false, true);
 		getSrcData().localName = localName;
 		nwriter.append(propertyName.getName(localData.constantsAvm2,
 				localData.fullyQualifiedNames, false, true));
-		return writer.marge(nwriter);
+		return nwriter;// .marge(nwriter);
 	}
 
 	@Override

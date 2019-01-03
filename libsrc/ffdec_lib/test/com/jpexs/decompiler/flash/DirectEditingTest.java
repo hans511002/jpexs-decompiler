@@ -12,8 +12,23 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash;
+
+import static org.testng.Assert.fail;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.ScriptPack;
@@ -31,17 +46,6 @@ import com.jpexs.decompiler.flash.tags.ABCContainerTag;
 import com.jpexs.decompiler.flash.tags.base.ASMSource;
 import com.jpexs.decompiler.graph.CompilationException;
 import com.jpexs.decompiler.graph.TranslateException;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import static org.testng.Assert.fail;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  *
@@ -49,107 +53,143 @@ import org.testng.annotations.Test;
  */
 public class DirectEditingTest extends FileTestBase {
 
-    @BeforeClass
-    public void init() {
-        Configuration.autoDeobfuscate.set(false);
-        Configuration.simplifyExpressions.set(false);
-        Configuration._debugCopy.set(false);
-        Configuration.useFlexAs3Compiler.set(false);
-    }
+	@BeforeClass
+	public void init() {
+		Configuration.autoDeobfuscate.set(false);
+		Configuration.simplifyExpressions.set(false);
+		Configuration._debugCopy.set(false);
+		Configuration.useFlexAs3Compiler.set(false);
+	}
 
-    public static final String TESTDATADIR = "testdata/directediting";
+	public static final String TESTDATADIR = "testdata/directediting";
 
-    @Test(dataProvider = "provideFiles")
-    public void testDirectEditing(String filePath) throws IOException, InterruptedException, AVM2ParseException, CompilationException {
-        File playerSWC = Configuration.getPlayerSWC();
-        if (playerSWC == null) {
-            throw new IOException("Player SWC library not found, please place it to " + Configuration.getFlashLibPath());
-        }
-        try {
-            SWF swf = new SWF(new BufferedInputStream(new FileInputStream(filePath)), false);
-            if (swf.isAS3()) {
-                boolean dotest = false;
-                List<ABC> allAbcs = new ArrayList<>();
-                for (ABCContainerTag ct : swf.getAbcList()) {
-                    allAbcs.add(ct.getABC());
-                }
-                for (ABC abc : allAbcs) {
-                    for (int s = 0; s < abc.script_info.size(); s++) {
-                        String startAfter = null;
-                        HighlightedTextWriter htw = new HighlightedTextWriter(new CodeFormatting(), false);
-                        ScriptPack en = abc.script_info.get(s).getPacks(abc, s, null, allAbcs).get(0);
-                        String classPathString = en.getClassPath().toString();
-                        if (startAfter == null || classPathString.equals(startAfter)) {
-                            dotest = true;
-                        }
-                        if (!dotest) {
-                            System.out.println("Skipped:" + classPathString);
-                            continue;
-                        }
+	@Test(dataProvider = "provideFiles")
+	public void testDirectEditing(String filePath) throws IOException,
+			InterruptedException, AVM2ParseException, CompilationException {
+		File playerSWC = Configuration.getPlayerSWC();
+		if (playerSWC == null) {
+			throw new IOException(
+					"Player SWC library not found, please place it to "
+							+ Configuration.getFlashLibPath());
+		}
+		try {
+			SWF swf = new SWF(new BufferedInputStream(new FileInputStream(
+					filePath)), false);
+			if (swf.isAS3()) {
+				boolean dotest = false;
+				List<ABC> allAbcs = new ArrayList<>();
+				for (ABCContainerTag ct : swf.getAbcList()) {
+					allAbcs.add(ct.getABC());
+				}
+				for (ABC abc : allAbcs) {
+					for (int s = 0; s < abc.script_info.size(); s++) {
+						String startAfter = null;
+						HighlightedTextWriter htw = new HighlightedTextWriter(
+								new CodeFormatting(), false);
+						ScriptPack en = abc.script_info.get(s)
+								.getPacks(abc, s, null, allAbcs).get(0);
+						String classPathString = en.getClassPath().toString();
+						if (startAfter == null
+								|| classPathString.equals(startAfter)) {
+							dotest = true;
+						}
+						if (!dotest) {
+							System.out.println("Skipped:" + classPathString);
+							continue;
+						}
 
-                        System.out.println("Recompiling:" + classPathString + "...");
-                        try {
-                            en.toSource(htw, abc.script_info.get(s).traits.traits, new ConvertData(), ScriptExportMode.AS, false);
-                            String original = htw.toString();
-                            abc.replaceScriptPack(As3ScriptReplacerFactory.createFFDec() /*TODO: test the otherone*/, en, original);
-                        } catch (As3ScriptReplaceException ex) {
-                            fail("Exception during decompilation - file: " + filePath + " class: " + classPathString + " msg:" + ex.getMessage(), ex);
-                        } catch (Exception ex) {
-                            fail("Exception during decompilation - file: " + filePath + " class: " + classPathString + " msg:" + ex.getMessage(), ex);
-                            throw ex;
-                        }
-                    }
-                }
-            } else {
-                Map<String, ASMSource> asms = swf.getASMs(false);
+						System.out.println("Recompiling:" + classPathString
+								+ "...");
+						try {
+							en.toSource(htw,
+									abc.script_info.get(s).traits.traits,
+									new ConvertData(), ScriptExportMode.AS,
+									false);
+							String original = htw.toText();
+							abc.replaceScriptPack(
+									As3ScriptReplacerFactory.createFFDec() /*
+																			 * TODO:
+																			 * test
+																			 * the
+																			 * otherone
+																			 */,
+									en, original);
+						} catch (As3ScriptReplaceException ex) {
+							fail("Exception during decompilation - file: "
+									+ filePath + " class: " + classPathString
+									+ " msg:" + ex.getMessage(), ex);
+						} catch (Exception ex) {
+							fail("Exception during decompilation - file: "
+									+ filePath + " class: " + classPathString
+									+ " msg:" + ex.getMessage(), ex);
+							throw ex;
+						}
+					}
+				}
+			} else {
+				Map<String, ASMSource> asms = swf.getASMs(false);
 
-                for (ASMSource asm : asms.values()) {
-                    try {
-                        HighlightedTextWriter writer = new HighlightedTextWriter(new CodeFormatting(), false);
-                        asm.getActionScriptSource(writer, null);
-                        String as = writer.toString();
-                        as = asm.removePrefixAndSuffix(as);
-                        ActionScript2Parser par = new ActionScript2Parser(swf.version);
-                        try {
-                            asm.setActions(par.actionsFromString(as));
-                        } catch (ActionParseException | CompilationException ex) {
-                            fail("Unable to parse: " + as + "/" + asm.toString(), ex);
-                        }
-                        writer = new HighlightedTextWriter(new CodeFormatting(), false);
-                        asm.getActionScriptSource(writer, null);
-                        String as2 = writer.toString();
-                        as2 = asm.removePrefixAndSuffix(as2);
-                        try {
-                            asm.setActions(par.actionsFromString(as2));
-                        } catch (ActionParseException | CompilationException ex) {
-                            fail("Unable to parse: " + asm.getSwf().getShortFileName() + "/" + asm.toString(), ex);
-                        }
-                        writer = new HighlightedTextWriter(new CodeFormatting(), false);
-                        asm.getActionScriptSource(writer, null);
-                        String as3 = writer.toString();
-                        as3 = asm.removePrefixAndSuffix(as3);
-                        if (!as3.equals(as2)) {
-                            fail("ActionScript is different: " + asm.getSwf().getShortFileName() + "/" + asm.toString());
-                        }
-                        asm.setModified();
-                    } catch (InterruptedException | IOException | OutOfMemoryError | TranslateException | StackOverflowError ex) {
-                    }
-                }
-            }
-            String nFilePath = filePath.substring(0, filePath.length() - 4); //remove .swf
-            nFilePath += ".recompiled.swf";
+				for (ASMSource asm : asms.values()) {
+					try {
+						HighlightedTextWriter writer = new HighlightedTextWriter(
+								new CodeFormatting(), false);
+						asm.getActionScriptSource(writer, null);
+						String as = writer.toText();
+						as = asm.removePrefixAndSuffix(as);
+						ActionScript2Parser par = new ActionScript2Parser(
+								swf.version);
+						try {
+							asm.setActions(par.actionsFromString(as));
+						} catch (ActionParseException | CompilationException ex) {
+							fail("Unable to parse: " + as + "/"
+									+ asm.toString(), ex);
+						}
+						writer = new HighlightedTextWriter(
+								new CodeFormatting(), false);
+						asm.getActionScriptSource(writer, null);
+						String as2 = writer.toText();
+						as2 = asm.removePrefixAndSuffix(as2);
+						try {
+							asm.setActions(par.actionsFromString(as2));
+						} catch (ActionParseException | CompilationException ex) {
+							fail("Unable to parse: "
+									+ asm.getSwf().getShortFileName() + "/"
+									+ asm.toString(), ex);
+						}
+						writer = new HighlightedTextWriter(
+								new CodeFormatting(), false);
+						asm.getActionScriptSource(writer, null);
+						String as3 = writer.toText();
+						as3 = asm.removePrefixAndSuffix(as3);
+						if (!as3.equals(as2)) {
+							fail("ActionScript is different: "
+									+ asm.getSwf().getShortFileName() + "/"
+									+ asm.toString());
+						}
+						asm.setModified();
+					} catch (InterruptedException | IOException
+							| OutOfMemoryError | TranslateException
+							| StackOverflowError ex) {
+					}
+				}
+			}
+			String nFilePath = filePath.substring(0, filePath.length() - 4); // remove
+																				// .swf
+			nFilePath += ".recompiled.swf";
 
-            try (FileOutputStream fos = new FileOutputStream(nFilePath)) {
-                swf.saveTo(fos);
-            }
-            //TODO: try tu run it in debug flashplayer (?)
-        } catch (Exception ex) {
-            fail("Exception during decompilation: " + filePath + ":" + ex.getMessage(), ex);
-        }
-    }
+			try (FileOutputStream fos = new FileOutputStream(nFilePath)) {
+				swf.saveTo(fos);
+			}
+			// TODO: try tu run it in debug flashplayer (?)
+		} catch (Exception ex) {
+			fail("Exception during decompilation: " + filePath + ":"
+					+ ex.getMessage(), ex);
+		}
+	}
 
-    @Override
-    public String[] getTestDataDirs() {
-        return new String[]{TESTDATADIR, FREE_ACTIONSCRIPT_AS2, FREE_ACTIONSCRIPT_AS3};
-    }
+	@Override
+	public String[] getTestDataDirs() {
+		return new String[] { TESTDATADIR, FREE_ACTIONSCRIPT_AS2,
+				FREE_ACTIONSCRIPT_AS3 };
+	}
 }

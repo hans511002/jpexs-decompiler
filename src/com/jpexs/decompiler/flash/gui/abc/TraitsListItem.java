@@ -117,7 +117,7 @@ public class TraitsListItem {
 				trait.toStringHeader(null, convertData, "", abc, true,
 						ScriptExportMode.AS, scriptIndex, classIndex, writer,
 						new ArrayList<>(), false);
-				s = writer.toString();
+				s = writer.toText();
 			} else {
 				ConvertData convertData = new ConvertData();
 				Trait trait = abc.instance_info.get(classIndex).instance_traits.traits

@@ -373,7 +373,7 @@ public class ActionPush extends Action {
 		HighlightedTextWriter writer = new HighlightedTextWriter(
 				Configuration.getCodeFormatting(), false);
 		toString(writer);
-		return writer.toString();
+		return writer.toText();
 	}
 
 	public GraphTextWriter toString(GraphTextWriter writer) {

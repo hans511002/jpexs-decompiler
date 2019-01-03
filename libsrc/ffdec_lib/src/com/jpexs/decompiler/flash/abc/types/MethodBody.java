@@ -510,7 +510,7 @@ public final class MethodBody implements Cloneable {
 			toString("", ScriptExportMode.AS, abc, null, writer,
 					new ArrayList<>());
 			writer.unindent().unindent().unindent();
-			return writer.toString();
+			return writer.toText();
 		} catch (InterruptedException ex) {
 			logger.log(Level.SEVERE, null, ex);
 		}

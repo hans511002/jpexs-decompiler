@@ -1228,7 +1228,7 @@ public class AVM2Code implements Cloneable {
 				Configuration.getCodeFormatting(), false);
 		toASMSource(constants, null, null, new ArrayList<>(),
 				ScriptExportMode.PCODE, writer);
-		return writer.toString();
+		return writer.toText();
 	}
 
 	public GraphTextWriter toASMSource(AVM2ConstantPool constants,
@@ -1240,8 +1240,8 @@ public class AVM2Code implements Cloneable {
 
 	public GraphTextWriter toASMSource(AVM2ConstantPool constants,
 			MethodInfo info, MethodBody body, List<Integer> outputMap,
-			ScriptExportMode exportMode, GraphTextWriter writer) {
-		GraphTextWriter nwriter = writer.cloneNew();
+			ScriptExportMode exportMode, GraphTextWriter nwriter) {
+		// GraphTextWriter nwriter = writer.cloneNew();
 
 		if (info != null) {
 			nwriter.appendNoHilight("method").newLine();
@@ -1441,8 +1441,8 @@ public class AVM2Code implements Cloneable {
 		if (info != null) {
 			nwriter.appendNoHilight("end ; method").newLine();
 		}
-		writer.marge(nwriter);
-		return writer;
+		// writer.marge(nwriter);
+		return nwriter;
 	}
 
 	public Set<Long> getImportantOffsets(MethodBody body, boolean tryEnds) {

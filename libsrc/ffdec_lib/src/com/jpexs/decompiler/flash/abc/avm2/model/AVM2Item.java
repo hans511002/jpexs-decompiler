@@ -45,13 +45,11 @@ public abstract class AVM2Item extends GraphTargetItem {
 
 	private AVM2Instruction lineStartIns;
 
-	public AVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns,
-			int precedence) {
+	public AVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, int precedence) {
 		this(instruction, lineStartIns, precedence, null);
 	}
 
-	public AVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns,
-			int precedence, GraphTargetItem value) {
+	public AVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, int precedence, GraphTargetItem value) {
 		super(instruction, lineStartIns, precedence, value);
 		if (instruction instanceof AVM2Instruction) {
 			this.instruction = (AVM2Instruction) instruction;
@@ -74,15 +72,13 @@ public abstract class AVM2Item extends GraphTargetItem {
 		return true;
 	}
 
-	protected GraphTextWriter formatProperty(GraphTextWriter writer,
-			GraphTargetItem object, GraphTargetItem propertyName,
-			LocalData localData) throws InterruptedException {
-		GraphTextWriter nwriter = writer.cloneNew();
+	protected GraphTextWriter formatProperty(GraphTextWriter nwriter, GraphTargetItem object,
+			GraphTargetItem propertyName, LocalData localData) throws InterruptedException {
+		// GraphTextWriter nwriter = writer.cloneNew();
 		boolean empty = object instanceof FindPropertyAVM2Item;
 		if (object instanceof LocalRegAVM2Item) {
 			if (((LocalRegAVM2Item) object).computedValue != null) {
-				if (((LocalRegAVM2Item) object).computedValue
-						.getThroughNotCompilable() instanceof FindPropertyAVM2Item) {
+				if (((LocalRegAVM2Item) object).computedValue.getThroughNotCompilable() instanceof FindPropertyAVM2Item) {
 					empty = true;
 				}
 			}
@@ -112,8 +108,8 @@ public abstract class AVM2Item extends GraphTargetItem {
 
 		if (empty) {
 			propertyName.toString(nwriter, localData);
-			writer.marge(nwriter);
-			return writer;
+			// writer.marge(nwriter);
+			return nwriter;
 		}
 		if (propertyName instanceof FullMultinameAVM2Item) {
 			if (((FullMultinameAVM2Item) propertyName).name != null) {
@@ -130,15 +126,13 @@ public abstract class AVM2Item extends GraphTargetItem {
 			propertyName.toString(nwriter, localData);
 			nwriter.append("]");
 		}
-		writer.marge(nwriter);
-		return writer;
+		// writer.marge(nwriter);
+		return nwriter;
 	}
 
-	public static String localRegName(HashMap<Integer, String> localRegNames,
-			int reg) {
+	public static String localRegName(HashMap<Integer, String> localRegNames, int reg) {
 		if (localRegNames.containsKey(reg)) {
-			return IdentifiersDeobfuscation.printIdentifier(true,
-					localRegNames.get(reg));
+			return IdentifiersDeobfuscation.printIdentifier(true, localRegNames.get(reg));
 		} else {
 			if (reg == 0) {
 				return "this";
@@ -151,8 +145,7 @@ public abstract class AVM2Item extends GraphTargetItem {
 	 * @Override public boolean hasReturnValue() { return false; }
 	 */
 	@Override
-	public List<GraphSourceItem> toSourceIgnoreReturnValue(
-			SourceGeneratorLocalData localData, SourceGenerator generator)
+	public List<GraphSourceItem> toSourceIgnoreReturnValue(SourceGeneratorLocalData localData, SourceGenerator generator)
 			throws CompilationException {
 		if (!hasReturnValue()) {
 			return toSource(localData, generator);
@@ -178,14 +171,12 @@ public abstract class AVM2Item extends GraphTargetItem {
 		return new AVM2Instruction(0, def, opArr);
 	}
 
-	public static int getFreeRegister(SourceGeneratorLocalData localData,
-			SourceGenerator generator) {
+	public static int getFreeRegister(SourceGeneratorLocalData localData, SourceGenerator generator) {
 		AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
 		return g.getFreeRegister(localData);
 	}
 
-	public static void killRegister(SourceGeneratorLocalData localData,
-			SourceGenerator generator, int regNumber) {
+	public static void killRegister(SourceGeneratorLocalData localData, SourceGenerator generator, int regNumber) {
 		AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
 		g.killRegister(localData, regNumber);
 	}

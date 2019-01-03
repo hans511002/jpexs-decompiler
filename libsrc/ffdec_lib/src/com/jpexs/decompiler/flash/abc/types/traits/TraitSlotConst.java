@@ -33,6 +33,7 @@ import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.exporters.script.Dependency;
 import com.jpexs.decompiler.flash.exporters.script.DependencyParser;
 import com.jpexs.decompiler.flash.exporters.script.DependencyType;
+import com.jpexs.decompiler.flash.helpers.Convert2Ts;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.helpers.NulWriter;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
@@ -70,44 +71,31 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 	public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
 		String typeStr = "*";
 		if (type_index > 0) {
-			typeStr = abc.constants.getMultiname(type_index).toString(
-					abc.constants, fullyQualifiedNames);
+			typeStr = abc.constants.getMultiname(type_index).toString(abc.constants, fullyQualifiedNames);
 		}
-		return "0x"
-				+ Helper.formatAddress(fileOffset)
-				+ " "
-				+ Helper.byteArrToString(bytes)
-				+ " SlotConst "
-				+ abc.constants.getMultiname(name_index).toString(
-						abc.constants, fullyQualifiedNames)
-				+ " slot="
-				+ slot_id
-				+ " type="
-				+ typeStr
-				+ " value="
-				+ (new ValueKind(value_index, value_kind))
-						.toString(abc.constants) + " metadata="
+		return "0x" + Helper.formatAddress(fileOffset) + " " + Helper.byteArrToString(bytes) + " SlotConst "
+				+ abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames) + " slot="
+				+ slot_id + " type=" + typeStr + " value="
+				+ (new ValueKind(value_index, value_kind)).toString(abc.constants) + " metadata="
 				+ Helper.intArrToString(metadata);
 	}
 
-	public String getType(AVM2ConstantPool constants,
-			List<DottedChain> fullyQualifiedNames) {
+	public String getType(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
 		String typeStr = "*";
 		if (type_index > 0) {
-			typeStr = constants.getMultiname(type_index).getName(constants,
-					fullyQualifiedNames, false, true);
+			typeStr = constants.getMultiname(type_index).getName(constants, fullyQualifiedNames, false, true);
 		}
 		return typeStr;
 	}
 
-	public GraphTextWriter getNameStr(GraphTextWriter nwriter, ABC abc,
-			List<DottedChain> fullyQualifiedNames) {
+	public GraphTextWriter getNameStr(GraphTextWriter nwriter, ABC abc, List<DottedChain> fullyQualifiedNames) {
 		// GraphTextWriter nwriter = writer.cloneNew();
 		String typeStr = getType(abc.constants, fullyQualifiedNames);
+		typeStr = Convert2Ts.convertType(typeStr);
 		if (typeStr.equals("*")) {
-			typeStr = "";
+			typeStr = ": any";
 		} else {
-			typeStr = ":" + typeStr;
+			typeStr = ": " + typeStr;
 		}
 		ValueKind val = null;
 		if (value_kind != 0) {
@@ -121,19 +109,18 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 		if (val != null && val.isNamespace()) {
 			slotconst = "namespace";
 		}
-		String txt = getName(abc).getName(abc.constants, fullyQualifiedNames,
-				false, true);
-		nwriter.hilightSpecial(slotconst + " ", HighlightSpecialType.TRAIT_TYPE);
+		String txt = getName(abc).getName(abc.constants, fullyQualifiedNames, false, true);
+		// nwriter.hilightSpecial(slotconst + " ",
+		// HighlightSpecialType.TRAIT_TYPE);
 		nwriter.hilightSpecial(txt, HighlightSpecialType.TRAIT_NAME);
 		nwriter.hilightSpecial(typeStr, HighlightSpecialType.TRAIT_TYPE_NAME);
 		// writer.marge(nwriter);
 		return nwriter;
 	}
 
-	public void getValueStr(ScriptExportMode exportMode, Trait parent,
-			ConvertData convertData, GraphTextWriter writer, ABC abc,
-			List<DottedChain> fullyQualifiedNames) throws InterruptedException {
-		GraphTextWriter nwriter = writer.cloneNew();
+	public void getValueStr(ScriptExportMode exportMode, Trait parent, ConvertData convertData,
+			GraphTextWriter nwriter, ABC abc, List<DottedChain> fullyQualifiedNames) throws InterruptedException {
+		// GraphTextWriter nwriter = writer.cloneNew();
 		if (convertData.assignedValues.containsKey(this)) {
 			AssignedValue assignment = convertData.assignedValues.get(this);
 			nwriter.startTrait(assignment.initializer);
@@ -146,20 +133,19 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 				nwriter.newLine();
 			}
 			if (exportMode != ScriptExportMode.AS_METHOD_STUBS) {
-				assignment.value.toString(nwriter, LocalData.create(
-						abc.constants, new HashMap<>(), fullyQualifiedNames));
+				assignment.value.toString(nwriter,
+						LocalData.create(abc.constants, new HashMap<>(), fullyQualifiedNames));
 			}
 			nwriter.endMethod();
 			nwriter.endTrait();
-			writer.marge(nwriter);
+			// writer.marge(nwriter);
 			return;
 		}
 		if (value_kind != 0) {
 			ValueKind val = new ValueKind(value_index, value_kind);
-			nwriter.hilightSpecial(val.toString(abc.constants),
-					HighlightSpecialType.TRAIT_VALUE);
+			nwriter.hilightSpecial(val.toString(abc.constants), HighlightSpecialType.TRAIT_VALUE);
 		}
-		writer.marge(nwriter);
+		// writer.marge(nwriter);
 	}
 
 	public boolean isNamespace() {
@@ -171,11 +157,9 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 	}
 
 	@Override
-	public GraphTextWriter toString(Trait parent, ConvertData convertData,
-			String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			GraphTextWriter nwriter, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
+	public GraphTextWriter toString(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter nwriter,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
 		// GraphTextWriter nwriter = writer.cloneNew();
 		getMetaData(parent, convertData, abc, nwriter);
 		Multiname n = getName(abc);
@@ -184,8 +168,7 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 			Namespace ns = n.getNamespace(abc.constants);
 			if (ns == null) {
 				showModifier = false;
-			} else if ((ns.kind != Namespace.KIND_PACKAGE)
-					&& (ns.kind != Namespace.KIND_PACKAGE_INTERNAL)) {
+			} else if ((ns.kind != Namespace.KIND_PACKAGE) && (ns.kind != Namespace.KIND_PACKAGE_INTERNAL)) {
 				showModifier = false;
 			}
 		}
@@ -195,8 +178,7 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 		if (convertData.assignedValues.containsKey(this)) {
 			GraphTargetItem val = convertData.assignedValues.get(this).value;
 			if (val instanceof NewFunctionAVM2Item) {
-				val.toString(nwriter, LocalData.create(abc.constants,
-						new HashMap<>(), fullyQualifiedNames));
+				val.toString(nwriter, LocalData.create(abc.constants, new HashMap<>(), fullyQualifiedNames));
 				// writer.marge(nwriter);
 				return nwriter;
 			}
@@ -204,24 +186,32 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 		getNameStr(nwriter, abc, fullyQualifiedNames);
 		if (value_kind != 0 || convertData.assignedValues.containsKey(this)) {
 			nwriter.appendNoHilight(" = ");
-			getValueStr(exportMode, parent, convertData, nwriter, abc,
-					fullyQualifiedNames);
+			getValueStr(exportMode, parent, convertData, nwriter, abc, fullyQualifiedNames);
+		} else {
+			String typeStr = getType(abc.constants, fullyQualifiedNames);
+			typeStr = Convert2Ts.convertType(typeStr);
+			if (typeStr.equals("number")) {
+				nwriter.appendNoHilight(" = 0");
+			} else if (typeStr.equals("boolean")) {
+				nwriter.appendNoHilight(" = false");
+			} else if (typeStr.equals("Date")) {
+				nwriter.appendNoHilight(" =new Date()");
+			} else {
+				nwriter.appendNoHilight(" = null");
+			}
 		}
-		nwriter.appendNoHilight(";").newLine();
+		nwriter.appendNoHilight(";");// .newLine();
 		// writer.marge(nwriter);
 		return nwriter;
 	}
 
 	@Override
-	public void convert(Trait parent, ConvertData convertData, String path,
-			ABC abc, boolean isStatic, ScriptExportMode exportMode,
-			int scriptIndex, int classIndex, NulWriter writer,
-			List<DottedChain> fullyQualifiedNames, boolean parallel)
-			throws InterruptedException {
+	public void convert(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
 		getNameStr(writer, abc, fullyQualifiedNames);
 		if (value_kind != 0 || convertData.assignedValues.containsKey(this)) {
-			getValueStr(exportMode, parent, convertData, writer, abc,
-					fullyQualifiedNames);
+			getValueStr(exportMode, parent, convertData, writer, abc, fullyQualifiedNames);
 		}
 	}
 
@@ -234,8 +224,7 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 	}
 
 	@Override
-	public int removeTraps(int scriptIndex, int classIndex, boolean isStatic,
-			ABC abc, String path) {
+	public int removeTraps(int scriptIndex, int classIndex, boolean isStatic, ABC abc, String path) {
 		// do nothing
 		return 0;
 	}
@@ -247,17 +236,14 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 	}
 
 	@Override
-	public void getDependencies(String customNs, ABC abc,
-			List<Dependency> dependencies, List<String> uses,
+	public void getDependencies(String customNs, ABC abc, List<Dependency> dependencies, List<String> uses,
 			DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames) {
 		if (ignorePackage == null) {
 			ignorePackage = getPackage(abc);
 		}
-		super.getDependencies(customNs, abc, dependencies, uses, ignorePackage,
-				fullyQualifiedNames);
-		DependencyParser.parseDependenciesFromMultiname(customNs, abc,
-				dependencies, uses, abc.constants.getMultiname(type_index),
-				getPackage(abc), fullyQualifiedNames, DependencyType.SIGNATURE);
+		super.getDependencies(customNs, abc, dependencies, uses, ignorePackage, fullyQualifiedNames);
+		DependencyParser.parseDependenciesFromMultiname(customNs, abc, dependencies, uses,
+				abc.constants.getMultiname(type_index), getPackage(abc), fullyQualifiedNames, DependencyType.SIGNATURE);
 	}
 
 	@Override
@@ -265,15 +251,11 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 
 		if (Configuration.handleSkinPartsAutomatically.get()) {
 			/*
-			 * Hide: private static var _skinParts (part of [SkinPart]
-			 * compilations)
+			 * Hide: private static var _skinParts (part of [SkinPart] compilations)
 			 */
-			if (isStatic
-					&& "_skinParts".equals(getName(abc).getName(abc.constants,
-							new ArrayList<>(), true, true))) {
+			if (isStatic && "_skinParts".equals(getName(abc).getName(abc.constants, new ArrayList<>(), true, true))) {
 				if (kindType == Trait.TRAIT_SLOT) {
-					if ("_skinParts".equals(getName(abc).getName(abc.constants,
-							new ArrayList<>(), true, true))) {
+					if ("_skinParts".equals(getName(abc).getName(abc.constants, new ArrayList<>(), true, true))) {
 						if (getName(abc).getNamespace(abc.constants).kind == Namespace.KIND_PRIVATE) {
 							return false;
 						}
@@ -290,23 +272,20 @@ public class TraitSlotConst extends Trait implements TraitWithSlot {
 		convertCommonHeaderFlags(isConst() ? "const" : "slot", abc, nwriter);
 		nwriter.newLine();
 		nwriter.appendNoHilight("slotid ");
-		nwriter.hilightSpecial(Integer.toString(slot_id),
-				HighlightSpecialType.SLOT_ID);
+		nwriter.hilightSpecial(Integer.toString(slot_id), HighlightSpecialType.SLOT_ID);
 		nwriter.newLine();
 		nwriter.appendNoHilight("type ");
-		nwriter.hilightSpecial(abc.constants.multinameToString(type_index),
-				HighlightSpecialType.TRAIT_TYPE_NAME);
+		nwriter.hilightSpecial(abc.constants.multinameToString(type_index), HighlightSpecialType.TRAIT_TYPE_NAME);
 		nwriter.newLine();
 		nwriter.appendNoHilight("value ");
-		nwriter.hilightSpecial((new ValueKind(value_index, value_kind)
-				.toASMString(abc.constants)), HighlightSpecialType.TRAIT_VALUE);
+		nwriter.hilightSpecial((new ValueKind(value_index, value_kind).toASMString(abc.constants)),
+				HighlightSpecialType.TRAIT_VALUE);
 		nwriter.newLine();
 		writer.marge(nwriter);
 		return writer;
 	}
 
 	@Override
-	public void getMethodInfos(ABC abc, int traitId, int classIndex,
-			List<MethodId> methodInfos) {
+	public void getMethodInfos(ABC abc, int traitId, int classIndex, List<MethodId> methodInfos) {
 	}
 }

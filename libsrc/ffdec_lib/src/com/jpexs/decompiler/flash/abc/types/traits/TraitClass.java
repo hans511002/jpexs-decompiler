@@ -65,119 +65,94 @@ public class TraitClass extends Trait implements TraitWithSlot {
 
 	@Override
 	public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
-		return "Class "
-				+ abc.constants.getMultiname(name_index).toString(
-						abc.constants, fullyQualifiedNames) + " slot="
-				+ slot_id + " class_info=" + class_info + " metadata="
-				+ Helper.intArrToString(metadata);
+		return "Class " + abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames)
+				+ " slot=" + slot_id + " class_info=" + class_info + " metadata=" + Helper.intArrToString(metadata);
 	}
 
 	@Override
-	public void getDependencies(String customNs, ABC abc,
-			List<Dependency> dependencies, List<String> uses,
+	public void getDependencies(String customNs, ABC abc, List<Dependency> dependencies, List<String> uses,
 			DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames) {
-		super.getDependencies(customNs, abc, dependencies, uses,
-				ignorePackage == null ? getPackage(abc) : ignorePackage,
-				fullyQualifiedNames);
+		super.getDependencies(customNs, abc, dependencies, uses, ignorePackage == null ? getPackage(abc)
+				: ignorePackage, fullyQualifiedNames);
 		ClassInfo classInfo = abc.class_info.get(class_info);
 		InstanceInfo instanceInfo = abc.instance_info.get(class_info);
-		DottedChain packageName = instanceInfo.getName(abc.constants)
-				.getNamespace(abc.constants).getName(abc.constants); // assume
-																		// not
-																		// null
-																		// name
+		DottedChain packageName = instanceInfo.getName(abc.constants).getNamespace(abc.constants)
+				.getName(abc.constants); // assume
+											// not
+											// null
+											// name
 
 		// DependencyParser.parseDependenciesFromMultiname(customNs, abc,
 		// dependencies, uses,
 		// abc.constants.getMultiname(instanceInfo.name_index), packageName,
 		// fullyQualifiedNames);
 		if (instanceInfo.super_index > 0) {
-			DependencyParser.parseDependenciesFromMultiname(customNs, abc,
-					dependencies, uses,
-					abc.constants.getMultiname(instanceInfo.super_index),
-					packageName, fullyQualifiedNames,
+			DependencyParser.parseDependenciesFromMultiname(customNs, abc, dependencies, uses,
+					abc.constants.getMultiname(instanceInfo.super_index), packageName, fullyQualifiedNames,
 					DependencyType.INHERITANCE);
 		}
 		for (int i : instanceInfo.interfaces) {
-			DependencyParser.parseDependenciesFromMultiname(customNs, abc,
-					dependencies, uses, abc.constants.getMultiname(i),
-					packageName, fullyQualifiedNames,
-					DependencyType.INHERITANCE);
+			DependencyParser.parseDependenciesFromMultiname(customNs, abc, dependencies, uses,
+					abc.constants.getMultiname(i), packageName, fullyQualifiedNames, DependencyType.INHERITANCE);
 		}
 
 		// static
-		classInfo.static_traits.getDependencies(customNs, abc, dependencies,
-				uses, packageName, fullyQualifiedNames);
+		classInfo.static_traits.getDependencies(customNs, abc, dependencies, uses, packageName, fullyQualifiedNames);
 
 		// static initializer
-		DependencyParser.parseDependenciesFromMethodInfo(customNs, abc,
-				classInfo.cinit_index, dependencies, uses, packageName,
-				fullyQualifiedNames, new ArrayList<>());
+		DependencyParser.parseDependenciesFromMethodInfo(customNs, abc, classInfo.cinit_index, dependencies, uses,
+				packageName, fullyQualifiedNames, new ArrayList<>());
 
 		// instance
-		instanceInfo.instance_traits.getDependencies(customNs, abc,
-				dependencies, uses, packageName, fullyQualifiedNames);
+		instanceInfo.instance_traits.getDependencies(customNs, abc, dependencies, uses, packageName,
+				fullyQualifiedNames);
 
 		// instance initializer
-		DependencyParser.parseDependenciesFromMethodInfo(customNs, abc,
-				instanceInfo.iinit_index, dependencies, uses, packageName,
-				fullyQualifiedNames, new ArrayList<>());
+		DependencyParser.parseDependenciesFromMethodInfo(customNs, abc, instanceInfo.iinit_index, dependencies, uses,
+				packageName, fullyQualifiedNames, new ArrayList<>());
 	}
 
 	@Override
-	public GraphTextWriter toStringHeader(Trait parent,
-			ConvertData convertData, String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			GraphTextWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) {
-		abc.instance_info.get(class_info).getClassHeaderStr(writer, abc,
-				fullyQualifiedNames, false);
+	public GraphTextWriter toStringHeader(Trait parent, ConvertData convertData, String path, ABC abc,
+			boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) {
+		abc.instance_info.get(class_info).getClassHeaderStr(writer, abc, fullyQualifiedNames, false);
 		return writer;
 	}
 
 	@Override
-	public void convertHeader(Trait parent, ConvertData convertData,
-			String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			NulWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) {
+	public void convertHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) {
 	}
 
 	@Override
-	public GraphTextWriter toString(Trait parent, ConvertData convertData,
-			String path, ABC abc, boolean isStatic,
-			ScriptExportMode exportMode, int scriptIndex, int classIndex,
-			GraphTextWriter writer, List<DottedChain> fullyQualifiedNames,
-			boolean parallel) throws InterruptedException {
-		GraphTextWriter nwriter = writer.cloneNew();
+	public GraphTextWriter toString(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter nwriter,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
+		// GraphTextWriter nwriter = writer.cloneNew();
 
 		InstanceInfo instanceInfo = abc.instance_info.get(class_info);
 		Multiname instanceInfoMultiname = instanceInfo.getName(abc.constants);
-		DottedChain packageName = instanceInfoMultiname.getNamespace(
-				abc.constants).getName(abc.constants); // assume not null name
-
+		DottedChain packageName = instanceInfoMultiname.getNamespace(abc.constants).getName(abc.constants);
+		// assume not null name
 		fullyQualifiedNames = new ArrayList<>();
 		writeImportsUsages(abc, nwriter, packageName, fullyQualifiedNames);
 
-		String instanceInfoName = instanceInfoMultiname.getName(abc.constants,
-				fullyQualifiedNames, false, true);
+		String instanceInfoName = instanceInfoMultiname.getName(abc.constants, fullyQualifiedNames, false, true);
 
 		nwriter.startClass(class_info);
 
 		getMetaData(parent, convertData, abc, nwriter);
 		// class header
-		instanceInfo
-				.getClassHeaderStr(nwriter, abc, fullyQualifiedNames, false);
+		instanceInfo.getClassHeaderStr(nwriter, abc, fullyQualifiedNames, false);
 		nwriter.startBlock();
 
 		// static variables & constants
 		ClassInfo classInfo = abc.class_info.get(class_info);
-		classInfo.static_traits
-				.toString(new Class[] { TraitSlotConst.class }, this,
-						convertData, path + /* packageName + */"/"
-								+ instanceInfoName, abc, true, exportMode,
-						false, scriptIndex, class_info, nwriter,
-						fullyQualifiedNames, parallel);
+		classInfo.static_traits.toString(new Class[] { TraitSlotConst.class }, this, convertData, path
+				+ /* packageName + */"/" + instanceInfoName, abc, true, exportMode, false, scriptIndex, class_info,
+				nwriter, fullyQualifiedNames, parallel);
 
 		// static initializer
 		int bodyIndex = abc.findBodyIndex(classInfo.cinit_index);
@@ -188,8 +163,7 @@ public class TraitClass extends Trait implements TraitWithSlot {
 				if (!classInitializerIsEmpty) {
 					nwriter.startBlock();
 					abc.bodies.get(bodyIndex).toString(
-							path + /* packageName + */"/" + instanceInfoName
-									+ ".staticinitializer", exportMode, abc,
+							path + /* packageName + */"/" + instanceInfoName + ".staticinitializer", exportMode, abc,
 							this, nwriter, fullyQualifiedNames);
 					nwriter.endBlock();
 				} else {
@@ -208,14 +182,14 @@ public class TraitClass extends Trait implements TraitWithSlot {
 		} else {
 			// "/*classInitializer*/";
 		}
-
+		/*
+		 * packageName +
+		 */
 		// instance variables
-		instanceInfo.instance_traits.toString(
-				new Class[] { TraitSlotConst.class }, this, convertData, path
-						+ /* packageName + */"/" + instanceInfoName, abc, false,
-				exportMode, false, scriptIndex, class_info, nwriter,
+		instanceInfo.instance_traits.toString(new Class[] { TraitSlotConst.class }, this, convertData, path + "/"
+				+ instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, nwriter,
 				fullyQualifiedNames, parallel);
-
+		nwriter.newLine();
 		// instance initializer - constructor
 		if (!instanceInfo.isInterface()) {
 			String modifier = "";
@@ -226,87 +200,79 @@ public class TraitClass extends Trait implements TraitWithSlot {
 				if (modifier.equals(" ")) {
 					modifier = "";
 				}
-				if (modifier.startsWith("private")) { // cannot have private
-														// constuctor
+				if (modifier.startsWith("private")) {
+					// cannot have private constuctor
 					modifier = "";
 				}
 			}
-
+			modifier = "public ";
 			nwriter.newLine();
 			nwriter.startTrait(GraphTextWriter.TRAIT_INSTANCE_INITIALIZER);
 			nwriter.startMethod(instanceInfo.iinit_index);
 			nwriter.appendNoHilight(modifier);
-			nwriter.appendNoHilight("function ");
-			nwriter.appendNoHilight(m.getName(abc.constants, null/*
-																 * do not want
-																 * full names
-																 * here
-																 */, false,
-					true));
+			// nwriter.appendNoHilight("function ");
+			String funName = m.getName(abc.constants, null, false, true);
+
+			if (funName.equals(instanceInfoName))
+				funName = "constructor";
+			nwriter.appendNoHilight(funName);
+
 			nwriter.appendNoHilight("(");
 			bodyIndex = abc.findBodyIndex(instanceInfo.iinit_index);
-			MethodBody body = bodyIndex == -1 ? null : abc.bodies
-					.get(bodyIndex);
-			abc.method_info.get(instanceInfo.iinit_index).getParamStr(nwriter,
-					abc.constants, body, abc, fullyQualifiedNames);
+			MethodBody body = bodyIndex == -1 ? null : abc.bodies.get(bodyIndex);
+			abc.method_info.get(instanceInfo.iinit_index).getParamStr(nwriter, abc.constants, body, abc,
+					fullyQualifiedNames);
 			nwriter.appendNoHilight(")").startBlock();
 			if (exportMode != ScriptExportMode.AS_METHOD_STUBS) {
 				if (body != null) {
-					body.toString(path + /* packageName + */"/"
-							+ instanceInfoName + ".initializer", exportMode,
-							abc, this, nwriter, fullyQualifiedNames);
+					body.toString(path + "/" + instanceInfoName + ".initializer", exportMode, abc, this, nwriter,
+							fullyQualifiedNames);
+				} else {
+					if (instanceInfo.super_index >= 0) {
+						nwriter.appendNoHilight("super();").newLine();
+					}
 				}
 			}
-
 			nwriter.endBlock().newLine();
 			nwriter.endMethod();
 			nwriter.endTrait();
 		}
 
 		// static methods
-		classInfo.static_traits.toString(new Class[] { TraitClass.class,
-				TraitFunction.class, TraitMethodGetterSetter.class }, this,
-				convertData, path + /* packageName + */"/" + instanceInfoName,
-				abc, true, exportMode, false, scriptIndex, class_info, nwriter,
-				fullyQualifiedNames, parallel);
+		classInfo.static_traits.toString(new Class[] { TraitClass.class, TraitFunction.class,
+				TraitMethodGetterSetter.class }, this, convertData, path + /* packageName + */"/" + instanceInfoName,
+				abc, true, exportMode, false, scriptIndex, class_info, nwriter, fullyQualifiedNames, parallel);
 
 		// instance methods
-		instanceInfo.instance_traits.toString(new Class[] { TraitClass.class,
-				TraitFunction.class, TraitMethodGetterSetter.class }, this,
-				convertData, path + /* packageName + */"/" + instanceInfoName,
-				abc, false, exportMode, false, scriptIndex, class_info,
-				nwriter, fullyQualifiedNames, parallel);
+		instanceInfo.instance_traits.toString(new Class[] { TraitClass.class, TraitFunction.class,
+				TraitMethodGetterSetter.class }, this, convertData, path + /* packageName + */"/" + instanceInfoName,
+				abc, false, exportMode, false, scriptIndex, class_info, nwriter, fullyQualifiedNames, parallel);
 
 		nwriter.endBlock(); // class
 		nwriter.endClass();
 		nwriter.newLine();
-		writer.marge(nwriter);
-		return writer;
+		// writer.marge(nwriter);
+		return nwriter;
 	}
 
 	@Override
-	public void convert(Trait parent, ConvertData convertData, String path,
-			ABC abc, boolean isStatic, ScriptExportMode exportMode,
-			int scriptIndex, int classIndex, NulWriter writer,
-			List<DottedChain> fullyQualifiedNames, boolean parallel)
-			throws InterruptedException {
+	public void convert(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
+			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
+			List<DottedChain> fullyQualifiedNames, boolean parallel) throws InterruptedException {
 
 		fullyQualifiedNames = new ArrayList<>();
 
 		InstanceInfo instanceInfo = abc.instance_info.get(class_info);
-		String instanceInfoName = instanceInfo.getName(abc.constants).getName(
-				abc.constants, fullyQualifiedNames, false, true);
+		String instanceInfoName = instanceInfo.getName(abc.constants).getName(abc.constants, fullyQualifiedNames,
+				false, true);
 		ClassInfo classInfo = abc.class_info.get(class_info);
 
 		AbcIndexing index = new AbcIndexing(abc.getSwf());
 		// for simplification of String(this)
 		convertData.thisHasDefaultToPrimitive = null == index.findProperty(
-				new AbcIndexing.PropertyDef("toString", new TypeItem(
-						instanceInfo.getName(abc.constants)
-								.getNameWithNamespace(abc.constants, true)),
-						abc, abc.constants.getNamespaceId(
-								Namespace.KIND_PACKAGE, DottedChain.TOPLEVEL,
-								abc.constants.getStringId("", true), true)),
+				new AbcIndexing.PropertyDef("toString", new TypeItem(instanceInfo.getName(abc.constants)
+						.getNameWithNamespace(abc.constants, true)), abc, abc.constants.getNamespaceId(
+						Namespace.KIND_PACKAGE, DottedChain.TOPLEVEL, abc.constants.getStringId("", true), true)),
 				false, true);
 
 		// class initializer
@@ -315,13 +281,10 @@ public class TraitClass extends Trait implements TraitWithSlot {
 			writer.mark();
 			List<Traits> ts = new ArrayList<>();
 			ts.add(classInfo.static_traits);
-			abc.bodies.get(bodyIndex).convert(
-					convertData,
-					path + /* packageName + */"/" + instanceInfoName
-							+ ".staticinitializer", exportMode, true,
-					classInfo.cinit_index, scriptIndex, class_info, abc, this,
-					new ScopeStack(), GraphTextWriter.TRAIT_CLASS_INITIALIZER,
-					writer, fullyQualifiedNames, ts, true);
+			abc.bodies.get(bodyIndex).convert(convertData,
+					path + /* packageName + */"/" + instanceInfoName + ".staticinitializer", exportMode, true,
+					classInfo.cinit_index, scriptIndex, class_info, abc, this, new ScopeStack(),
+					GraphTextWriter.TRAIT_CLASS_INITIALIZER, writer, fullyQualifiedNames, ts, true);
 			classInitializerIsEmpty = !writer.getMark();
 		}
 
@@ -331,51 +294,39 @@ public class TraitClass extends Trait implements TraitWithSlot {
 			if (bodyIndex != -1) {
 				List<Traits> ts = new ArrayList<>();
 				ts.add(instanceInfo.instance_traits);
-				abc.bodies.get(bodyIndex).convert(
-						convertData,
-						path + /* packageName + */"/" + instanceInfoName
-								+ ".initializer", exportMode, false,
-						instanceInfo.iinit_index, scriptIndex, class_info, abc,
-						this, new ScopeStack(),
-						GraphTextWriter.TRAIT_INSTANCE_INITIALIZER, writer,
-						fullyQualifiedNames, ts, true);
+				abc.bodies.get(bodyIndex).convert(convertData,
+						path + /* packageName + */"/" + instanceInfoName + ".initializer", exportMode, false,
+						instanceInfo.iinit_index, scriptIndex, class_info, abc, this, new ScopeStack(),
+						GraphTextWriter.TRAIT_INSTANCE_INITIALIZER, writer, fullyQualifiedNames, ts, true);
 			}
 		}
 
 		// static variables,constants & methods
-		classInfo.static_traits.convert(this, convertData, path
-				+ /* packageName + */"/" + instanceInfoName, abc, true,
-				exportMode, false, scriptIndex, class_info, writer,
-				fullyQualifiedNames, parallel);
+		classInfo.static_traits.convert(this, convertData, path + /* packageName + */"/" + instanceInfoName, abc, true,
+				exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel);
 
 		instanceInfo.instance_traits.convert(this, convertData, path + /*
-																		 * packageName
-																		 * +
-																		 */"/"
-				+ instanceInfoName, abc, false, exportMode, false, scriptIndex,
-				class_info, writer, fullyQualifiedNames, parallel);
+																		 * packageName +
+																		 */"/" + instanceInfoName, abc, false,
+				exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel);
 	}
 
 	@Override
-	public int removeTraps(int scriptIndex, int classIndex, boolean isStatic,
-			ABC abc, String path) throws InterruptedException {
+	public int removeTraps(int scriptIndex, int classIndex, boolean isStatic, ABC abc, String path)
+			throws InterruptedException {
 		ClassInfo classInfo = abc.class_info.get(class_info);
 		InstanceInfo instanceInfo = abc.instance_info.get(class_info);
 		int iInitializer = abc.findBodyIndex(instanceInfo.iinit_index);
 		int ret = 0;
 		if (iInitializer != -1) {
-			ret += abc.bodies.get(iInitializer).removeTraps(abc, this,
-					scriptIndex, class_info, false, path);
+			ret += abc.bodies.get(iInitializer).removeTraps(abc, this, scriptIndex, class_info, false, path);
 		}
 		int sInitializer = abc.findBodyIndex(classInfo.cinit_index);
 		if (sInitializer != -1) {
-			ret += abc.bodies.get(sInitializer).removeTraps(abc, this,
-					scriptIndex, class_info, true, path);
+			ret += abc.bodies.get(sInitializer).removeTraps(abc, this, scriptIndex, class_info, true, path);
 		}
-		ret += instanceInfo.instance_traits.removeTraps(scriptIndex,
-				class_info, false, abc, path);
-		ret += classInfo.static_traits.removeTraps(scriptIndex, class_info,
-				true, abc, path);
+		ret += instanceInfo.instance_traits.removeTraps(scriptIndex, class_info, false, abc, path);
+		ret += classInfo.static_traits.removeTraps(scriptIndex, class_info, true, abc, path);
 		return ret;
 	}
 
@@ -390,33 +341,26 @@ public class TraitClass extends Trait implements TraitWithSlot {
 		GraphTextWriter nwriter = writer.cloneNew();
 		convertCommonHeaderFlags("class", abc, nwriter);
 		nwriter.appendNoHilight(" slotid ");
-		nwriter.hilightSpecial(Integer.toString(slot_id),
-				HighlightSpecialType.SLOT_ID);
+		nwriter.hilightSpecial(Integer.toString(slot_id), HighlightSpecialType.SLOT_ID);
 		nwriter.newLine();
 		writer.marge(nwriter);
 		return writer;
 	}
 
 	@Override
-	public void getMethodInfos(ABC abc, int traitId, int classIndex,
-			List<MethodId> methodInfos) {
+	public void getMethodInfos(ABC abc, int traitId, int classIndex, List<MethodId> methodInfos) {
 		InstanceInfo instanceInfo = abc.instance_info.get(class_info);
 		ClassInfo classInfo = abc.class_info.get(class_info);
 
 		// class initializer
-		methodInfos.add(new MethodId(GraphTextWriter.TRAIT_CLASS_INITIALIZER,
-				class_info, classInfo.cinit_index));
+		methodInfos.add(new MethodId(GraphTextWriter.TRAIT_CLASS_INITIALIZER, class_info, classInfo.cinit_index));
 
 		// constructor - instance initializer
-		methodInfos.add(new MethodId(
-				GraphTextWriter.TRAIT_INSTANCE_INITIALIZER, class_info,
-				instanceInfo.iinit_index));
+		methodInfos.add(new MethodId(GraphTextWriter.TRAIT_INSTANCE_INITIALIZER, class_info, instanceInfo.iinit_index));
 
 		// static variables,constants & methods
-		classInfo.static_traits.getMethodInfos(abc, true, class_info,
-				methodInfos);
+		classInfo.static_traits.getMethodInfos(abc, true, class_info, methodInfos);
 
-		instanceInfo.instance_traits.getMethodInfos(abc, false, class_info,
-				methodInfos);
+		instanceInfo.instance_traits.getMethodInfos(abc, false, class_info, methodInfos);
 	}
 }

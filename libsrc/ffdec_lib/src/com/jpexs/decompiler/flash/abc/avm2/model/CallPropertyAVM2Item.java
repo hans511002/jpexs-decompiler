@@ -44,10 +44,8 @@ public class CallPropertyAVM2Item extends AVM2Item {
 
 	public boolean isVoid;
 
-	public CallPropertyAVM2Item(GraphSourceItem instruction,
-			GraphSourceItem lineStartIns, boolean isVoid,
-			GraphTargetItem receiver, GraphTargetItem propertyName,
-			List<GraphTargetItem> arguments) {
+	public CallPropertyAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, boolean isVoid,
+			GraphTargetItem receiver, GraphTargetItem propertyName, List<GraphTargetItem> arguments) {
 		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
 		this.receiver = receiver;
 		this.propertyName = propertyName;
@@ -56,9 +54,9 @@ public class CallPropertyAVM2Item extends AVM2Item {
 	}
 
 	@Override
-	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
-			throws InterruptedException {
+	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		GraphTextWriter nwriter = writer.cloneNew();
+		// nwriter.append("this.");
 		formatProperty(nwriter, receiver, propertyName, localData);
 		nwriter.spaceBeforeCallParenthesies(arguments.size());
 		nwriter.append("(");
@@ -74,18 +72,11 @@ public class CallPropertyAVM2Item extends AVM2Item {
 	}
 
 	@Override
-	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
-			SourceGenerator generator) throws CompilationException {
-		return toSourceMerge(
-				localData,
-				generator,
-				receiver,
-				arguments,
-				new AVM2Instruction(0, AVM2Instructions.CallProperty,
-						new int[] {
-								((AVM2SourceGenerator) generator)
-										.propertyName(propertyName),
-								arguments.size() }));
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator)
+			throws CompilationException {
+		return toSourceMerge(localData, generator, receiver, arguments, new AVM2Instruction(0,
+				AVM2Instructions.CallProperty, new int[] {
+						((AVM2SourceGenerator) generator).propertyName(propertyName), arguments.size() }));
 	}
 
 	@Override

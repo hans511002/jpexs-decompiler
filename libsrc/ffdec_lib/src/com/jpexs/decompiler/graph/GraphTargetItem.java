@@ -124,8 +124,7 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 			return new IntegerValueAVM2Item(null, null, (Long) r);
 		}
 		if (r instanceof Integer) {
-			return new IntegerValueAVM2Item(null, null,
-					(long) (int) (Integer) r);
+			return new IntegerValueAVM2Item(null, null, (long) (int) (Integer) r);
 		}
 
 		if (r instanceof Double) {
@@ -149,25 +148,21 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 			List<NameValuePair> props = new ArrayList<>();
 			ObjectType ot = (ObjectType) r;
 			for (String k : ot.getAttributeNames()) {
-				props.add(new NameValuePair(valToItem(k), valToItem(ot
-						.getAttribute(k))));
+				props.add(new NameValuePair(valToItem(k), valToItem(ot.getAttribute(k))));
 			}
 			return new NewObjectAVM2Item(null, null, props);
 		}
 		return null;
 	}
 
-	public static GraphTargetItem simplifySomething(GraphTargetItem it,
-			String implicitCoerce) {
+	public static GraphTargetItem simplifySomething(GraphTargetItem it, String implicitCoerce) {
 		if ((it instanceof SimpleValue) && implicitCoerce.isEmpty()) {
 			if (((SimpleValue) it).isSimpleValue()) {
 				return it;
 			}
 		}
 
-		if (!it.isCompileTime()
-				&& !(!implicitCoerce.isEmpty() && it
-						.isConvertedCompileTime(new HashSet<>()))) {
+		if (!it.isCompileTime() && !(!implicitCoerce.isEmpty() && it.isConvertedCompileTime(new HashSet<>()))) {
 			return it;
 		}
 		Object r = it.getResult();
@@ -226,13 +221,11 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		this(null, null, NOPRECEDENCE);
 	}
 
-	public GraphTargetItem(GraphSourceItem src, GraphSourceItem lineStartItem,
-			int precedence) {
+	public GraphTargetItem(GraphSourceItem src, GraphSourceItem lineStartItem, int precedence) {
 		this(src, lineStartItem, precedence, null);
 	}
 
-	public GraphTargetItem(GraphSourceItem src, GraphSourceItem lineStartItem,
-			int precedence, GraphTargetItem value) {
+	public GraphTargetItem(GraphSourceItem src, GraphSourceItem lineStartItem, int precedence, GraphTargetItem value) {
 		this.src = src;
 		this.lineStartItem = lineStartItem;
 		this.precedence = precedence;
@@ -277,18 +270,19 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return ret;
 	}
 
-	public GraphTextWriter toStringSemicoloned(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringSemicoloned(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new InterruptedException();
 		}
 
-		writer.startOffset(src, getLineStartItem(), getPos(), srcData);
-		appendTry(writer, localData);
+		GraphTextWriter nwriter = writer.cloneNew();
+		nwriter.startOffset(src, getLineStartItem(), getPos(), srcData);
+		appendTry(nwriter, localData);
 		if (needsSemicolon()) {
-			writer.appendNoHilight(";");
+			nwriter.appendNoHilight(";");
 		}
-		writer.endOffset();
+		nwriter.endOffset();
+		writer.marge(nwriter);
 		return writer;
 	}
 
@@ -301,28 +295,23 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return getClass().getName();
 	}
 
-	public GraphTextWriter toStringBoolean(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringBoolean(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return toString(writer, localData, "Boolean");
 	}
 
-	public GraphTextWriter toStringString(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringString(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return toString(writer, localData, "String");
 	}
 
-	public GraphTextWriter toStringInt(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringInt(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return toString(writer, localData, "int");
 	}
 
-	public GraphTextWriter toStringNumber(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringNumber(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return toString(writer, localData, "Number");
 	}
 
-	public GraphTextWriter toString(GraphTextWriter writer,
-			LocalData localData, String implicitCoerce)
+	public GraphTextWriter toString(GraphTextWriter writer, LocalData localData, String implicitCoerce)
 			throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new InterruptedException();
@@ -334,33 +323,27 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return writer;
 	}
 
-	public GraphTextWriter toString(GraphTextWriter writer, LocalData localData)
-			throws InterruptedException {
+	public GraphTextWriter toString(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return toString(writer, localData, "");
 	}
 
-	public abstract GraphTextWriter appendTo(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException;
+	public abstract GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException;
 
-	public GraphTextWriter appendTry(GraphTextWriter writer, LocalData localData)
-			throws InterruptedException {
+	public GraphTextWriter appendTry(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return appendTry(writer, localData, "");
 	}
 
-	public GraphTextWriter appendTry(GraphTextWriter writer,
-			LocalData localData, String implicitCoerce)
+	public GraphTextWriter appendTry(GraphTextWriter writer, LocalData localData, String implicitCoerce)
 			throws InterruptedException {
 		GraphTargetItem t = this;
 		if (!implicitCoerce.isEmpty()) { // if implicit coerce equals explicit
 			if (t instanceof ConvertAVM2Item) {
-				if (implicitCoerce.equals((((ConvertAVM2Item) t).type
-						.toString()))) {
+				if (implicitCoerce.equals((((ConvertAVM2Item) t).type.toString()))) {
 					t = t.value;
 				}
 			}
 		}
-		if (!implicitCoerce.isEmpty()
-				&& Configuration.simplifyExpressions.get()) {
+		if (!implicitCoerce.isEmpty() && Configuration.simplifyExpressions.get()) {
 			t = t.simplify(implicitCoerce);
 		}
 		return t.appendTo(writer, localData);
@@ -368,10 +351,9 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 	}
 
 	public String toString(LocalData localData) throws InterruptedException {
-		HighlightedTextWriter writer = new HighlightedTextWriter(
-				Configuration.getCodeFormatting(), false);
+		HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
 		toString(writer, localData);
-		return writer.toString();
+		return writer.toText();
 	}
 
 	public int getPrecedence() {
@@ -422,16 +404,14 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return toString();
 	}
 
-	public GraphTextWriter toStringNoQuotes(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringNoQuotes(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		writer.startOffset(src, getLineStartItem(), getPos(), srcData);
 		appendToNoQuotes(writer, localData);
 		writer.endOffset();
 		return writer;
 	}
 
-	public GraphTextWriter appendToNoQuotes(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter appendToNoQuotes(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		return toString(writer, localData);
 	}
 
@@ -451,8 +431,7 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return false;
 	}
 
-	public GraphTextWriter toStringNL(GraphTextWriter writer,
-			LocalData localData) throws InterruptedException {
+	public GraphTextWriter toStringNL(GraphTextWriter writer, LocalData localData) throws InterruptedException {
 		writer.startOffset(src, getLineStartItem(), getPos(), srcData);
 		appendTry(writer, localData);
 		if (needsNewLine()) {
@@ -478,13 +457,12 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return equals(target);
 	}
 
-	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
-			SourceGenerator generator) throws CompilationException {
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator)
+			throws CompilationException {
 		return new ArrayList<>();
 	}
 
-	public List<GraphSourceItem> toSourceIgnoreReturnValue(
-			SourceGeneratorLocalData localData, SourceGenerator generator)
+	public List<GraphSourceItem> toSourceIgnoreReturnValue(SourceGeneratorLocalData localData, SourceGenerator generator)
 			throws CompilationException {
 		if (!hasReturnValue()) {
 			return toSource(localData, generator);
@@ -492,15 +470,13 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return generator.generateDiscardValue(localData, this);
 	}
 
-	protected List<GraphSourceItem> toSourceBinary(BinaryOp op,
-			GraphSourceItem action) {
+	protected List<GraphSourceItem> toSourceBinary(BinaryOp op, GraphSourceItem action) {
 		List<GraphSourceItem> ret = new ArrayList<>();
 
 		return ret;
 	}
 
-	public static List<GraphSourceItem> toSourceMerge(
-			SourceGeneratorLocalData localData, SourceGenerator gen,
+	public static List<GraphSourceItem> toSourceMerge(SourceGeneratorLocalData localData, SourceGenerator gen,
 			Object... tar) throws CompilationException {
 		List<GraphSourceItem> ret = new ArrayList<>();
 		for (Object o : tar) {
@@ -520,8 +496,7 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 						ret.add((GraphSourceItem) o2);
 					}
 					if (o2 instanceof GraphTargetItem) {
-						ret.addAll(((GraphTargetItem) o2).toSource(localData,
-								gen));
+						ret.addAll(((GraphTargetItem) o2).toSource(localData, gen));
 					}
 				}
 			}
@@ -554,8 +529,7 @@ public abstract class GraphTargetItem implements Serializable, Cloneable {
 		return new NotItem(src, getLineStartItem(), this);
 	}
 
-	public GraphTextWriter appendBlock(GraphTargetItem prevLineItem,
-			GraphTextWriter writer, LocalData localData,
+	public GraphTextWriter appendBlock(GraphTargetItem prevLineItem, GraphTextWriter writer, LocalData localData,
 			List<GraphTargetItem> commands) throws InterruptedException {
 
 		// This may be useful in the future, but we must handle obfuscated SWFs

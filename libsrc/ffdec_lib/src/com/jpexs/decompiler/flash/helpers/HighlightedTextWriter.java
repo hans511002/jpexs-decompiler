@@ -60,9 +60,9 @@ public class HighlightedTextWriter extends GraphTextWriter {
 	public List<Highlighting> specialHilights = new ArrayList<>();
 
 	public GraphTextWriter cloneNew() {
-		HighlightedTextWriter nw = new HighlightedTextWriter(formatting,
-				hilight, indent);
+		HighlightedTextWriter nw = new HighlightedTextWriter(formatting, this.hilight, this.indent);
 		nw.newLine = this.newLine;
+		this.newLine = false;
 		return nw;
 	};
 
@@ -78,10 +78,12 @@ public class HighlightedTextWriter extends GraphTextWriter {
 		this.instructionHilights.addAll(o.instructionHilights);
 		this.specialHilights.addAll(o.specialHilights);
 		String tmp = o.sb.toString();
-		logger.info("tmpWriter=" + tmp);
 		if (tmp.indexOf("addFrameScript") >= 0) {
 			logger.info("tmpWriter=" + tmp);
 		}
+		tmp = Convert2Ts.convertType(tmp);
+		tmp = Convert2Ts.convertLine(tmp);
+		logger.info("tmpWriter=" + tmp);
 		this.append(tmp);
 		this.indent = o.indent;
 		this.newLine = o.newLine;
@@ -93,8 +95,7 @@ public class HighlightedTextWriter extends GraphTextWriter {
 		this.hilight = hilight;
 	}
 
-	public HighlightedTextWriter(CodeFormatting formatting, boolean hilight,
-			int indent) {
+	public HighlightedTextWriter(CodeFormatting formatting, boolean hilight, int indent) {
 		super(formatting);
 		this.hilight = hilight;
 		this.indent = indent;
@@ -116,8 +117,8 @@ public class HighlightedTextWriter extends GraphTextWriter {
 	 * @return HighlightedTextWriter
 	 */
 	@Override
-	public HighlightedTextWriter startOffset(GraphSourceItem src,
-			GraphSourceItem startLineItem, int pos, HighlightData data) {
+	public HighlightedTextWriter startOffset(GraphSourceItem src, GraphSourceItem startLineItem, int pos,
+			HighlightData data) {
 		GraphSourceItemPosition itemPos = new GraphSourceItemPosition();
 		itemPos.graphSourceItem = src;
 		itemPos.startLineItem = startLineItem;
@@ -210,8 +211,8 @@ public class HighlightedTextWriter extends GraphTextWriter {
 	}
 
 	@Override
-	protected HighlightedTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, String specialValue, HighlightData data) {
+	protected HighlightedTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue,
+			HighlightData data) {
 		HighlightData ndata = new HighlightData();
 		ndata.merge(data);
 		ndata.subtype = type;
@@ -240,11 +241,9 @@ public class HighlightedTextWriter extends GraphTextWriter {
 				ndata.offset = src.getAddress() + pos;
 				ndata.fileOffset = src.getFileOffset();
 				if (itemPos.startLineItem != null) {
-					ndata.firstLineOffset = itemPos.startLineItem
-							.getLineOffset();
+					ndata.firstLineOffset = itemPos.startLineItem.getLineOffset();
 				}
-				h = new Highlighting(sb.length() - newLineCount, ndata,
-						HighlightType.OFFSET, str);
+				h = new Highlighting(sb.length() - newLineCount, ndata, HighlightType.OFFSET, str);
 				instructionHilights.add(h);
 			}
 		}
@@ -263,8 +262,7 @@ public class HighlightedTextWriter extends GraphTextWriter {
 			HighlightData data = new HighlightData();
 			data.offset = offset;
 			data.fileOffset = fileOffset;
-			h = new Highlighting(sb.length() - newLineCount, data,
-					HighlightType.OFFSET, str);
+			h = new Highlighting(sb.length() - newLineCount, data, HighlightType.OFFSET, str);
 			instructionHilights.add(h);
 		}
 		appendToSb(str);
@@ -317,18 +315,15 @@ public class HighlightedTextWriter extends GraphTextWriter {
 	}
 
 	@Override
-	public String toString() {
+	public String toText() {
 		if (toStringCalled) {
-			throw new Error(
-					"HighlightedTextWriter.toString() was already called.");
+			throw new Error("HighlightedTextWriter.toString() was already called.");
 		}
 		if (Configuration._debugMode.get()) {
 			long stopTime = System.currentTimeMillis();
 			long time = stopTime - startTime;
 			if (time > 500) {
-				System.out.println("Rendering is too slow: "
-						+ Helper.formatTimeSec(time) + " length: "
-						+ sb.length());
+				System.out.println("Rendering is too slow: " + Helper.formatTimeSec(time) + " length: " + sb.length());
 			}
 		}
 		toStringCalled = true;
@@ -336,10 +331,14 @@ public class HighlightedTextWriter extends GraphTextWriter {
 		return sb.toString();
 	}
 
+	@Override
+	public String toString() {
+		return sb.toString();
+	}
+
 	private HighlightedTextWriter start(HighlightData data, HighlightType type) {
 		if (hilight) {
-			Highlighting h = new Highlighting(sb.length() - newLineCount, data,
-					type, null);
+			Highlighting h = new Highlighting(sb.length() - newLineCount, data, type, null);
 			hilightStack.add(h);
 		}
 		return this;

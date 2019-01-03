@@ -265,7 +265,12 @@ public abstract class GraphTextWriter {
 		startTime += time - suspendTime;
 	}
 
-	@Override
+	// @Override
+	public String toText() {
+		return "";
+	}
+
+	// @Override
 	public String toString() {
 		return "";
 	}
