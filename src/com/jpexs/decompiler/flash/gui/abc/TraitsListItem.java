@@ -35,8 +35,7 @@ import com.jpexs.decompiler.flash.search.ABCSearchResult;
  * @author JPEXS
  */
 public class TraitsListItem {
-	static final Logger logger = Logger.getLogger(TraitsListItem.class
-			.getName());
+	static final Logger logger = Logger.getLogger(TraitsListItem.class.getName());
 
 	private final TraitType type;
 
@@ -56,8 +55,7 @@ public class TraitsListItem {
 
 	public static String STR_SCRIPT_INITIALIZER = ABCSearchResult.STR_SCRIPT_INITIALIZER;
 
-	public TraitsListItem(TraitType type, int index, boolean isStatic, ABC abc,
-			int classIndex, int scriptIndex) {
+	public TraitsListItem(TraitType type, int index, boolean isStatic, ABC abc, int classIndex, int scriptIndex) {
 		this.type = type;
 		this.index = index;
 		this.isStatic = isStatic;
@@ -83,12 +81,10 @@ public class TraitsListItem {
 			return "__" + STR_SCRIPT_INITIALIZER;
 		}
 		if (isStatic) {
-			return abc.class_info.get(classIndex).static_traits.traits
-					.get(index).getName(abc)
+			return abc.class_info.get(classIndex).static_traits.traits.get(index).getName(abc)
 					.getName(abc.constants, null, false, true);
 		} else {
-			return abc.instance_info.get(classIndex).instance_traits.traits
-					.get(index).getName(abc)
+			return abc.instance_info.get(classIndex).instance_traits.traits.get(index).getName(abc)
 					.getName(abc.constants, null, false, true);
 		}
 	}
@@ -107,37 +103,28 @@ public class TraitsListItem {
 				}
 			} else if (isStatic) {
 				ConvertData convertData = new ConvertData();
-				Trait trait = abc.class_info.get(classIndex).static_traits.traits
-						.get(index);
-				trait.convertHeader(null, convertData, "", abc, true,
-						ScriptExportMode.AS, scriptIndex, classIndex,
+				Trait trait = abc.class_info.get(classIndex).static_traits.traits.get(index);
+				trait.convertHeader(null, convertData, "", abc, true, ScriptExportMode.AS, scriptIndex, classIndex,
 						new NulWriter(), new ArrayList<>(), false);
-				HighlightedTextWriter writer = new HighlightedTextWriter(
-						Configuration.getCodeFormatting(), false);
-				trait.toStringHeader(null, convertData, "", abc, true,
-						ScriptExportMode.AS, scriptIndex, classIndex, writer,
-						new ArrayList<>(), false);
+				HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
+				trait.toStringHeader(null, convertData, "", abc, true, ScriptExportMode.AS, scriptIndex, classIndex,
+						writer, new ArrayList<>(), false);
 				s = writer.toText();
 			} else {
 				ConvertData convertData = new ConvertData();
-				Trait trait = abc.instance_info.get(classIndex).instance_traits.traits
-						.get(index);
-				trait.convertHeader(null, convertData, "", abc, false,
-						ScriptExportMode.AS, scriptIndex, classIndex,
+				Trait trait = abc.instance_info.get(classIndex).instance_traits.traits.get(index);
+				trait.convertHeader(null, convertData, "", abc, false, ScriptExportMode.AS, scriptIndex, classIndex,
 						new NulWriter(), new ArrayList<>(), false);
-				HighlightedTextWriter writer = new HighlightedTextWriter(
-						Configuration.getCodeFormatting(), false);
-				trait.toStringHeader(null, convertData, "", abc, false,
-						ScriptExportMode.AS, scriptIndex, classIndex, writer,
-						new ArrayList<>(), false);
+				HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
+				trait.toStringHeader(null, convertData, "", abc, false, ScriptExportMode.AS, scriptIndex, classIndex,
+						writer, new ArrayList<>(), false);
 				s = writer.toString();
 			}
 		} catch (InterruptedException ex) {
-			Logger.getLogger(TraitsListItem.class.getName()).log(Level.SEVERE,
-					null, ex);
+			Logger.getLogger(TraitsListItem.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		s = s.replaceAll("[ \r\n]+", " ");
-		logger.info(this.getClass().getName() + " res=" + s);
+		// logger.info(this.getClass().getName() + " res=" + s);
 		return s;
 	}
 

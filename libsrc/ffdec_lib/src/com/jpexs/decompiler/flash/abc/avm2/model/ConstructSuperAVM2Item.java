@@ -39,8 +39,7 @@ public class ConstructSuperAVM2Item extends AVM2Item {
 
 	public List<GraphTargetItem> args;
 
-	public ConstructSuperAVM2Item(GraphSourceItem instruction,
-			GraphSourceItem lineStartIns, GraphTargetItem object,
+	public ConstructSuperAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem object,
 			List<GraphTargetItem> args) {
 		super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
 		this.object = object;
@@ -48,9 +47,8 @@ public class ConstructSuperAVM2Item extends AVM2Item {
 	}
 
 	@Override
-	public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData)
-			throws InterruptedException {
-		GraphTextWriter nwriter = writer.cloneNew();
+	public GraphTextWriter appendTo(GraphTextWriter nwriter, LocalData localData) throws InterruptedException {
+		// GraphTextWriter nwriter = writer.cloneNew();
 		if (!object.toString().equals("this")) {
 			object.toString(nwriter, localData);
 			nwriter.append(".");
@@ -64,8 +62,8 @@ public class ConstructSuperAVM2Item extends AVM2Item {
 			args.get(a).toString(nwriter, localData);
 		}
 		nwriter.append(")");
-		writer.marge(nwriter);
-		return writer;
+		// writer.marge(nwriter);
+		return nwriter;
 	}
 
 	@Override
@@ -79,10 +77,9 @@ public class ConstructSuperAVM2Item extends AVM2Item {
 	}
 
 	@Override
-	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData,
-			SourceGenerator generator) throws CompilationException {
-		return toSourceMerge(localData, generator, object, args,
-				new AVM2Instruction(0, AVM2Instructions.ConstructSuper,
-						new int[] { args.size() }));
+	public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator)
+			throws CompilationException {
+		return toSourceMerge(localData, generator, object, args, new AVM2Instruction(0,
+				AVM2Instructions.ConstructSuper, new int[] { args.size() }));
 	}
 }

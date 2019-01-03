@@ -310,14 +310,14 @@ public class MethodInfo {
 		return param_types.length + (flagNeed_rest() ? 1 : 0) + (flagNeed_arguments() ? 1 : 0);
 	}
 
-	public GraphTextWriter getParamStr(GraphTextWriter writer, AVM2ConstantPool constants, MethodBody body, ABC abc,
+	public GraphTextWriter getParamStr(GraphTextWriter nwriter, AVM2ConstantPool constants, MethodBody body, ABC abc,
 			List<DottedChain> fullyQualifiedNames) {
 		Map<Integer, String> localRegNames = new HashMap<>();
 		if (body != null && Configuration.getLocalNamesFromDebugInfo.get()) {
 			localRegNames = body.getCode().getLocalRegNamesFromDebug(abc);
 		}
 		for (int i = 0; i < param_types.length; i++) {
-			GraphTextWriter nwriter = writer.cloneNew();
+			// GraphTextWriter nwriter = writer.cloneNew();
 			if (i > 0) {
 				nwriter.appendNoHilight(", ");
 			}
@@ -361,7 +361,7 @@ public class MethodInfo {
 							optionalIndex);
 				}
 			}
-			writer.marge(nwriter);
+			// writer.marge(nwriter);
 		}
 		if (flagNeed_rest()) {
 			String restAdd = "";
@@ -381,17 +381,17 @@ public class MethodInfo {
 			pdata.declaredType = DottedChain.ALL;
 			pdata.regIndex = param_types.length + 1;
 			pdata.localName = restName;
-			GraphTextWriter nwriter = writer.cloneNew();
+			// GraphTextWriter nwriter = writer.cloneNew();
 			nwriter.append(restAdd);
 			nwriter.hilightSpecial(restName, HighlightSpecialType.FLAG_NEED_REST, 0, pdata);
-			writer.marge(nwriter);
+			// writer.marge(nwriter);
 		}
-		return writer;
+		return nwriter;
 	}
 
-	public GraphTextWriter getReturnTypeStr(GraphTextWriter writer, AVM2ConstantPool constants,
+	public GraphTextWriter getReturnTypeStr(GraphTextWriter nwriter, AVM2ConstantPool constants,
 			List<DottedChain> fullyQualifiedNames) {
-		GraphTextWriter nwriter = writer.cloneNew();
+		// GraphTextWriter nwriter = writer.cloneNew();
 		String rname = "any";
 		if (ret_type > 0) {
 			Multiname multiname = constants.getMultiname(ret_type);
@@ -404,8 +404,8 @@ public class MethodInfo {
 		}
 		rname = Convert2Ts.convertType(rname);
 		nwriter.hilightSpecial(rname, HighlightSpecialType.RETURNS);
-		writer.marge(nwriter);
-		return writer;
+		// writer.marge(nwriter);
+		return nwriter;
 	}
 
 	public String getReturnTypeRaw(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {

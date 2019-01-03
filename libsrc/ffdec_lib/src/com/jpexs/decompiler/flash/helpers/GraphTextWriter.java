@@ -28,8 +28,7 @@ import com.jpexs.decompiler.graph.GraphSourceItem;
  * @author JPEXS
  */
 public abstract class GraphTextWriter {
-	static final Logger logger = Logger.getLogger(HighlightedTextWriter.class
-			.getName());
+	static final Logger logger = Logger.getLogger(HighlightedTextWriter.class.getName());
 
 	protected long startTime;
 
@@ -73,8 +72,7 @@ public abstract class GraphTextWriter {
 	 * @param data
 	 * @return GraphTextWriter
 	 */
-	public GraphTextWriter startOffset(GraphSourceItem src,
-			GraphSourceItem startLineItem, int pos, HighlightData data) {
+	public GraphTextWriter startOffset(GraphSourceItem src, GraphSourceItem startLineItem, int pos, HighlightData data) {
 		return this;
 	}
 
@@ -84,32 +82,32 @@ public abstract class GraphTextWriter {
 
 	public GraphTextWriter marge(GraphTextWriter nwriter) {
 		this.startTime += nwriter.startTime;
-		String tmp = toTmpString().trim();
+		// String tmp = toTmpString().trim();
 		// if (tmp.length() > 5)
-		{
-			// logger.info(this.getClass().getCanonicalName()
-			// + "=================================marge");
-			StackTraceElement[] eles = Thread.currentThread().getStackTrace();
-			StackTraceElement e = eles[3];
-			logger.info(e.getClassName() + "." + e.getMethodName() + "("
-					+ e.getFileName() + ":" + e.getLineNumber()
-					+ ") marge========");
-			// boolean haveToString = false;
-			// for (int i = 2; i < (eles.length > 7 ? 7 : eles.length); i++) {
-			// if (eles[i].getMethodName().equals("toString")) {
-			// haveToString = true;
-			// break;
-			// }
-			// }
-			// if (haveToString) {
-			// for (int i = 2; i < (eles.length > 7 ? 7 : eles.length); i++) {
-			// e = eles[i];
-			// logger.info(e.getClassName() + "." + e.getMethodName()
-			// + "(" + e.getFileName() + ":" + e.getLineNumber()
-			// + ") marge========");
-			// }
-			// }
-		}
+		// {
+		// logger.info(this.getClass().getCanonicalName()
+		// + "=================================marge");
+		// StackTraceElement[] eles = Thread.currentThread().getStackTrace();
+		// StackTraceElement e = eles[3];
+		// logger.info(e.getClassName() + "." + e.getMethodName() + "("
+		// + e.getFileName() + ":" + e.getLineNumber()
+		// + ") marge========");
+		// boolean haveToString = false;
+		// for (int i = 2; i < (eles.length > 7 ? 7 : eles.length); i++) {
+		// if (eles[i].getMethodName().equals("toString")) {
+		// haveToString = true;
+		// break;
+		// }
+		// }
+		// if (haveToString) {
+		// for (int i = 2; i < (eles.length > 7 ? 7 : eles.length); i++) {
+		// e = eles[i];
+		// logger.info(e.getClassName() + "." + e.getMethodName()
+		// + "(" + e.getFileName() + ":" + e.getLineNumber()
+		// + ") marge========");
+		// }
+		// }
+		// }
 		return this;
 	};
 
@@ -179,28 +177,25 @@ public abstract class GraphTextWriter {
 		return this;
 	}
 
-	public final GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type) {
+	public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type) {
 		return hilightSpecial(text, type, "");
 	}
 
-	public final GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, int specialValue) {
+	public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, int specialValue) {
 		return hilightSpecial(text, type, Integer.toString(specialValue), null);
 	}
 
-	public final GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, int specialValue, HighlightData data) {
+	public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, int specialValue,
+			HighlightData data) {
 		return hilightSpecial(text, type, Integer.toString(specialValue), data);
 	}
 
-	public final GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, String specialValue) {
+	public final GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue) {
 		return hilightSpecial(text, type, specialValue, null);
 	}
 
-	protected GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, String specialValue, HighlightData data) {
+	protected GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue,
+			HighlightData data) {
 		return this;
 	}
 
@@ -208,8 +203,7 @@ public abstract class GraphTextWriter {
 		return "";
 	}
 
-	public abstract GraphTextWriter appendWithData(String str,
-			HighlightData data);
+	public abstract GraphTextWriter appendWithData(String str, HighlightData data);
 
 	public GraphTextWriter append(char value) {
 		return append(Character.toString(value));
@@ -229,8 +223,7 @@ public abstract class GraphTextWriter {
 
 	public abstract GraphTextWriter append(String str);
 
-	public abstract GraphTextWriter append(String str, long offset,
-			long fileOffset);
+	public abstract GraphTextWriter append(String str, long offset, long fileOffset);
 
 	public abstract GraphTextWriter appendNoHilight(int i);
 

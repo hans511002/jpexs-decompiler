@@ -78,12 +78,8 @@ public class HighlightedTextWriter extends GraphTextWriter {
 		this.instructionHilights.addAll(o.instructionHilights);
 		this.specialHilights.addAll(o.specialHilights);
 		String tmp = o.sb.toString();
-		if (tmp.indexOf("addFrameScript") >= 0) {
-			logger.info("tmpWriter=" + tmp);
-		}
 		tmp = Convert2Ts.convertType(tmp);
 		tmp = Convert2Ts.convertLine(tmp);
-		logger.info("tmpWriter=" + tmp);
 		this.append(tmp);
 		this.indent = o.indent;
 		this.newLine = o.newLine;

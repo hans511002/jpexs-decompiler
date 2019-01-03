@@ -485,8 +485,8 @@ public abstract class Trait implements Cloneable, Serializable {
 		if ((ns.kind == Namespace.KIND_PACKAGE) || (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
 			String nsname = ns.getName(abc.constants).toPrintableString(true);
 			// writer.appendNoHilight("package");
-			nwriter.appendNoHilight("module");
 			if (!nsname.isEmpty()) {
+				nwriter.appendNoHilight("module");
 				nwriter.appendNoHilight(" " + nsname); // assume not null name
 				nwriter.startBlock();
 			}

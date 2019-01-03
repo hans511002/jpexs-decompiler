@@ -1,9 +1,11 @@
 package com.jpexs.decompiler.flash.helpers;
 
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Convert2Ts {
+	static final Logger logger = Logger.getLogger(HighlightedTextWriter.class.getName());
 
 	// Ê××ÖÄ¸´óÐ´
 	// (^|\W*)(\w*)
@@ -30,6 +32,8 @@ public class Convert2Ts {
 	public static String convertType(String val) {
 		if (val.equals("MovieClip")) {
 			val = "std.MovieClip";
+		} else if (val.equals("SimpleButton")) {
+			val = "std.MCSimpleButton";
 		} else if (val.equals("Sound")) {
 			val = "egret.Sound";
 		} else if (val.equals("SoundChannel")) {
@@ -76,9 +80,9 @@ public class Convert2Ts {
 	static java.util.regex.Pattern removeEventListener = Pattern.compile("removeEventListener\\((.*)\\) ?;");
 	static java.util.regex.Pattern thisRemoveEventListener = Pattern.compile("this\\.removeEventListener\\((.*)\\) ?;");
 
-	static java.util.regex.Pattern th = Pattern
+	static java.util.regex.Pattern mcCtl = Pattern
 			.compile("this\\.([\\w.]+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
-	static java.util.regex.Pattern gotoAndPlay = Pattern
+	static java.util.regex.Pattern thisMemMc = Pattern
 			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
 	static java.util.regex.Pattern objPlay = Pattern
 			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
@@ -102,15 +106,25 @@ public class Convert2Ts {
 		if (m.find()) {
 			val = m.replaceAll("$1");
 		}
-		m = gotoAndPlay.matcher(val);
+		m = mcCtl.matcher(val);
 		if (m.find()) {
-			val = m.replaceAll("$1");
-		}
-		while (m.find()) {
-			String g1 = m.group(1);
-			if (g1.equals("this")) {
-				val = m.replaceFirst("$1") + "." + m.group(2) + toUp(m.group(3) + "." + m.group(2));
-				m = gotoAndPlay.matcher(val);
+			m = thisMemMc.matcher(val);
+			while (m.find()) {
+				String g1 = m.group(1);
+				if (g1.equals("this")) {
+
+					val = m.replaceFirst("$1" + "." + m.group(2) + toUp(m.group(3)) + "." + m.group(4));
+					m = thisMemMc.matcher(val);
+				} else {
+					val = m.replaceFirst("$1" + toUp(m.group(2)) + toUp(m.group(3)) + "." + m.group(4));
+					m = thisMemMc.matcher(val);
+				}
+			}
+		} else {
+			m = objPlay.matcher(val);
+			while (m.find()) {
+				val = m.replaceFirst("$1" + "." + m.group(2) + toUp(m.group(3)) + "." + m.group(4));
+				m = objPlay.matcher(val);
 			}
 		}
 
@@ -161,6 +175,7 @@ public class Convert2Ts {
 			if (!thisRemoveEventListener.matcher(val).find())
 				val = m.replaceFirst("this.\\removeEventListener($1);");
 		}
+		logger.info("tmpWriter=" + val);
 
 		return val;
 
