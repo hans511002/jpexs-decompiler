@@ -88,6 +88,8 @@ public class Convert2Ts {
 			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
 
 	public static String convertLine(String val) {
+		if (val.trim().isEmpty())
+			return val;
 		String lines[] = val.split("\\n");
 		if (lines.length > 1) {
 			return val;

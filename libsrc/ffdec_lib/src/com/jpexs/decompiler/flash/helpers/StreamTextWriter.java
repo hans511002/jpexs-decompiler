@@ -17,7 +17,6 @@
 package com.jpexs.decompiler.flash.helpers;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -50,40 +49,53 @@ public class StreamTextWriter extends GraphTextWriter implements AutoCloseable {
 		this.writer = new Utf8OutputStreamWriter(new BufferedOutputStream(os));
 	}
 
+	StreamTextWriter(CodeFormatting formatting) {
+		super(formatting);
+		// this.os = new java.io.ByteArrayOutputStream(64 * 1024);
+		this.writer = null;// new Utf8OutputStreamWriter(os);
+	}
+
 	public GraphTextWriter cloneNew() {
-		return new StreamTextWriter(formatting,
-				new java.io.ByteArrayOutputStream(64 * 1024));
+		StreamTextWriter nw = new StreamTextWriter(formatting);
+		nw.newLine = this.newLine;
+		nw.indent = this.indent;
+		this.newLine = false;
+		return nw;
 	};
 
 	@Override
 	public GraphTextWriter marge(GraphTextWriter w) {
 		super.marge(w);
 		StreamTextWriter o = (StreamTextWriter) w;
-		if (this.os instanceof ByteArrayOutputStream) {
-			o.sb.append(new String(((ByteArrayOutputStream) os).toByteArray()));
-			this.append(o.sb.toString());
+		if (this.writer == null) {
+			String tmp = sb.toString();
+			tmp = Convert2Ts.convertType(tmp);
+			tmp = Convert2Ts.convertLine(tmp);
+			this.append(tmp);
+			this.indent = o.indent;
+			this.newLine = o.newLine;
 		}
 		return this;
 	};
 
 	@Override
 	public String toTmpString() {
-		return new String(((ByteArrayOutputStream) os).toByteArray());
+		return sb.toString();
 	}
 
 	@Override
 	public String toText() {
-		return new String(((ByteArrayOutputStream) os).toByteArray());
+		return sb.toString();
 	}
 
 	@Override
 	public String toString() {
-		return new String(((ByteArrayOutputStream) os).toByteArray());
+		return sb.toString();
 	}
 
 	@Override
-	public GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, String specialValue, HighlightData data) {
+	public GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue,
+			HighlightData data) {
 		writeToOutputStream(text);
 		return this;
 	}
@@ -153,11 +165,14 @@ public class StreamTextWriter extends GraphTextWriter implements AutoCloseable {
 			appendIndent();
 		}
 		try {
-			writer.write(str);
-			writtenBytes += str.length();
+			if (writer != null) {
+				writer.write(str);
+				writtenBytes += str.length();
+			} else {
+				sb.append(str);
+			}
 		} catch (IOException ex) {
-			Logger.getLogger(StreamTextWriter.class.getName()).log(
-					Level.SEVERE, null, ex);
+			Logger.getLogger(StreamTextWriter.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 

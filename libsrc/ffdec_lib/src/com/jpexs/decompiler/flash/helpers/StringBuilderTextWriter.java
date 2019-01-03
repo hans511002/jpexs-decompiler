@@ -34,8 +34,7 @@ public class StringBuilderTextWriter extends GraphTextWriter {
 
 	private int writtenBytes;
 
-	public StringBuilderTextWriter(CodeFormatting formatting,
-			StringBuilder writer) {
+	public StringBuilderTextWriter(CodeFormatting formatting, StringBuilder writer) {
 		super(formatting);
 		this.writer = writer;
 		this.sb = writer;
@@ -47,15 +46,23 @@ public class StringBuilderTextWriter extends GraphTextWriter {
 	}
 
 	public GraphTextWriter cloneNew() {
-		return new StringBuilderTextWriter(formatting);
+		StringBuilderTextWriter nw = new StringBuilderTextWriter(formatting);
+		nw.newLine = this.newLine;
+		nw.indent = this.indent;
+		this.newLine = false;
+		return nw;
 	};
 
 	@Override
 	public GraphTextWriter marge(GraphTextWriter w) {
 		super.marge(w);
 		StringBuilderTextWriter o = (StringBuilderTextWriter) w;
-		this.sb.append(o.sb);
-		this.writtenBytes += o.writtenBytes;
+		String tmp = o.sb.toString();
+		tmp = Convert2Ts.convertType(tmp);
+		tmp = Convert2Ts.convertLine(tmp);
+		this.append(tmp);
+		this.indent = o.indent;
+		this.newLine = o.newLine;
 		return this;
 	};
 
@@ -75,8 +82,8 @@ public class StringBuilderTextWriter extends GraphTextWriter {
 	}
 
 	@Override
-	public GraphTextWriter hilightSpecial(String text,
-			HighlightSpecialType type, String specialValue, HighlightData data) {
+	public GraphTextWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue,
+			HighlightData data) {
 		writeToOutputStream(text);
 		return this;
 	}
@@ -94,8 +101,7 @@ public class StringBuilderTextWriter extends GraphTextWriter {
 	}
 
 	@Override
-	public StringBuilderTextWriter append(String str, long offset,
-			long fileOffset) {
+	public StringBuilderTextWriter append(String str, long offset, long fileOffset) {
 		writeToOutputStream(str);
 		return this;
 	}

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="examples"/>
 	<classpathentry kind="src" path="libsrc/avi/src"/>
 	<classpathentry excluding="org/monte/media/io/" kind="src" path="libsrc/cmykjpeg/src"/>
@@ -56,6 +57,5 @@
 	<classpathentry kind="lib" path="libsrc/ffdec_lib/testlib/testng-6.8.jar"/>
 	<classpathentry kind="lib" path="libsrc/jpacker/jargs.jar"/>
 	<classpathentry kind="lib" path="testlib/testng-6.8.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
