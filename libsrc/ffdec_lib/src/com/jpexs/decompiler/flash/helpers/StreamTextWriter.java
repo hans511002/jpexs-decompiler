@@ -67,8 +67,8 @@ public class StreamTextWriter extends GraphTextWriter implements AutoCloseable {
 	public GraphTextWriter marge(GraphTextWriter w) {
 		super.marge(w);
 		StreamTextWriter o = (StreamTextWriter) w;
-		if (this.writer == null) {
-			String tmp = sb.toString();
+		if (o.writer == null) {
+			String tmp = o.sb.toString();
 			tmp = Convert2Ts.convertType(tmp);
 			tmp = Convert2Ts.convertLine(tmp);
 			this.append(tmp);
@@ -167,10 +167,10 @@ public class StreamTextWriter extends GraphTextWriter implements AutoCloseable {
 		try {
 			if (writer != null) {
 				writer.write(str);
-				writtenBytes += str.length();
 			} else {
 				sb.append(str);
 			}
+			writtenBytes += str.length();
 		} catch (IOException ex) {
 			Logger.getLogger(StreamTextWriter.class.getName()).log(Level.SEVERE, null, ex);
 		}

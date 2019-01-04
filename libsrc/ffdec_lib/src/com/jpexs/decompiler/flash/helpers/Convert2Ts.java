@@ -61,31 +61,34 @@ public class Convert2Ts {
 	static java.util.regex.Pattern visible = Pattern.compile("\\.visible = (.*) ?;");
 	// addChild(_loc2_);
 	static java.util.regex.Pattern addFrameScript = Pattern.compile("addFrameScript\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisaddFrameScript = Pattern.compile("this\\.addFrameScript\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisaddFrameScript = Pattern.compile("\\.addFrameScript\\((.*)\\) ?;");
 
 	static java.util.regex.Pattern addChild = Pattern.compile("addChild\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisAddChild = Pattern.compile("this\\.addChild\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisAddChild = Pattern.compile("\\.addChild\\((.*)\\) ?;");
 
 	static java.util.regex.Pattern removeChild = Pattern.compile("removeChild\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisRemoveChild = Pattern.compile("this\\.removeChild\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisRemoveChild = Pattern.compile("\\.removeChild\\((.*)\\) ?;");
 
 	static java.util.regex.Pattern stop = Pattern.compile("stop\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisstop = Pattern.compile("this\\.stop\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisstop = Pattern.compile("\\.stop\\((.*)\\) ?;");
 
 	static java.util.regex.Pattern play = Pattern.compile("play\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisplay = Pattern.compile("this\\.play\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisplay = Pattern.compile("\\.play\\((.*)\\) ?;");
 
 	static java.util.regex.Pattern addEventListener = Pattern.compile("addEventListener\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisaddEventListener = Pattern.compile("this\\.addEventListener\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisaddEventListener = Pattern.compile("\\.addEventListener\\((.*)\\) ?;");
 	static java.util.regex.Pattern removeEventListener = Pattern.compile("removeEventListener\\((.*)\\) ?;");
-	static java.util.regex.Pattern thisRemoveEventListener = Pattern.compile("this\\.removeEventListener\\((.*)\\) ?;");
+	static java.util.regex.Pattern thisRemoveEventListener = Pattern.compile("\\.removeEventListener\\((.*)\\) ?;");
 
 	static java.util.regex.Pattern mcCtl = Pattern
-			.compile("this\\.([\\w.]+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
+			.compile("this\\.([\\w.]+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
 	static java.util.regex.Pattern thisMemMc = Pattern
-			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
+			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
 	static java.util.regex.Pattern objPlay = Pattern
-			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.(gotoAndPlay\\(|gotoAndStop\\(|play\\(|stop\\()");
+			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
+
+	static java.util.regex.Pattern _rnd = Pattern.compile("([ \\(])_rnd\\((\\d*)\\)");
+	static java.util.regex.Pattern _int = Pattern.compile("([ \\(])int\\((.*)\\)");
 
 	public static String convertLine(String val) {
 		if (val.trim().isEmpty())
@@ -94,19 +97,41 @@ public class Convert2Ts {
 		if (lines.length > 1) {
 			return val;
 		}
-		if (val.indexOf("public ") > 0) {
+		while (val.indexOf("public public") > 0) {
 			val = val.replace("public public", "public");
 		}
-		if (val.indexOf("this.this.") > 0) {
+		while (val.indexOf("this.this.") > 0) {
 			val = val.replace("this.this.", "this.");
 		}
-		// gotoAndPlay
-		// gotoAndStop
-		// play
-		// _rnd(40)
+		if (val.length() < 10)
+			return val;
+
+		// Event.ADDED_TO_STAGE
+		// this.removeEventListener(Event.ADDED_TO_STAGE,this.init);
+		// this.sfx_bt.addEventListener(MouseEvent.CLICK,this.click_sfx_f);
+		// this.music_bt.addEventListener(MouseEvent.CLICK,this.click_music_f);
+		if (val.indexOf("(Event.") >= 0) {
+			val = val.replaceAll("\\(Event\\.", "(egret.Event.");
+		}
+		if (val.indexOf("(MouseEvent.CLICK") >= 0) {
+			val = val.replaceAll("\\(MouseEvent\\.CLICK", "(egret.TouchEvent.TOUCH_TAP");
+		}
+		if (val.indexOf(": MouseEvent") >= 0) {
+			val = val.replaceAll(": MouseEvent", ": egret.TouchEvent");
+		}
+
+		val = val.replaceAll("([ \\(])stage\\.", "$1this.stage\\.");
 		Matcher m = number.matcher(val);
 		if (m.find()) {
 			val = m.replaceAll("$1");
+		}
+		m = _rnd.matcher(val);
+		if (m.find()) {
+			val = m.replaceAll("$1std._rnd($2)");
+		}
+		m = _int.matcher(val);
+		if (m.find()) {
+			val = m.replaceAll("$1Math.floor($2)");
 		}
 		m = mcCtl.matcher(val);
 		if (m.find()) {
@@ -145,41 +170,39 @@ public class Convert2Ts {
 		m = addFrameScript.matcher(val);
 		if (m.find()) {
 			if (!thisaddFrameScript.matcher(val).find())
-				val = m.replaceFirst("this.\\addFrameScript($1);");
+				val = m.replaceFirst("this.addFrameScript($1);");
 		}
 		m = addChild.matcher(val);
 		if (m.find()) {
 			if (!thisAddChild.matcher(val).find())
-				val = m.replaceFirst("this.\\addChild($1);");
+				val = m.replaceFirst("this.addChild($1);");
 		}
 		m = removeChild.matcher(val);
 		if (m.find()) {
 			if (!thisRemoveChild.matcher(val).find())
-				val = m.replaceFirst("this.\\removeChild($1);");
+				val = m.replaceFirst("this.removeChild($1);");
 		}
 		m = play.matcher(val);
 		if (m.find()) {
 			if (!thisplay.matcher(val).find())
-				val = m.replaceFirst("this.\\play($1);");
+				val = m.replaceFirst("this.play($1);");
 		}
 		m = stop.matcher(val);
 		if (m.find()) {
 			if (!thisstop.matcher(val).find())
-				val = m.replaceFirst("this.\\stop($1);");
+				val = m.replaceFirst("this.stop($1);");
 		}
 		m = addEventListener.matcher(val);
 		if (m.find()) {
 			if (!thisaddEventListener.matcher(val).find())
-				val = m.replaceFirst("this.\\addEventListener($1);");
+				val = m.replaceFirst("this.addEventListener($1);");
 		}
 		m = removeEventListener.matcher(val);
 		if (m.find()) {
 			if (!thisRemoveEventListener.matcher(val).find())
-				val = m.replaceFirst("this.\\removeEventListener($1);");
+				val = m.replaceFirst("this.removeEventListener($1);");
 		}
 		logger.info("tmpWriter=" + val);
-
 		return val;
-
 	}
 }

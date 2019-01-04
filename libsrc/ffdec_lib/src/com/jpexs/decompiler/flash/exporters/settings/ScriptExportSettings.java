@@ -25,35 +25,35 @@ import com.jpexs.decompiler.flash.helpers.FileTextWriter;
  */
 public class ScriptExportSettings {
 
-    public static final String EXPORT_FOLDER_NAME = "scripts";
+	public static final String EXPORT_FOLDER_NAME = "scripts";
 
-    public ScriptExportMode mode;
+	public ScriptExportMode mode;
 
-    public boolean singleFile;
+	public boolean singleFile;
 
-    public FileTextWriter singleFileWriter;
+	public FileTextWriter singleFileWriter;
 
-    public ScriptExportSettings(ScriptExportMode mode, boolean singleFile) {
-        this.mode = mode;
-        this.singleFile = singleFile;
-    }
+	public ScriptExportSettings(ScriptExportMode mode, boolean singleFile) {
+		this.mode = mode;
+		this.singleFile = singleFile;
+	}
 
-    public String getFileExtension() {
-        switch (mode) {
-            case AS:
-            case AS_METHOD_STUBS:
-                return ".as";
-            case PCODE_GRAPHVIZ:
-                return ".gv";
-            case PCODE:
-            case PCODE_HEX:
-                return ".pcode";
-            case HEX:
-                return ".hex";
-            case CONSTANTS:
-                return ".txt";
-            default:
-                throw new Error("Unsupported script export mode: " + mode);
-        }
-    }
+	public String getFileExtension() {
+		switch (mode) {
+		case AS:
+		case AS_METHOD_STUBS:
+			return ".ts";
+		case PCODE_GRAPHVIZ:
+			return ".gv";
+		case PCODE:
+		case PCODE_HEX:
+			return ".pcode";
+		case HEX:
+			return ".hex";
+		case CONSTANTS:
+			return ".txt";
+		default:
+			throw new Error("Unsupported script export mode: " + mode);
+		}
+	}
 }
