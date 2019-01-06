@@ -1496,14 +1496,6 @@ public class XFLConverter {
 		// TODO: Imported assets
 		// linkageImportForRS="true" linkageIdentifier="xxx"
 		// linkageURL="yyy.swf"
-		// <folders>
-		// <DOMFolderItem name="Button" itemID="5c2f2d9c-000008b5"/>
-		// <DOMFolderItem name="Image" itemID="5c2f2db8-00000d10"/>
-		// <DOMFolderItem name="Shape" itemID="5c2f2d9c-00000877"/>
-		// <DOMFolderItem name="Sound" itemID="5c2f2dc7-00000d14"/>
-		// <DOMFolderItem name="Sprite" itemID="5c2f2d9c-00000871"/>
-		// </folders>
-
 		writer.writeStartElement("folders");
 		Map<String, String> folders = new HashMap<String, String>();
 		for (int ch : characters.keySet()) {
@@ -2486,13 +2478,10 @@ public class XFLConverter {
 				}
 			}
 		}
-
 		if (!hasFont) {
 			return;
 		}
-
 		writer.writeStartElement("fonts");
-
 		for (Tag t : tags) {
 			if (t instanceof FontTag) {
 				SWF swf = t.getSwf();
@@ -2518,20 +2507,16 @@ public class XFLConverter {
 					continue;
 				}
 				String embeddedCharacters = fontChars;
-				embeddedCharacters = embeddedCharacters.replace("\u00A0", ""); // nonbreak
-																				// space
-				embeddedCharacters = embeddedCharacters.replace(".", ""); // todo:
-																			// honfika:
-																			// why?
+				embeddedCharacters = embeddedCharacters.replace("\u00A0", "");
+				// nonbreak space
+				embeddedCharacters = embeddedCharacters.replace(".", "");
+				// todo: honfika: why?
 				for (char i = 0; i < 32; i++) {
 					if (i == 9 || i == 10 || i == 13) {
 						continue;
 					}
-
-					embeddedCharacters = embeddedCharacters.replace("" + i, ""); // not
-																					// supported
-																					// in
-																					// xml
+					embeddedCharacters = embeddedCharacters.replace("" + i, "");
+					// not supported in xml
 				}
 
 				boolean hasAllRanges = false;
@@ -2566,11 +2551,9 @@ public class XFLConverter {
 				if (!"".equals(embeddedCharacters)) {
 					writer.writeAttribute("embeddedCharacters", embeddedCharacters);
 				}
-
 				writer.writeEndElement();
 			}
 		}
-
 		writer.writeEndElement();
 	}
 
@@ -3508,13 +3491,8 @@ public class XFLConverter {
 					"platform", "Windows", "versionInfo", "Saved by " + generatorVerName, "majorVersion",
 					generatorVersion, "buildNumber", "", "nextSceneIdentifier", "2", "playOptionsPlayLoop", "false",
 					"playOptionsPlayPages", "false", "playOptionsPlayFrameActions", "false", "autoSaveHasPrompted",
-					"true", "backgroundColor", backgroundColor, "frameRate", Integer.toString((int) swf.frameRate) // todo:
-																													// is
-																													// the
-																													// cast
-																													// to
-																													// int
-																													// needed?
+					"true", "backgroundColor", backgroundColor, "frameRate", Integer.toString((int) swf.frameRate)
+			// todo: is the cast to int needed?
 					});
 
 			if (Double.compare(width, 550) != 0) {
@@ -3885,6 +3863,10 @@ public class XFLConverter {
 			File binDir = new File(outDir.getAbsolutePath() + File.separator + "bin");
 			binDir.mkdir();
 			for (String fileName : files.keySet()) {
+				File tile = new File(libraryDir.getAbsolutePath() + File.separator + fileName);
+				if (!tile.getParentFile().exists()) {
+					tile.getParentFile().mkdirs();
+				}
 				writeFile(handler, files.get(fileName), libraryDir.getAbsolutePath() + File.separator + fileName);
 			}
 			for (String fileName : datfiles.keySet()) {
