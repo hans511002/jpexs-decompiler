@@ -2095,13 +2095,8 @@ public class XFLConverter {
 							Long.toString(getTimestamp(swf)), "externalFileSize", Integer.toString(data.length) });
 					writer.writeAttribute("href", symbolFile);
 					writer.writeAttribute("videoType", videoType);
-					writer.writeAttribute("fps", (int) swf.frameRate); // todo:
-																		// is
-																		// the
-																		// cast
-																		// to
-																		// int
-																		// needed?
+					writer.writeAttribute("fps", (int) swf.frameRate);
+					// todo: is the cast to int needed?
 					writer.writeAttribute("width", video.width);
 					writer.writeAttribute("height", video.height);
 					double len = (double) video.numFrames / swf.frameRate;
@@ -3503,7 +3498,7 @@ public class XFLConverter {
 				domDocument.writeAttribute("height", doubleToString(height));
 			}
 
-			// convertFonts(swf.getTags(), domDocument);
+			convertFonts(swf.getTags(), domDocument);
 			convertLibrary(swf, characterVariables, characterClasses, characterScriptPacks, nonLibraryShapes,
 					backgroundColor, swf.getTags(), characters, files, datfiles, flaVersion, domDocument);
 

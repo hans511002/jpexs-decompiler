@@ -1,5 +1,9 @@
 package com.jpexs.decompiler.flash.helpers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -202,7 +206,205 @@ public class Convert2Ts {
 			if (!thisRemoveEventListener.matcher(val).find())
 				val = m.replaceFirst("this.removeEventListener($1);");
 		}
-		logger.info("tmpWriter=" + val);
+		// logger.info("tmpWriter=" + val);
 		return val;
+	}
+
+	public static String convertCode(String tmpString) {
+		String lines[] = tmpString.replaceAll("\\\r", "").split("\n");
+		List<String> cnt = new ArrayList<String>();
+		Map<String, String> members = new HashMap<String, String>();
+		Map<String, String> methods = new HashMap<String, String>();
+		methods.put("_sp", "any");
+		convertCode(lines, members, methods, null);
+		return convertCode(lines, members, methods, cnt);
+	}
+
+	public static String convertCode(String lines[], Map<String, String> members, Map<String, String> methods,
+			List<String> cnt) {
+		boolean newLine = false;
+		boolean inModule = false;
+		boolean inClass = false;
+		boolean inMethod = false;
+		boolean inMem = false;
+		int dkhNum = 0;
+		for (int i = 0; i < lines.length; i++) {
+			String line = lines[i];
+			String lineCnt = line.trim();
+			if (lineCnt.isEmpty()) {
+				if (!newLine) {
+					continue;
+				} else {
+
+					if (cnt != null)
+						cnt.add("");
+					continue;
+				}
+			}
+			if (lineCnt.startsWith("//")) {
+				continue;
+			}
+			if (i < 10 && !inModule && lineCnt.startsWith("module ")) {
+				inModule = true;
+				if (cnt != null)
+					cnt.add(line);
+				continue;
+			}
+			if (i < 20 && !inClass && lineCnt.startsWith("export class ")) {
+				inClass = true;
+				inMem = true;
+				if (cnt != null)
+					cnt.add(line);
+				continue;
+			}
+			if (cnt != null) {
+				if (line.indexOf(": Array = null") > 0) {
+					line = line.replace(": Array = null", ": any = []");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf("new Sprite(") > 0) {
+					line = line.replace("new Sprite(", "new egret.Sprite(");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf("new LoadSounds(") > 0) {
+					line = line.replace("new LoadSounds(", "new egret.LoadSounds(");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf("new LoadMusic(") > 0) {
+					line = line.replace("new LoadMusic(", "new egret.LoadMusic(");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf(".removeEventListener(") > 0
+						&& !line.matches(".*\\.removeEventListener\\((.*), ?this\\);")) {
+					line = line.replaceFirst("\\.removeEventListener\\((.*)\\);", ".removeEventListener($1,this);");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf(".addEventListener(") > 0 && !line.matches(".*\\.addEventListener\\((.*), ?this\\);")) {
+					line = line.replaceFirst("\\.addEventListener\\((.*)\\);", ".addEventListener($1,this);");
+					cnt.add(line);
+					continue;
+				}
+			}
+			if (inClass) {
+				if (inMem) {//
+					Pattern var = Pattern.compile("(\\w+): ([\\w\\.]*) = (.*);");
+					Matcher m = var.matcher(lineCnt);
+					if (m.find()) {
+						String memName = m.group(1);
+						String memType = m.group(2);
+						String memVal = m.group(3);
+						members.put(memName, memVal);
+						if (cnt != null)
+							cnt.add(line);
+						continue;
+					}
+				}
+				if (!inMethod && lineCnt.matches("public \\w+\\(.*?\\)(: \\w+)?")) {
+					if (lines[i + 1].trim().equals("{")) {
+						Pattern var = Pattern.compile("public (\\w+)\\((.*?)\\)(: \\w+)?");
+						Matcher m = var.matcher(lineCnt);
+						if (m.find()) {
+							String methodName = m.group(1);
+							if (!"constructor".equals(methodName)) {
+								String r = m.group(3);
+								if (r != null && !r.isEmpty()) {
+									r = r.substring(1).trim();
+								}
+								methods.put(methodName, m.group(3));
+							}
+						}
+						inMethod = true;
+						inMem = false;
+						dkhNum++;
+						if (cnt != null)
+							cnt.add("");
+						if (cnt != null)
+							cnt.add(line + lines[++i].trim());
+						continue;
+					}
+					// } else if (inMethod && lineCnt.equals("{")) {
+					// dkhNum++;
+				} else if (inMethod && lineCnt.equals("}")) {
+					dkhNum--;
+				}
+				if (inMethod && dkhNum == 0) {
+					inMethod = false;
+					newLine = true;
+				}
+				if (inMethod && cnt != null) {
+					Pattern var = Pattern.compile(" (\\w+)\\((.*)\\)");
+					Matcher m = var.matcher(lineCnt);
+					if (m.find()) {
+						String tmp = m.group(1);
+						if (methods.containsKey(tmp)) {
+							line = line.substring(0, line.indexOf(lineCnt));
+							line += m.replaceAll(" this.$1($2)");
+						}
+					}
+					var = Pattern.compile("^(\\w+)\\((.*)\\)");
+					m = var.matcher(lineCnt);
+					if (m.find()) {
+						String tmp = m.group(1);
+						if (methods.containsKey(tmp)) {
+							line = line.substring(0, line.indexOf(lineCnt));
+							line += m.replaceAll("this.$1($2)");
+						}
+					}
+
+					var = Pattern.compile("^(\\w+)\\.");
+					m = var.matcher(lineCnt);
+					if (m.find()) {
+						String tmp = m.group(1);
+						if (members.containsKey(tmp)) {
+							line = line.substring(0, line.indexOf(lineCnt));
+							line += m.replaceAll("this.$0");
+						}
+					}
+					var = Pattern.compile("this\\.(\\w+?)\\.");
+					m = var.matcher(lineCnt);
+					if (m.find()) {
+						String tmp = m.group(1);
+						for (String string : members.keySet()) {
+							if (tmp.length() > string.length() && tmp.startsWith(string)) {// this.skinIcon_clIcon2Bg_cl.gotoAndStop(2);
+								if (members.containsKey(tmp)) {
+									continue;
+								}
+								line = line.substring(0, line.indexOf(lineCnt));
+								String l = tmp.substring(string.length());
+								String lt = l.length() > 1 ? l.substring(1) : "";
+								String slineline = "this." + string + "." + l.substring(0, 1).toLowerCase() + lt + ".";
+								line += m.replaceFirst(slineline);
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (cnt != null)
+				cnt.add(line);
+			if (lines.length - 1 > i) {
+				if (inMethod && lines[i + 1].trim().equals("{")) {
+					dkhNum++;
+				}
+			}
+		}
+		if (cnt == null)
+			return "";
+		StringBuffer sb = new StringBuffer();
+		String lastLine = "";
+		for (String str : cnt) {
+			if (lastLine.isEmpty() && str.isEmpty()) {
+				continue;
+			}
+			sb.append(str);
+			sb.append("\n");
+			lastLine = str;
+		}
+		return sb.toString();
 	}
 }
