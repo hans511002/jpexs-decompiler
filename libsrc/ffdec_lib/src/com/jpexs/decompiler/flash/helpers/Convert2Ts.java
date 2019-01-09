@@ -385,13 +385,17 @@ public class Convert2Ts {
 					}
 				}
 			}
-			if (cnt != null)
-				cnt.add(line);
+
 			if (lines.length - 1 > i) {
 				if (inMethod && lines[i + 1].trim().equals("{")) {
+					if (cnt != null)
+						line += "{";
+					i++;
 					dkhNum++;
 				}
 			}
+			if (cnt != null)
+				cnt.add(line);
 		}
 		if (cnt == null)
 			return "";
