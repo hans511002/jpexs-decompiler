@@ -77,11 +77,8 @@ public class TraitClass extends Trait implements TraitWithSlot {
 		ClassInfo classInfo = abc.class_info.get(class_info);
 		InstanceInfo instanceInfo = abc.instance_info.get(class_info);
 		DottedChain packageName = instanceInfo.getName(abc.constants).getNamespace(abc.constants)
-				.getName(abc.constants); // assume
-											// not
-											// null
-											// name
-
+				.getName(abc.constants);
+		// assume not null name
 		// DependencyParser.parseDependenciesFromMultiname(customNs, abc,
 		// dependencies, uses,
 		// abc.constants.getMultiname(instanceInfo.name_index), packageName,
@@ -116,7 +113,7 @@ public class TraitClass extends Trait implements TraitWithSlot {
 	public GraphTextWriter toStringHeader(Trait parent, ConvertData convertData, String path, ABC abc,
 			boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer,
 			List<DottedChain> fullyQualifiedNames, boolean parallel) {
-		abc.instance_info.get(class_info).getClassHeaderStr(writer, abc, fullyQualifiedNames, false);
+		abc.instance_info.get(class_info).getClassHeaderStr(writer, abc, fullyQualifiedNames, false, getNsName(abc));
 		return writer;
 	}
 
@@ -124,6 +121,15 @@ public class TraitClass extends Trait implements TraitWithSlot {
 	public void convertHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic,
 			ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer,
 			List<DottedChain> fullyQualifiedNames, boolean parallel) {
+	}
+
+	String getNsName(ABC abc) {
+		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(abc.constants);
+		if ((ns.kind == Namespace.KIND_PACKAGE) || (ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
+			String nsname = ns.getName(abc.constants).toPrintableString(true);
+			return nsname;
+		}
+		return "";
 	}
 
 	@Override
@@ -145,7 +151,7 @@ public class TraitClass extends Trait implements TraitWithSlot {
 
 		getMetaData(parent, convertData, abc, nwriter);
 		// class header
-		instanceInfo.getClassHeaderStr(nwriter, abc, fullyQualifiedNames, false);
+		instanceInfo.getClassHeaderStr(nwriter, abc, fullyQualifiedNames, false, getNsName(abc));
 		nwriter.startBlock();
 
 		// static variables & constants

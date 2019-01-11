@@ -236,12 +236,8 @@ public abstract class Trait implements Cloneable, Serializable {
 		importnames.addAll(Arrays.asList(builtInClasses));
 		for (int i = 0; i < imports.size(); i++) {
 			DottedChain ipath = imports.get(i);
-			if (ipath.getWithoutLast().equals(ignorePackage)) { // do not check
-																// classes from
-																// same package,
-																// they are
-																// imported
-																// automatically
+			if (ipath.getWithoutLast().equals(ignorePackage)) {
+				// do not check classes from same package, they are imported automatically
 				imports.remove(i);
 				i--;
 				continue;

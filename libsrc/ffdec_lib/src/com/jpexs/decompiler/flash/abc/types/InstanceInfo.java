@@ -76,35 +76,27 @@ public class InstanceInfo {
 
 	@Override
 	public String toString() {
-		return "name_index=" + name_index + " super_index=" + super_index
-				+ " flags=" + flags + " protectedNS=" + protectedNS
-				+ " interfaces=" + Helper.intArrToString(interfaces)
-				+ " method_index=" + iinit_index + "\r\n"
-				+ instance_traits.toString();
+		return "name_index=" + name_index + " super_index=" + super_index + " flags=" + flags + " protectedNS="
+				+ protectedNS + " interfaces=" + Helper.intArrToString(interfaces) + " method_index=" + iinit_index
+				+ "\r\n" + instance_traits.toString();
 	}
 
 	public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
 		String supIndexStr = "[nothing]";
 		if (super_index > 0) {
-			supIndexStr = abc.constants.getMultiname(super_index).toString(
-					abc.constants, fullyQualifiedNames);
+			supIndexStr = abc.constants.getMultiname(super_index).toString(abc.constants, fullyQualifiedNames);
 		}
-		return "name_index="
-				+ abc.constants.getMultiname(name_index).toString(
-						abc.constants, fullyQualifiedNames) + " super_index="
-				+ supIndexStr + " flags=" + flags + " protectedNS="
-				+ protectedNS + " interfaces="
-				+ Helper.intArrToString(interfaces) + " method_index="
-				+ iinit_index + "\r\n"
+		return "name_index=" + abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames)
+				+ " super_index=" + supIndexStr + " flags=" + flags + " protectedNS=" + protectedNS + " interfaces="
+				+ Helper.intArrToString(interfaces) + " method_index=" + iinit_index + "\r\n"
 				+ instance_traits.toString(abc, fullyQualifiedNames);
 	}
 
-	public GraphTextWriter getClassHeaderStr(GraphTextWriter writer, ABC abc,
-			List<DottedChain> fullyQualifiedNames, boolean allowPrivate) {
+	public GraphTextWriter getClassHeaderStr(GraphTextWriter writer, ABC abc, List<DottedChain> fullyQualifiedNames,
+			boolean allowPrivate, String cpackage) {
 		GraphTextWriter nwriter = writer.cloneNew();
-		String modifiers;
-		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(
-				abc.constants);
+		String modifiers = "";
+		Namespace ns = abc.constants.getMultiname(name_index).getNamespace(abc.constants);
 		modifiers = ns.getPrefix(abc);
 		if (!allowPrivate && modifiers.equals("private")) {
 			modifiers = "";
@@ -112,7 +104,9 @@ public class InstanceInfo {
 		if (!modifiers.isEmpty()) {
 			modifiers += " ";
 		}
-		modifiers = "export ";
+		modifiers = "";
+		if (!cpackage.isEmpty())
+			modifiers = "export ";
 		// if (isFinal()) {
 		// modifiers += "final ";
 		// }
@@ -126,21 +120,19 @@ public class InstanceInfo {
 
 		nwriter.appendNoHilight(modifiers + objType);
 		nwriter.hilightSpecial(
-				abc.constants.getMultiname(name_index).getName(abc.constants,
-						null/* No full names here */, false, true),
+				abc.constants.getMultiname(name_index).getName(abc.constants, null/* No full names here */, false, true),
 				HighlightSpecialType.CLASS_NAME);
 
 		if (super_index > 0) {
-			String typeName = abc.constants.getMultiname(super_index)
-					.getNameWithNamespace(abc.constants, true).toRawString();
-			String parentName = abc.constants.getMultiname(super_index)
-					.getName(abc.constants, fullyQualifiedNames, false, true);
+			String typeName = abc.constants.getMultiname(super_index).getNameWithNamespace(abc.constants, true)
+					.toRawString();
+			String parentName = abc.constants.getMultiname(super_index).getName(abc.constants, fullyQualifiedNames,
+					false, true);
 			if (!parentName.equals("Object")) {
 
 				parentName = Convert2Ts.convertType(parentName);
 				nwriter.appendNoHilight(" extends ");
-				nwriter.hilightSpecial(parentName,
-						HighlightSpecialType.TYPE_NAME, typeName);
+				nwriter.hilightSpecial(parentName, HighlightSpecialType.TYPE_NAME, typeName);
 			}
 		}
 		if (interfaces.length > 0) {
@@ -153,15 +145,12 @@ public class InstanceInfo {
 				if (i > 0) {
 					nwriter.append(", ");
 				}
-				String typeName = abc.constants.getMultiname(interfaces[i])
-						.getNameWithNamespace(abc.constants, true)
+				String typeName = abc.constants.getMultiname(interfaces[i]).getNameWithNamespace(abc.constants, true)
 						.toRawString();
-				String parentName = abc.constants.getMultiname(interfaces[i])
-						.getName(abc.constants, fullyQualifiedNames, false,
-								true);
+				String parentName = abc.constants.getMultiname(interfaces[i]).getName(abc.constants,
+						fullyQualifiedNames, false, true);
 				parentName = Convert2Ts.convertType(parentName);
-				nwriter.hilightSpecial(parentName,
-						HighlightSpecialType.TYPE_NAME, typeName);
+				nwriter.hilightSpecial(parentName, HighlightSpecialType.TYPE_NAME, typeName);
 			}
 		}
 		writer.marge(nwriter);

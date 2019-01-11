@@ -104,6 +104,9 @@ public class Convert2Ts {
 		while (val.indexOf("public public") > 0) {
 			val = val.replace("public public", "public");
 		}
+		while (val.indexOf("public static public") > 0) {
+			val = val.replace("public static public", "public static");
+		}
 		while (val.indexOf("this.this.") > 0) {
 			val = val.replace("this.this.", "this.");
 		}
