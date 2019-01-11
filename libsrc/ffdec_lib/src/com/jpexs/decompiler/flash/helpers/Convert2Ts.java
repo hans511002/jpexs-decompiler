@@ -1,6 +1,8 @@
 package com.jpexs.decompiler.flash.helpers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,12 @@ public class Convert2Ts {
 			val = "boolean";
 		} else if (val.equals("Event")) {
 			val = "egret.Event";
+		} else if (val.equals("MouseEvent.MOUSE_DOWN")) {
+			val = "egret.TouchEvent.TOUCH_BEGIN";
+		} else if (val.equals("MouseEvent.MOUSE_UP")) {
+			val = "egret.TouchEvent.TOUCH_END";
+		} else if (val.equals("MouseEvent.MOUSE_MOVE")) {
+			val = "egret.TouchEvent.TOUCH_MOVE";
 		} else if (val.startsWith("Event.")) {
 			val = "egret." + val;
 		} else if (val.equals("Event.ENTER_FRAME")) {
@@ -231,14 +239,30 @@ public class Convert2Ts {
 		boolean inMethod = false;
 		boolean inMem = false;
 		int dkhNum = 0;
+		String[] memSorts = new String[0];
+		if (members.size() > 1)
+			memSorts = new ArrayList<String>(members.keySet()).toArray(new String[0]);
+		if (memSorts.length > 1)
+			Arrays.sort(memSorts, new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					return o2.compareTo(o1);
+				}
+			});
+
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
 			String lineCnt = line.trim();
 			if (lineCnt.isEmpty()) {
 				if (!newLine) {
+					if (i < lines.length - 1) {
+						if (lines[i + 1].trim().isEmpty()) {
+							if (cnt != null)
+								cnt.add("");
+						}
+					}
 					continue;
 				} else {
-
 					if (cnt != null)
 						cnt.add("");
 					continue;
@@ -260,7 +284,32 @@ public class Convert2Ts {
 					cnt.add(line);
 				continue;
 			}
+			if (i < 20 && !inClass && lineCnt.startsWith("class ")) {
+				inClass = true;
+				inMem = true;
+				if (cnt != null)
+					cnt.add(line);
+				continue;
+			}
 			if (cnt != null) {
+				if (line.indexOf("(stage)") > 0) {
+					line = line.replace("(stage)", "(this.stage)");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf("MouseEvent.MOUSE_DOWN") > 0) {
+					line = line.replace("MouseEvent.MOUSE_DOWN", "egret.TouchEvent.TOUCH_BEGIN");
+					cnt.add(line);
+					continue;
+				} else if (line.indexOf("MouseEvent.MOUSE_UP") > 0) {
+					line = line.replace("MouseEvent.MOUSE_UP", "egret.TouchEvent.TOUCH_END");
+					cnt.add(line);
+					continue;
+				} else if (line.indexOf("MouseEvent.MOUSE_MOVE") > 0) {
+					line = line.replace("MouseEvent.MOUSE_MOVE", "egret.TouchEvent.TOUCH_MOVE");
+					cnt.add(line);
+					continue;
+				}
 				if (line.indexOf(":* = ") > 0) {
 					line = line.replace(":* = ", ":any = ");
 					cnt.add(line);
@@ -339,8 +388,8 @@ public class Convert2Ts {
 						continue;
 					}
 				}
-				if (!inMethod && lineCnt.matches("public \\w+\\(.*?\\)(: \\w+)?")) {
-					if (lines[i + 1].trim().equals("{")) {
+				if (!inMethod && lineCnt.matches("public \\w+\\(.*?\\)(: \\w+)? ?\\{?")) {
+					if (lines[i + 1].trim().equals("{") || lineCnt.endsWith("{")) {
 						Pattern var = Pattern.compile("public (\\w+)\\((.*?)\\)(: \\w+)?");
 						Matcher m = var.matcher(lineCnt);
 						if (m.find()) {
@@ -358,13 +407,18 @@ public class Convert2Ts {
 						dkhNum++;
 						if (cnt != null)
 							cnt.add("");
-						if (cnt != null)
-							cnt.add(line + lines[++i].trim());
+						if (cnt != null) {
+							if (lines[i + 1].trim().equals("{")) {
+								line += "{";
+								i++;
+							}
+							cnt.add(line);
+						}
 						continue;
 					}
 					// } else if (inMethod && lineCnt.equals("{")) {
 					// dkhNum++;
-				} else if (inMethod && lineCnt.equals("}")) {
+				} else if (inMethod && (lineCnt.equals("}") || lineCnt.startsWith("}"))) {
 					dkhNum--;
 				}
 				if (inMethod && dkhNum == 0) {
@@ -404,17 +458,17 @@ public class Convert2Ts {
 					m = var.matcher(lineCnt);
 					if (m.find()) {
 						String tmp = m.group(1);
-						for (String string : members.keySet()) {
-							if (tmp.length() > string.length() && tmp.startsWith(string)) {// this.skinIcon_clIcon2Bg_cl.gotoAndStop(2);
-								if (members.containsKey(tmp)) {
-									continue;
+						if (!members.containsKey(tmp)) {
+							for (String string : memSorts) {
+								if (tmp.length() > string.length() && tmp.startsWith(string)) {// this.skinIcon_clIcon2Bg_cl.gotoAndStop(2);
+									line = line.substring(0, line.indexOf(lineCnt));
+									String l = tmp.substring(string.length());
+									String lt = l.length() > 1 ? l.substring(1) : "";
+									String slineline = "this." + string + "." + l.substring(0, 1).toLowerCase() + lt
+											+ ".";
+									line += m.replaceFirst(slineline);
+									break;
 								}
-								line = line.substring(0, line.indexOf(lineCnt));
-								String l = tmp.substring(string.length());
-								String lt = l.length() > 1 ? l.substring(1) : "";
-								String slineline = "this." + string + "." + l.substring(0, 1).toLowerCase() + lt + ".";
-								line += m.replaceFirst(slineline);
-								break;
 							}
 						}
 					}
@@ -422,10 +476,13 @@ public class Convert2Ts {
 			}
 
 			if (lines.length - 1 > i) {
-				if (inMethod && lines[i + 1].trim().equals("{")) {
-					if (cnt != null)
-						line += "{";
-					i++;
+				if (inMethod && (lines[i + 1].trim().equals("{") || lineCnt.endsWith("{"))) {
+					if (cnt != null) {
+						if (lines[i + 1].trim().equals("{")) {
+							line += "{";
+							i++;
+						}
+					}
 					dkhNum++;
 				}
 			}
