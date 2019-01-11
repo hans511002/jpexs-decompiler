@@ -869,8 +869,8 @@ public final class MainPanel extends JPanel implements TreeSelectionListener, Se
 				public void run() {
 					while (!Thread.currentThread().isInterrupted()) {
 						DecompilerPool d = swf.getDecompilerPool();
-						statusPanel.setStatus(swf.getFileTitle() + " " + d.getStat());
-
+						if (d != null)
+							statusPanel.setStatus(swf.getFileTitle() + " " + d.getStat());
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException ex) {

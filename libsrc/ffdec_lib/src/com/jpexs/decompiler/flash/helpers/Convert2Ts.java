@@ -37,7 +37,7 @@ public class Convert2Ts {
 		if (val.equals("MovieClip")) {
 			val = "std.MovieClip";
 		} else if (val.equals("SimpleButton")) {
-			val = "std.MCSimpleButton";
+			val = "std.MCButton";
 		} else if (val.equals("Sound")) {
 			val = "egret.Sound";
 		} else if (val.equals("SoundChannel")) {
@@ -261,6 +261,26 @@ public class Convert2Ts {
 				continue;
 			}
 			if (cnt != null) {
+				if (line.indexOf(":* = ") > 0) {
+					line = line.replace(":* = ", ":any = ");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf("new Sound(") > 0) {
+					line = line.replace("new Sound(", "new egret.Sound(");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf(" extends Sprite") > 0) {
+					line = line.replace(" extends Sprite", " extends egret.Sprite");
+					cnt.add(line);
+					continue;
+				}
+				if (line.indexOf(" extends MovieClip") > 0) {
+					line = line.replace(" extends MovieClip", " extends std.MovieClip");
+					cnt.add(line);
+					continue;
+				}
 				if (line.indexOf(": Array = null") > 0) {
 					line = line.replace(": Array = null", ": any = []");
 					cnt.add(line);
