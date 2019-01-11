@@ -231,6 +231,82 @@ public class Convert2Ts {
 		return convertCode(lines, members, methods, cnt);
 	}
 
+	static boolean special(List<String> cnt, String line) {
+		if (line.indexOf(": TextField ") > 0) {
+			line = line.replace(": TextField ", ": std.MCLabel");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("(stage)") > 0) {
+			line = line.replace("(stage)", "(this.stage)");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("MouseEvent.MOUSE_DOWN") > 0) {
+			line = line.replace("MouseEvent.MOUSE_DOWN", "egret.TouchEvent.TOUCH_BEGIN");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("MouseEvent.MOUSE_UP") > 0) {
+			line = line.replace("MouseEvent.MOUSE_UP", "egret.TouchEvent.TOUCH_END");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("MouseEvent.MOUSE_MOVE") > 0) {
+			line = line.replace("MouseEvent.MOUSE_MOVE", "egret.TouchEvent.TOUCH_MOVE");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(":* = ") > 0) {
+			line = line.replace(":* = ", ":any = ");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("new Sound(") > 0) {
+			line = line.replace("new Sound(", "new egret.Sound(");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(" extends Sprite") > 0) {
+			line = line.replace(" extends Sprite", " extends egret.Sprite");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(" extends MovieClip") > 0) {
+			line = line.replace(" extends MovieClip", " extends std.MovieClip");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(": Array = null") > 0) {
+			line = line.replace(": Array = null", ": any = []");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("new Sprite(") > 0) {
+			line = line.replace("new Sprite(", "new egret.Sprite(");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(": Sprite") > 0) {
+			line = line.replace(": Sprite", ": egret.Sprite");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(": SoundTransform") > 0) {
+			line = line.replace(": SoundTransform", ": number");
+			if (line.indexOf(": number = null;") > 0) {
+				line = line.replace(": number = null;", ": number = 0.0;");
+			}
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf("new SoundTransform") > 0) {
+			line = line.replaceFirst("new SoundTransform\\(([\\d\\.]+?)(,[\\d\\.]+)?\\);", "$1;");
+			if (line.indexOf("new SoundTransform") > 0) {
+				line = line.replace("new SoundTransform", "");
+			}
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(".removeEventListener(") > 0
+				&& !line.matches(".*\\.removeEventListener\\((.*), ?this\\);")) {
+			line = line.replaceFirst("\\.removeEventListener\\((.*)\\);", ".removeEventListener($1,this);");
+			cnt.add(line);
+			return true;
+		} else if (line.indexOf(".addEventListener(") > 0 && !line.matches(".*\\.addEventListener\\((.*), ?this\\);")) {
+			line = line.replaceFirst("\\.addEventListener\\((.*)\\);", ".addEventListener($1,this);");
+			cnt.add(line);
+			return true;
+		}
+		return false;
+	}
+
 	public static String convertCode(String lines[], Map<String, String> members, Map<String, String> methods,
 			List<String> cnt) {
 		boolean newLine = false;
@@ -292,87 +368,8 @@ public class Convert2Ts {
 				continue;
 			}
 			if (cnt != null) {
-				if (line.indexOf("(stage)") > 0) {
-					line = line.replace("(stage)", "(this.stage)");
-					cnt.add(line);
+				if (special(cnt, line))
 					continue;
-				}
-				if (line.indexOf("MouseEvent.MOUSE_DOWN") > 0) {
-					line = line.replace("MouseEvent.MOUSE_DOWN", "egret.TouchEvent.TOUCH_BEGIN");
-					cnt.add(line);
-					continue;
-				} else if (line.indexOf("MouseEvent.MOUSE_UP") > 0) {
-					line = line.replace("MouseEvent.MOUSE_UP", "egret.TouchEvent.TOUCH_END");
-					cnt.add(line);
-					continue;
-				} else if (line.indexOf("MouseEvent.MOUSE_MOVE") > 0) {
-					line = line.replace("MouseEvent.MOUSE_MOVE", "egret.TouchEvent.TOUCH_MOVE");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(":* = ") > 0) {
-					line = line.replace(":* = ", ":any = ");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf("new Sound(") > 0) {
-					line = line.replace("new Sound(", "new egret.Sound(");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(" extends Sprite") > 0) {
-					line = line.replace(" extends Sprite", " extends egret.Sprite");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(" extends MovieClip") > 0) {
-					line = line.replace(" extends MovieClip", " extends std.MovieClip");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(": Array = null") > 0) {
-					line = line.replace(": Array = null", ": any = []");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf("new Sprite(") > 0) {
-					line = line.replace("new Sprite(", "new egret.Sprite(");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(": Sprite") > 0) {
-					line = line.replace(": Sprite", ": egret.Sprite");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(": SoundTransform") > 0) {
-					line = line.replace(": SoundTransform", ": number");
-					if (line.indexOf(": number = null;") > 0) {
-						line = line.replace(": number = null;", ": number = 0.0;");
-					}
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf("new SoundTransform") > 0) {
-					line = line.replaceFirst("new SoundTransform\\(([\\d\\.]+?)(,[\\d\\.]+)?\\);", "$1;");
-					if (line.indexOf("new SoundTransform") > 0) {
-						line = line.replace("new SoundTransform", "");
-					}
-					cnt.add(line);
-					continue;
-				}
-
-				if (line.indexOf(".removeEventListener(") > 0
-						&& !line.matches(".*\\.removeEventListener\\((.*), ?this\\);")) {
-					line = line.replaceFirst("\\.removeEventListener\\((.*)\\);", ".removeEventListener($1,this);");
-					cnt.add(line);
-					continue;
-				}
-				if (line.indexOf(".addEventListener(") > 0 && !line.matches(".*\\.addEventListener\\((.*), ?this\\);")) {
-					line = line.replaceFirst("\\.addEventListener\\((.*)\\);", ".addEventListener($1,this);");
-					cnt.add(line);
-					continue;
-				}
 			}
 			if (inClass) {
 				if (inMem) {//
