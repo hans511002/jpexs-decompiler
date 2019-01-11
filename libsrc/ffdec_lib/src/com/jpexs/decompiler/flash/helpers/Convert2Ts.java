@@ -271,16 +271,28 @@ public class Convert2Ts {
 					cnt.add(line);
 					continue;
 				}
-				if (line.indexOf("new LoadSounds(") > 0) {
-					line = line.replace("new LoadSounds(", "new egret.LoadSounds(");
+				if (line.indexOf(": Sprite") > 0) {
+					line = line.replace(": Sprite", ": egret.Sprite");
 					cnt.add(line);
 					continue;
 				}
-				if (line.indexOf("new LoadMusic(") > 0) {
-					line = line.replace("new LoadMusic(", "new egret.LoadMusic(");
+				if (line.indexOf(": SoundTransform") > 0) {
+					line = line.replace(": SoundTransform", ": number");
+					if (line.indexOf(": number = null;") > 0) {
+						line = line.replace(": number = null;", ": number = 0.0;");
+					}
 					cnt.add(line);
 					continue;
 				}
+				if (line.indexOf("new SoundTransform") > 0) {
+					line = line.replaceFirst("new SoundTransform\\(([\\d\\.]+?)(,[\\d\\.]+)?\\);", "$1;");
+					if (line.indexOf("new SoundTransform") > 0) {
+						line = line.replace("new SoundTransform", "");
+					}
+					cnt.add(line);
+					continue;
+				}
+
 				if (line.indexOf(".removeEventListener(") > 0
 						&& !line.matches(".*\\.removeEventListener\\((.*), ?this\\);")) {
 					line = line.replaceFirst("\\.removeEventListener\\((.*)\\);", ".removeEventListener($1,this);");

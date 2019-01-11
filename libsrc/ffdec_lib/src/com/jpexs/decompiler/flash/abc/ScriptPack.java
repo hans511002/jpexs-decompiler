@@ -137,6 +137,7 @@ public class ScriptPack extends AS3ClassTreeItem {
 	public File getExportFile(String directory, String extension) {
 
 		String scriptName = getPathScriptName();
+		logger.info("file:" + scriptName);
 		DottedChain packageName = getPathPackage();
 		File outDir = new File(directory + File.separatorChar + packageName.toFilePath());
 		String fileName = outDir.toString() + File.separator + Helper.makeFileName(scriptName) + extension;
