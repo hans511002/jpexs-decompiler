@@ -12,7 +12,8 @@
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library. */
+ * License along with this library.
+ */
 package com.jpexs.decompiler.flash.tags.base;
 
 import com.jpexs.decompiler.flash.SWF;
@@ -26,56 +27,64 @@ import com.jpexs.helpers.ByteArrayRange;
  */
 public abstract class CharacterTag extends Tag implements CharacterIdTag {
 
-    protected String className;
+	protected String className;
 
-    public CharacterTag(SWF swf, int id, String name, ByteArrayRange data) {
-        super(swf, id, name, data);
-    }
+	public CharacterTag(SWF swf, int id, String name, ByteArrayRange data) {
+		super(swf, id, name, data);
+	}
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
+	public void setClassName(String className) {
+		this.className = className;
+	}
 
-    public String getClassName() {
-        return className;
-    }
+	public String getClassName() {
+		return className;
+	}
 
-    @Override
-    public String getName() {
-        String nameAppend = "";
-        if (exportName != null) {
-            nameAppend = ": " + exportName;
-        }
-        if (className != null) {
-            nameAppend = ": " + className;
-        }
-        return tagName + " (" + getCharacterId() + nameAppend + ")";
-    }
+	@Override
+	public String getName() {
+		String nameAppend = "";
+		if (exportName != null) {
+			nameAppend = ": " + exportName;
+		}
+		if (className != null) {
+			nameAppend = ": " + className;
+		}
+		return tagName + " (" + getCharacterId() + nameAppend + ")";
+	}
 
-    @Override
-    public String getExportFileName() {
-        String result = super.getExportFileName();
-        return result + "_" + getCharacterId() + (exportName != null ? "_" + exportName : "") + (className != null ? "_" + className : "");
-    }
+	@Override
+	public String getExportFileName() {
+		String result = super.getExportFileName();
+		return result + "_" + getCharacterId() + (exportName != null ? "_" + exportName : "")
+				+ (className != null ? "_" + className : "");
+	}
 
-    public String getCharacterExportFileName() {
-        return getCharacterId() + (exportName != null ? "_" + exportName : "") + (className != null ? "_" + className : "");
-    }
+	public String getCharacterExportFileName() {
+		if (exportName != null && !exportName.isEmpty()) {
+			return exportName;
+		}
+		if (className != null && !className.isEmpty()) {
+			return className;
+		}
+		return getCharacterId() + (exportName != null ? "_" + exportName : "")
+				+ (className != null ? "_" + className : "");
+	}
 
-    protected String exportName;
+	protected String exportName;
 
-    public void setExportName(String exportName) {
-        if ("".equals(exportName)) {
-            exportName = null;
-        }
-        this.exportName = exportName;
-    }
+	public void setExportName(String exportName) {
+		if ("".equals(exportName)) {
+			exportName = null;
+		}
+		this.exportName = exportName;
+	}
 
-    public String getExportName() {
-        return exportName;
-    }
+	public String getExportName() {
+		return exportName;
+	}
 
-    public DefineScalingGridTag getScalingGridTag() {
-        return (DefineScalingGridTag) swf.getCharacterIdTag(getCharacterId(), DefineScalingGridTag.ID);
-    }
+	public DefineScalingGridTag getScalingGridTag() {
+		return (DefineScalingGridTag) swf.getCharacterIdTag(getCharacterId(), DefineScalingGridTag.ID);
+	}
 }
