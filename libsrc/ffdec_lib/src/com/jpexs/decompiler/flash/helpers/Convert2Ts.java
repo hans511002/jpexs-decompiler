@@ -92,15 +92,17 @@ public class Convert2Ts {
 	static java.util.regex.Pattern removeEventListener = Pattern.compile("removeEventListener\\((.*)\\) ?;");
 	static java.util.regex.Pattern thisRemoveEventListener = Pattern.compile("\\.removeEventListener\\((.*)\\) ?;");
 
-	static java.util.regex.Pattern mcCtl = Pattern
-			.compile("this\\.([\\w.]+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
-	static java.util.regex.Pattern thisMemMc = Pattern
-			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
+	// static java.util.regex.Pattern mcCtl = Pattern.compile("this\\.([\\w.]+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
+	// static java.util.regex.Pattern thisMemMc = Pattern
+	// .compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
 	static java.util.regex.Pattern objPlay = Pattern
 			.compile("(\\w+)\\.(\\w+)\\.(\\w+)\\.((gotoAndPlay\\()|(gotoAndStop\\()|(play\\()|(stop\\())");
+	static java.util.regex.Pattern thisSub = Pattern.compile("this\\.(\\w+)\\.(\\w+)\\.");
+	// static java.util.regex.Pattern thisPlay = Pattern.compile("this\\.(\\w+)\\.(\\w+)\\.(.*?)\\.(.*?)");
 
 	static java.util.regex.Pattern _rnd = Pattern.compile("([ \\(])_rnd\\((\\d*)\\)");
 	static java.util.regex.Pattern _int = Pattern.compile("([ \\(])int\\((.*)\\)");
+	static boolean useSubObj = true;
 
 	public static String convertLine(String val) {
 		if (val.trim().isEmpty())
@@ -148,19 +150,11 @@ public class Convert2Ts {
 		if (m.find()) {
 			val = m.replaceAll("$1Math.floor($2)");
 		}
-		m = mcCtl.matcher(val);
-		if (m.find()) {
-			m = thisMemMc.matcher(val);
+		if (useSubObj) {
+			m = thisSub.matcher(val);
 			while (m.find()) {
-				String g1 = m.group(1);
-				if (g1.equals("this")) {
-
-					val = m.replaceFirst("$1" + "." + m.group(2) + toUp(m.group(3)) + "." + m.group(4));
-					m = thisMemMc.matcher(val);
-				} else {
-					val = m.replaceFirst("$1" + toUp(m.group(2)) + toUp(m.group(3)) + "." + m.group(4));
-					m = thisMemMc.matcher(val);
-				}
+				val = m.replaceFirst("this." + m.group(1) + "[\"" + m.group(2) + "\"].");
+				m = thisSub.matcher(val);
 			}
 		} else {
 			m = objPlay.matcher(val);
@@ -169,6 +163,25 @@ public class Convert2Ts {
 				m = objPlay.matcher(val);
 			}
 		}
+		// if (m.find()) {
+		// m = thisMemMc.matcher(val);
+		// while (m.find()) {
+		// String g1 = m.group(1);
+		// if (g1.equals("this")) {
+		// val = m.replaceFirst("$1" + "." + m.group(2) + toUp(m.group(3)) + "." + m.group(4));
+		// m = thisMemMc.matcher(val);
+		// } else {
+		// val = m.replaceFirst("$1" + toUp(m.group(2)) + toUp(m.group(3)) + "." + m.group(4));
+		// m = thisMemMc.matcher(val);
+		// }
+		// }
+		// } else {
+		// m = objPlay.matcher(val);
+		// while (m.find()) {
+		// val = m.replaceFirst("$1" + "." + m.group(2) + toUp(m.group(3)) + "." + m.group(4));
+		// m = objPlay.matcher(val);
+		// }
+		// }
 
 		m = setx.matcher(val);
 		if (m.find()) {
@@ -294,8 +307,7 @@ public class Convert2Ts {
 			}
 			cnt.add(line);
 			return true;
-		} else if (line.indexOf(".removeEventListener(") > 0
-				&& !line.matches(".*\\.removeEventListener\\((.*), ?this\\);")) {
+		} else if (line.indexOf(".removeEventListener(") > 0 && !line.matches(".*\\.removeEventListener\\((.*), ?this\\);")) {
 			line = line.replaceFirst("\\.removeEventListener\\((.*)\\);", ".removeEventListener($1,this);");
 			cnt.add(line);
 			return true;
@@ -307,16 +319,40 @@ public class Convert2Ts {
 		return false;
 	}
 
-	public static String convertCode(String lines[], Map<String, String> members, Map<String, String> methods,
-			List<String> cnt) {
+	static Map<String, String> keyWorlds = new HashMap<String, String>();
+	static {
+		keyWorlds.put("super", "super");
+		keyWorlds.put("if", "if");
+		keyWorlds.put("switch", "switch");
+		keyWorlds.put("case", "case");
+		keyWorlds.put("while", "while");
+		keyWorlds.put("for", "for");
+		keyWorlds.put("do", "do");
+		keyWorlds.put("Main", "Main");
+		keyWorlds.put("_instance", "_instance");
+		keyWorlds.put("this", "this");
+		keyWorlds.put("var", "var");
+		keyWorlds.put("std", "std");
+		keyWorlds.put("function", "function");
+		keyWorlds.put("egret", "egret");
+		keyWorlds.put("param1", "param1");
+		keyWorlds.put("param2", "param1");
+		keyWorlds.put("param3", "param1");
+		keyWorlds.put("param4", "param1");
+	}
+
+	public static String convertCode(String lines[], Map<String, String> members, Map<String, String> methods, List<String> cnt) {
 		boolean newLine = false;
 		boolean inModule = false;
 		boolean inClass = false;
 		boolean inMethod = false;
 		boolean inMem = false;
+		String className = "";
 		int dkhNum = 0;
 		String[] memSorts = new String[0];
-		if (members.size() > 1)
+		if (cnt != null)
+			cnt.clear();
+		if (members.size() > 0)
 			memSorts = new ArrayList<String>(members.keySet()).toArray(new String[0]);
 		if (memSorts.length > 1)
 			Arrays.sort(memSorts, new Comparator<String>() {
@@ -326,6 +362,9 @@ public class Convert2Ts {
 				}
 			});
 
+		Map<String, String> methodParms = new HashMap<String, String>();
+		Map<String, String> localVar = new HashMap<String, String>();
+		Map<String, String> staticVar = new HashMap<String, String>();
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
 			String lineCnt = line.trim();
@@ -356,6 +395,7 @@ public class Convert2Ts {
 			if (i < 20 && !inClass && lineCnt.startsWith("export class ")) {
 				inClass = true;
 				inMem = true;
+				className = lineCnt.replaceFirst(".*?export class (\\w+).*", "$1");
 				if (cnt != null)
 					cnt.add(line);
 				continue;
@@ -363,6 +403,7 @@ public class Convert2Ts {
 			if (i < 20 && !inClass && lineCnt.startsWith("class ")) {
 				inClass = true;
 				inMem = true;
+				className = lineCnt.replaceAll(".*?class (\\w+).*", "$1 ");
 				if (cnt != null)
 					cnt.add(line);
 				continue;
@@ -372,17 +413,20 @@ public class Convert2Ts {
 					continue;
 			}
 			if (inClass) {
-				if (inMem) {//
-					Pattern var = Pattern.compile("(\\w+): ([\\w\\.]*) = (.*);");
+				if (inMem) {// public static go_to_game: boolean = false;
+					Pattern var = Pattern.compile("(static )?(\\w+): ([\\w\\.]*) = (.*);");
 					Matcher m = var.matcher(lineCnt);
 					if (m.find()) {
-						String memName = m.group(1);
-						String memType = m.group(2);
-						String memVal = m.group(3);
+						String staFlag = m.group(1);
+						String memName = m.group(2);
+						String memVal = m.group(4);
+						if (staFlag != null && staFlag.trim().equals("static"))
+							staticVar.put(memName, memVal);
 						members.put(memName, memVal);
-						if (cnt != null)
+						if (cnt != null) {
 							cnt.add(line);
-						continue;
+							continue;
+						}
 					}
 				}
 				if (!inMethod && lineCnt.matches("public \\w+\\(.*?\\)(: \\w+)? ?\\{?")) {
@@ -397,6 +441,22 @@ public class Convert2Ts {
 									r = r.substring(1).trim();
 								}
 								methods.put(methodName, m.group(3));
+							}
+							if (cnt != null) {
+								methodParms.clear();
+								String g2 = m.group(2);
+								String tmp[] = g2.split(",");
+								for (String kv : tmp) {
+									kv = kv.trim();
+									int idx = kv.indexOf(":");
+									String pn = kv;
+									String pv = "any";
+									if (idx > 0) {
+										pn = kv.substring(0, idx).trim();
+										pv = kv.substring(idx + 1).trim();
+									}
+									methodParms.put(pn, pv);
+								}
 							}
 						}
 						inMethod = true;
@@ -422,56 +482,158 @@ public class Convert2Ts {
 					inMethod = false;
 					newLine = true;
 				}
-				if (inMethod && cnt != null) {
-					Pattern var = Pattern.compile(" (\\w+)\\((.*)\\)");
+
+				if (inMethod && cnt == null) {// ½âÎömem
+					Pattern var = Pattern.compile("^(\\w+)(\\.|\\(|\\[| )");// mem
 					Matcher m = var.matcher(lineCnt);
 					if (m.find()) {
-						String tmp = m.group(1);
-						if (methods.containsKey(tmp)) {
-							line = line.substring(0, line.indexOf(lineCnt));
-							line += m.replaceAll(" this.$1($2)");
+						String g1 = m.group(1);
+						if (!keyWorlds.containsKey(g1) && !members.containsKey(g1)) {
+							members.put(g1, "cnt");
 						}
 					}
-					var = Pattern.compile("^(\\w+)\\((.*)\\)");
+					var = Pattern.compile("^var (\\w+)");// mem
 					m = var.matcher(lineCnt);
 					if (m.find()) {
 						String tmp = m.group(1);
-						if (methods.containsKey(tmp)) {
+						if (!keyWorlds.containsKey(tmp)) {
+							localVar.put(tmp, "var");
+						}
+					}
+				}
+				if (inMethod && cnt != null) {
+					Pattern var = Pattern.compile("(\\(| |\\[|\\[)(\\w+)(\\.|\\(|\\]|\\[| )");// mid mem
+					Matcher m = var.matcher(lineCnt);
+					int pos = 0;
+					while (m.find(pos)) {
+						String tmp = m.group(2);
+						if (members.containsKey(tmp) && !keyWorlds.containsKey(tmp) && !localVar.containsKey(tmp)) {
 							line = line.substring(0, line.indexOf(lineCnt));
-							line += m.replaceAll("this.$1($2)");
+							if (staticVar.containsKey(tmp)) {
+								line += m.replaceAll("$1" + className + ".$2$3");
+							} else {
+								line += m.replaceAll("$1this.$2$3");
+								while (line.indexOf("this.this.") > 0) {
+									line = line.replace("this.this.", "this.");
+								}
+							}
+							lineCnt = line.trim();
+							m = var.matcher(" " + lineCnt);
+						} else {
+							pos = m.end();
+						}
+					}
+					var = Pattern.compile("^(\\w+)(\\.|\\(|\\[| )");// mem
+					m = var.matcher(lineCnt);
+					if (m.find()) {
+						String tmp = m.group(1);
+						if (members.containsKey(tmp) && !keyWorlds.containsKey(tmp) && !localVar.containsKey(tmp)) {
+							line = line.substring(0, line.indexOf(lineCnt));
+							if (staticVar.containsKey(tmp)) {
+								line += m.replaceAll(className + ".$1$2");
+							} else {
+								line += m.replaceAll("this.$1$2");
+							}
+							lineCnt = line.trim();
+						}
+					}
+					var = Pattern.compile("^var (\\w+)");// mem
+					m = var.matcher(lineCnt);
+					if (m.find()) {
+						line = line.substring(0, line.indexOf(lineCnt));
+						line += m.replaceAll("let $1");
+						lineCnt = line.trim();
+					}
+					var = Pattern.compile("^(\\w+)(\\(.*?\\))");// method
+					m = var.matcher(lineCnt);
+					if (m.find()) {
+						String tmp = m.group(1);
+						if (members.containsKey(tmp) && !keyWorlds.containsKey(tmp) && !localVar.containsKey(tmp)) {
+							// if (members.containsKey(tmp)) {
+							line = line.substring(0, line.indexOf(lineCnt));
+							if (staticVar.containsKey(tmp)) {
+								line += m.replaceAll(className + ".$1$2");
+							} else {
+								line += m.replaceAll("this.$1$2");
+							}
+							lineCnt = line.trim();
+							// }
 						}
 					}
 
-					var = Pattern.compile("^(\\w+)\\.");
+					var = Pattern.compile("\\.(\\w+)\\((.*?)\\)");// method param
+					m = var.matcher(" " + lineCnt);
+					pos = 0;
+					while (m.find(pos)) {
+						String g1 = m.group(1);
+						String g2 = m.group(2);
+						boolean respl = false;
+						if (!g2.isEmpty()) {
+							String pars[] = g2.split(",");
+							for (String par : pars) {
+								String _par = par.trim();
+								String pn = _par;
+								if (pn.matches("[\\w\\.]+") && !pn.matches("[\\d\\.]+")) {
+									if ((members.containsKey(pn) || methods.containsKey(pn)) && !localVar.containsKey(pn)) {
+										if (staticVar.containsKey(pn)) {
+											pn = className + "." + pn;
+										} else {
+											pn = "this." + pn;
+										}
+										String _line = line.replace("((\\(|,|\\[)" + par + ")|(" + par + "(,|\\)|\\]))", "$2" + pn + "$4");
+										if (!_line.equals(line))
+											respl = true;
+									}
+								}
+							}
+						}
+						if (respl) {
+							pos = 0;
+							lineCnt = line.trim();
+							m = var.matcher(lineCnt);
+						} else {
+							pos = m.end();
+						}
+					}
+					line = line.replaceAll("new this\\.", "new ");
+					lineCnt = line.trim();
+
+					var = Pattern.compile("([ \\(])(\\w+)(\\[.*?\\])?\\.");
 					m = var.matcher(lineCnt);
 					if (m.find()) {
-						String tmp = m.group(1);
-						if (members.containsKey(tmp)) {
+						String g1 = m.group(2);
+						if (!keyWorlds.containsKey(g1) && !methodParms.containsKey(g1) && !localVar.containsKey(g1) && g1.charAt(0) >= 'a'
+								&& g1.charAt(0) <= 'z') {
 							line = line.substring(0, line.indexOf(lineCnt));
-							line += m.replaceAll("this.$0");
+							if (staticVar.containsKey(g1)) {
+								line += m.replaceAll(" $1" + className + ".$2$3.");
+							} else {
+								line += m.replaceAll(" $1this.$2$3.");
+							}
+							lineCnt = line.trim();
 						}
 					}
 					var = Pattern.compile("this\\.(\\w+?)\\.");
 					m = var.matcher(lineCnt);
 					if (m.find()) {
 						String tmp = m.group(1);
-						if (!members.containsKey(tmp)) {
+						if (!members.containsKey(tmp) && !localVar.containsKey(tmp)) {
 							for (String string : memSorts) {
 								if (tmp.length() > string.length() && tmp.startsWith(string)) {// this.skinIcon_clIcon2Bg_cl.gotoAndStop(2);
 									line = line.substring(0, line.indexOf(lineCnt));
 									String l = tmp.substring(string.length());
 									String lt = l.length() > 1 ? l.substring(1) : "";
-									String slineline = "this." + string + "." + l.substring(0, 1).toLowerCase() + lt
-											+ ".";
+									String slineline = "this." + string + "." + l.substring(0, 1).toLowerCase() + lt + ".";
 									line += m.replaceFirst(slineline);
+									lineCnt = line.trim();
 									break;
 								}
 							}
 						}
 					}
+
 				}
 			}
-
 			if (lines.length - 1 > i) {
 				if (inMethod && (lines[i + 1].trim().equals("{") || lineCnt.endsWith("{"))) {
 					if (cnt != null) {
@@ -483,8 +645,10 @@ public class Convert2Ts {
 					dkhNum++;
 				}
 			}
-			if (cnt != null)
+			if (cnt != null) {
+				System.err.println(line);
 				cnt.add(line);
+			}
 		}
 		if (cnt == null)
 			return "";
